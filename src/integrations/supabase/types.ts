@@ -14,16 +14,304 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      loan_approvals: {
+        Row: {
+          approver_id: string
+          comment: string | null
+          created_at: string
+          decision: Database["public"]["Enums"]["approval_decision"]
+          id: string
+          loan_id: string
+          stage: Database["public"]["Enums"]["loan_stage"]
+        }
+        Insert: {
+          approver_id: string
+          comment?: string | null
+          created_at?: string
+          decision: Database["public"]["Enums"]["approval_decision"]
+          id?: string
+          loan_id: string
+          stage: Database["public"]["Enums"]["loan_stage"]
+        }
+        Update: {
+          approver_id?: string
+          comment?: string | null
+          created_at?: string
+          decision?: Database["public"]["Enums"]["approval_decision"]
+          id?: string
+          loan_id?: string
+          stage?: Database["public"]["Enums"]["loan_stage"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loan_approvals_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loan_documents: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_path: string
+          file_size: number
+          id: string
+          loan_id: string
+          mime_type: string | null
+          note: string | null
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_path: string
+          file_size: number
+          id?: string
+          loan_id: string
+          mime_type?: string | null
+          note?: string | null
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          id?: string
+          loan_id?: string
+          mime_type?: string | null
+          note?: string | null
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loan_documents_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loans: {
+        Row: {
+          amount_approved: number | null
+          amount_requested: number
+          created_at: string
+          eligibility_limit: number | null
+          id: string
+          interest_rate: number
+          loan_number: string
+          member_id: string
+          outstanding_balance: number
+          purpose: string
+          stage: Database["public"]["Enums"]["loan_stage"]
+          status: Database["public"]["Enums"]["loan_status"]
+          term_months: number
+          updated_at: string
+        }
+        Insert: {
+          amount_approved?: number | null
+          amount_requested: number
+          created_at?: string
+          eligibility_limit?: number | null
+          id?: string
+          interest_rate?: number
+          loan_number?: string
+          member_id: string
+          outstanding_balance?: number
+          purpose: string
+          stage?: Database["public"]["Enums"]["loan_stage"]
+          status?: Database["public"]["Enums"]["loan_status"]
+          term_months: number
+          updated_at?: string
+        }
+        Update: {
+          amount_approved?: number | null
+          amount_requested?: number
+          created_at?: string
+          eligibility_limit?: number | null
+          id?: string
+          interest_rate?: number
+          loan_number?: string
+          member_id?: string
+          outstanding_balance?: number
+          purpose?: string
+          stage?: Database["public"]["Enums"]["loan_stage"]
+          status?: Database["public"]["Enums"]["loan_status"]
+          term_months?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          link: string | null
+          read: boolean
+          title: string
+          type: Database["public"]["Enums"]["notif_type"]
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read?: boolean
+          title: string
+          type: Database["public"]["Enums"]["notif_type"]
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read?: boolean
+          title?: string
+          type?: Database["public"]["Enums"]["notif_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string
+          id: string
+          joined_at: string
+          member_number: string | null
+          phone: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string
+          id?: string
+          joined_at?: string
+          member_number?: string | null
+          phone?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string
+          id?: string
+          joined_at?: string
+          member_number?: string | null
+          phone?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          tx_type: Database["public"]["Enums"]["tx_type"]
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          tx_type: Database["public"]["Enums"]["tx_type"]
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          tx_type?: Database["public"]["Enums"]["tx_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_eligibility: { Args: { _user_id: string }; Returns: Json }
+      get_active_loan_balance: { Args: { _user_id: string }; Returns: number }
+      get_savings_balance: { Args: { _user_id: string }; Returns: number }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_staff: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "member" | "approver" | "finance" | "manager" | "admin"
+      approval_decision:
+        | "approved"
+        | "rejected"
+        | "forwarded"
+        | "docs_requested"
+      loan_stage:
+        | "submitted"
+        | "under_review"
+        | "branch_approval"
+        | "finance_approval"
+        | "manager_approval"
+        | "disbursement"
+        | "completed"
+        | "rejected"
+      loan_status:
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "disbursed"
+        | "completed"
+      notif_type:
+        | "deposit"
+        | "loan_update"
+        | "loan_approved"
+        | "loan_rejected"
+        | "due_reminder"
+        | "docs_requested"
+        | "system"
+      tx_type:
+        | "deposit"
+        | "withdrawal"
+        | "contribution"
+        | "fee"
+        | "repayment"
+        | "disbursement"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +438,48 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["member", "approver", "finance", "manager", "admin"],
+      approval_decision: [
+        "approved",
+        "rejected",
+        "forwarded",
+        "docs_requested",
+      ],
+      loan_stage: [
+        "submitted",
+        "under_review",
+        "branch_approval",
+        "finance_approval",
+        "manager_approval",
+        "disbursement",
+        "completed",
+        "rejected",
+      ],
+      loan_status: [
+        "pending",
+        "approved",
+        "rejected",
+        "disbursed",
+        "completed",
+      ],
+      notif_type: [
+        "deposit",
+        "loan_update",
+        "loan_approved",
+        "loan_rejected",
+        "due_reminder",
+        "docs_requested",
+        "system",
+      ],
+      tx_type: [
+        "deposit",
+        "withdrawal",
+        "contribution",
+        "fee",
+        "repayment",
+        "disbursement",
+      ],
+    },
   },
 } as const
