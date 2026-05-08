@@ -74,14 +74,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "WASSHA SACCOSS" },
+      { name: "description", content: "WASSHA Connect is a web-based SACCOS management system for financial transparency and efficient loan processing." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "WASSHA SACCOSS" },
+      { property: "og:description", content: "WASSHA Connect is a web-based SACCOS management system for financial transparency and efficient loan processing." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "WASSHA SACCOSS" },
+      { name: "twitter:description", content: "WASSHA Connect is a web-based SACCOS management system for financial transparency and efficient loan processing." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/smfIg4vFevcom7fmKb37R3n7jP53/social-images/social-1778231011056-logo.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/smfIg4vFevcom7fmKb37R3n7jP53/social-images/social-1778231011056-logo.webp" },
     ],
     links: [
       {
