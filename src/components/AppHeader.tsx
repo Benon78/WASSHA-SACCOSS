@@ -1,8 +1,17 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { Wallet } from "lucide-react";
+import { Wallet, LogOut, Bell } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { NotificationsBell } from "@/components/NotificationsBell";
 
 export function AppHeader() {
+  const { user, roles, isStaff, signOut } = useAuth();
+  const nav = useNavigate();
+
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -15,18 +24,64 @@ export function AppHeader() {
             <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">SACCOS</div>
           </div>
         </Link>
-        <nav className="hidden items-center gap-7 text-sm font-medium text-muted-foreground md:flex">
-          <a href="#features" className="transition hover:text-foreground">Features</a>
-          <a href="#roles" className="transition hover:text-foreground">Roles</a>
-          <a href="#workflow" className="transition hover:text-foreground">Loan Workflow</a>
-        </nav>
+
+        {user ? (
+          <nav className="hidden items-center gap-6 text-sm font-medium text-muted-foreground md:flex">
+            <Link to="/dashboard" className="transition hover:text-foreground" activeProps={{ className: "text-foreground" }}>Dashboard</Link>
+            <Link to="/loans" className="transition hover:text-foreground" activeProps={{ className: "text-foreground" }}>My Loans</Link>
+            <Link to="/loans/apply" className="transition hover:text-foreground" activeProps={{ className: "text-foreground" }}>Apply</Link>
+            {isStaff && (
+              <Link to="/approvals" className="transition hover:text-foreground" activeProps={{ className: "text-foreground" }}>Approvals</Link>
+            )}
+            {roles.includes("admin") && (
+              <Link to="/admin" className="transition hover:text-foreground" activeProps={{ className: "text-foreground" }}>Admin</Link>
+            )}
+          </nav>
+        ) : (
+          <nav className="hidden items-center gap-7 text-sm font-medium text-muted-foreground md:flex">
+            <a href="#features" className="transition hover:text-foreground">Features</a>
+            <a href="#roles" className="transition hover:text-foreground">Roles</a>
+            <a href="#workflow" className="transition hover:text-foreground">Loan Workflow</a>
+          </nav>
+        )}
+
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" asChild>
-            <Link to="/dashboard">Sign in</Link>
-          </Button>
-          <Button size="sm" asChild className="bg-[image:var(--gradient-primary)] text-primary-foreground shadow-[var(--shadow-elegant)] hover:opacity-95">
-            <Link to="/dashboard">Open Dashboard</Link>
-          </Button>
+          {user ? (
+            <>
+              <NotificationsBell />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    {user.email?.split("@")[0]}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    <div className="text-xs text-muted-foreground">Signed in as</div>
+                    <div className="truncate text-sm font-medium">{user.email}</div>
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {roles.map((r) => (
+                        <span key={r} className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase text-primary">{r}</span>
+                      ))}
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={async () => { await signOut(); nav({ to: "/" }); }}>
+                    <LogOut className="mr-2 h-4 w-4" /> Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/auth">Sign in</Link>
+              </Button>
+              <Button size="sm" asChild className="bg-[image:var(--gradient-primary)] text-primary-foreground shadow-[var(--shadow-elegant)] hover:opacity-95">
+                <Link to="/auth">Get started</Link>
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </header>

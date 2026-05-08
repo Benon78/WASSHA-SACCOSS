@@ -1,0 +1,174 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { AppHeader } from "@/components/AppHeader";
+import { StatCard } from "@/components/StatCard";
+import { LoanWorkflowTimeline } from "@/components/LoanWorkflowTimeline";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
+import { fmtTZS, fmtDate } from "@/lib/format";
+import {
+  Wallet, PiggyBank, TrendingUp, Banknote, ArrowUpRight, ArrowDownRight, ChevronRight, Plus,
+} from "lucide-react";
+
+export const Route = createFileRoute("/_app/dashboard")({
+  head: () => ({ meta: [{ title: "Dashboard — WASSHA SACCOS" }] }),
+  component: Dashboard,
+});
+
+function Dashboard() {
+  const { user, roles, isStaff } = useAuth();
+  const [savings, setSavings] = useState(0);
+  const [activeLoan, setActiveLoan] = useState(0);
+  const [eligibility, setEligibility] = useState<any>(null);
+  const [loans, setLoans] = useState<any[]>([]);
+  const [txs, setTxs] = useState<any[]>([]);
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const [p, s, a, e, l, t] = await Promise.all([
+        supabase.from("profiles").select("*").eq("user_id", user.id).maybeSingle(),
+        supabase.rpc("get_savings_balance", { _user_id: user.id }),
+        supabase.rpc("get_active_loan_balance", { _user_id: user.id }),
+        supabase.rpc("calculate_eligibility", { _user_id: user.id }),
+        supabase.from("loans").select("*").eq("member_id", user.id).order("created_at", { ascending: false }).limit(3),
+        supabase.from("transactions").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(6),
+      ]);
+      setProfile(p.data);
+      setSavings(Number(s.data ?? 0));
+      setActiveLoan(Number(a.data ?? 0));
+      setEligibility(e.data);
+      setLoans(l.data ?? []);
+      setTxs(t.data ?? []);
+    })();
+  }, [user?.id]);
+
+  const activeLoanRecord = loans.find((l) => ["pending", "approved", "disbursed"].includes(l.status));
+
+  return (
+    <div className="min-h-screen bg-muted/30">
+      <AppHeader />
+      <div className="container mx-auto space-y-6 px-4 py-6">
+        {/* Welcome */}
+        <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-[image:var(--gradient-hero)] p-6 text-primary-foreground shadow-[var(--shadow-card)] md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-[0.2em] text-white/60">Welcome back</p>
+            <h1 className="mt-1 text-2xl font-bold md:text-3xl">
+              Hello, {profile?.full_name?.split(" ")[0] || "Member"} 👋
+            </h1>
+            <p className="mt-1 text-sm text-white/70">
+              Member #{profile?.member_number ?? "—"} · {roles.join(", ") || "member"}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button asChild className="bg-white text-secondary hover:bg-white/90">
+              <Link to="/loans/apply">
+                <Plus className="mr-2 h-4 w-4" /> Apply for loan
+              </Link>
+            </Button>
+            {isStaff && (
+              <Button asChild variant="outline" className="border-white/25 bg-white/5 text-white hover:bg-white/10 hover:text-white">
+                <Link to="/approvals">Open approvals</Link>
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* KPIs */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard label="Total savings" value={fmtTZS(savings)} icon={PiggyBank} tone="primary" />
+          <StatCard label="Active loan balance" value={fmtTZS(activeLoan)} icon={Banknote} tone="navy" />
+          <StatCard
+            label="Eligible to borrow"
+            value={fmtTZS(eligibility?.max_amount ?? 0)}
+            icon={TrendingUp}
+            tone={eligibility?.eligible ? "success" : "warning"}
+            delta={eligibility?.eligible ? "Ready to apply" : "See reasons below"}
+          />
+          <StatCard label="Active loans" value={String(loans.filter((l) => ["pending","approved","disbursed"].includes(l.status)).length)} icon={Wallet} tone="warning" />
+        </div>
+
+        {/* Eligibility reasons */}
+        {eligibility && !eligibility.eligible && eligibility.reasons?.length > 0 && (
+          <div className="rounded-2xl border border-warning/40 bg-warning/5 p-5">
+            <p className="text-sm font-semibold text-foreground">Why you're not eligible right now</p>
+            <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+              {eligibility.reasons.map((r: any, i: number) => (
+                <li key={i} className="flex gap-2"><span className="text-warning">•</span> {r.message}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Workflow */}
+        {activeLoanRecord && (
+          <LoanWorkflowTimeline
+            currentStage={activeLoanRecord.stage}
+            status={activeLoanRecord.status}
+            loanNumber={activeLoanRecord.loan_number}
+          />
+        )}
+
+        {/* Transactions */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className="rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-base font-semibold">Recent transactions</h3>
+            </div>
+            {txs.length === 0 ? (
+              <p className="py-6 text-center text-sm text-muted-foreground">No transactions yet.</p>
+            ) : (
+              <ul className="divide-y divide-border/70">
+                {txs.map((tx) => {
+                  const isIn = ["deposit","contribution"].includes(tx.tx_type);
+                  return (
+                    <li key={tx.id} className="flex items-center justify-between py-3">
+                      <div className="flex items-center gap-3">
+                        <div className={`flex h-9 w-9 items-center justify-center rounded-full ${isIn ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
+                          {isIn ? <ArrowDownRight className="h-4 w-4" /> : <ArrowUpRight className="h-4 w-4" />}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium capitalize">{tx.description || tx.tx_type.replace("_", " ")}</p>
+                          <p className="text-xs text-muted-foreground">{fmtDate(tx.created_at)}</p>
+                        </div>
+                      </div>
+                      <span className={`text-sm font-semibold ${isIn ? "text-success" : "text-foreground"}`}>
+                        {isIn ? "+" : "-"}{fmtTZS(tx.amount)}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+
+          <div className="rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-base font-semibold">Recent loans</h3>
+              <Link to="/loans" className="inline-flex items-center text-xs font-semibold text-primary hover:underline">
+                View all <ChevronRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+            {loans.length === 0 ? (
+              <p className="py-6 text-center text-sm text-muted-foreground">No loans yet. Apply for your first loan.</p>
+            ) : (
+              <ul className="divide-y divide-border/70">
+                {loans.map((l) => (
+                  <li key={l.id} className="flex items-center justify-between py-3">
+                    <div>
+                      <p className="text-sm font-semibold">{l.loan_number}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{l.stage.replace(/_/g, " ")}</p>
+                    </div>
+                    <span className="text-sm font-semibold">{fmtTZS(l.amount_requested)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -9,12 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
+import { Route as AppApprovalsRouteImport } from './routes/_app/approvals'
+import { Route as AppAdminRouteImport } from './routes/_app/admin'
+import { Route as AppLoansIndexRouteImport } from './routes/_app/loans/index'
+import { Route as AppLoansApplyRouteImport } from './routes/_app/loans/apply'
+import { Route as AppLoansLoanIdRouteImport } from './routes/_app/loans/$loanId'
 
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -22,40 +33,123 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppApprovalsRoute = AppApprovalsRouteImport.update({
+  id: '/approvals',
+  path: '/approvals',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdminRoute = AppAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLoansIndexRoute = AppLoansIndexRouteImport.update({
+  id: '/loans/',
+  path: '/loans/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLoansApplyRoute = AppLoansApplyRouteImport.update({
+  id: '/loans/apply',
+  path: '/loans/apply',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLoansLoanIdRoute = AppLoansLoanIdRouteImport.update({
+  id: '/loans/$loanId',
+  path: '/loans/$loanId',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
+  '/auth': typeof AuthRoute
+  '/admin': typeof AppAdminRoute
+  '/approvals': typeof AppApprovalsRoute
+  '/dashboard': typeof AppDashboardRoute
+  '/loans/$loanId': typeof AppLoansLoanIdRoute
+  '/loans/apply': typeof AppLoansApplyRoute
+  '/loans/': typeof AppLoansIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
+  '/auth': typeof AuthRoute
+  '/admin': typeof AppAdminRoute
+  '/approvals': typeof AppApprovalsRoute
+  '/dashboard': typeof AppDashboardRoute
+  '/loans/$loanId': typeof AppLoansLoanIdRoute
+  '/loans/apply': typeof AppLoansApplyRoute
+  '/loans': typeof AppLoansIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
+  '/_app': typeof AppRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_app/admin': typeof AppAdminRoute
+  '/_app/approvals': typeof AppApprovalsRoute
+  '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/loans/$loanId': typeof AppLoansLoanIdRoute
+  '/_app/loans/apply': typeof AppLoansApplyRoute
+  '/_app/loans/': typeof AppLoansIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/admin'
+    | '/approvals'
+    | '/dashboard'
+    | '/loans/$loanId'
+    | '/loans/apply'
+    | '/loans/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard'
-  id: '__root__' | '/' | '/dashboard'
+  to:
+    | '/'
+    | '/auth'
+    | '/admin'
+    | '/approvals'
+    | '/dashboard'
+    | '/loans/$loanId'
+    | '/loans/apply'
+    | '/loans'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/auth'
+    | '/_app/admin'
+    | '/_app/approvals'
+    | '/_app/dashboard'
+    | '/_app/loans/$loanId'
+    | '/_app/loans/apply'
+    | '/_app/loans/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DashboardRoute: typeof DashboardRoute
+  AppRoute: typeof AppRouteWithChildren
+  AuthRoute: typeof AuthRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -65,12 +159,75 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/approvals': {
+      id: '/_app/approvals'
+      path: '/approvals'
+      fullPath: '/approvals'
+      preLoaderRoute: typeof AppApprovalsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/admin': {
+      id: '/_app/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AppAdminRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/loans/': {
+      id: '/_app/loans/'
+      path: '/loans'
+      fullPath: '/loans/'
+      preLoaderRoute: typeof AppLoansIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/loans/apply': {
+      id: '/_app/loans/apply'
+      path: '/loans/apply'
+      fullPath: '/loans/apply'
+      preLoaderRoute: typeof AppLoansApplyRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/loans/$loanId': {
+      id: '/_app/loans/$loanId'
+      path: '/loans/$loanId'
+      fullPath: '/loans/$loanId'
+      preLoaderRoute: typeof AppLoansLoanIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppAdminRoute: typeof AppAdminRoute
+  AppApprovalsRoute: typeof AppApprovalsRoute
+  AppDashboardRoute: typeof AppDashboardRoute
+  AppLoansLoanIdRoute: typeof AppLoansLoanIdRoute
+  AppLoansApplyRoute: typeof AppLoansApplyRoute
+  AppLoansIndexRoute: typeof AppLoansIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppAdminRoute: AppAdminRoute,
+  AppApprovalsRoute: AppApprovalsRoute,
+  AppDashboardRoute: AppDashboardRoute,
+  AppLoansLoanIdRoute: AppLoansLoanIdRoute,
+  AppLoansApplyRoute: AppLoansApplyRoute,
+  AppLoansIndexRoute: AppLoansIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DashboardRoute: DashboardRoute,
+  AppRoute: AppRouteWithChildren,
+  AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
