@@ -41,18 +41,18 @@ function Landing() {
               The fintech-grade<br />
               <span className="bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">SACCOS platform</span> your members deserve
             </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-base text-white/75 md:text-lg">
+            <p className="mx-auto mt-5 max-w-2xl text-base text-white/95 md:text-lg">
               Transparent savings, intelligent loan workflows, and real-time notifications — purpose built for WASSHA SACCOS members, approvers, and administrators.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Button size="lg" asChild className="bg-[image:var(--gradient-primary)] text-primary-foreground shadow-[var(--shadow-elegant)] hover:opacity-95">
                 <Link to="/dashboard">Explore Member Dashboard <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
               </Button>
-              <Button size="lg" variant="outline" className="border-white/25 bg-white/5 text-white hover:bg-white/10 hover:text-white">
-                Request a demo
+              <Button size="lg" asChild variant="outline" className="border-white/40 bg-white/10 text-white hover:bg-white/20 hover:text-white">
+                <Link to="/workflow">View workflow guide</Link>
               </Button>
             </div>
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-white/60">
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-white/85">
               <span className="inline-flex items-center gap-1.5"><Lock className="h-3.5 w-3.5" /> Bank-grade security</span>
               <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5" /> Role-based access</span>
               <span className="inline-flex items-center gap-1.5"><Smartphone className="h-3.5 w-3.5" /> Mobile-first</span>
@@ -132,7 +132,9 @@ function Landing() {
                 <Button asChild className="bg-[image:var(--gradient-primary)] text-primary-foreground shadow-[var(--shadow-elegant)] hover:opacity-95">
                   <Link to="/dashboard">See it live <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
                 </Button>
-                <Button variant="outline">View workflow guide</Button>
+                <Button asChild variant="outline">
+                  <Link to="/workflow">View workflow guide</Link>
+                </Button>
               </div>
             </div>
             <div className="rounded-2xl bg-secondary/[0.04] p-6">
