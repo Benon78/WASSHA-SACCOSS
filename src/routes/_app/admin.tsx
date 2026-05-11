@@ -109,7 +109,7 @@ function AdminPage() {
                 <tr className="border-b text-left text-xs uppercase text-muted-foreground">
                   <th className="py-2">Name</th>
                   <th>Member #</th>
-                  <th>Joined</th>
+                  <th>Joined SACCOS</th>
                   <th>Roles</th>
                 </tr>
               </thead>
@@ -118,7 +118,22 @@ function AdminPage() {
                   <tr key={u.id} className="border-b border-border/40">
                     <td className="py-3 font-medium">{u.full_name || "—"}</td>
                     <td>{u.member_number}</td>
-                    <td className="text-xs text-muted-foreground">{fmtDate(u.created_at)}</td>
+                    <td>
+                      <Input
+                        type="date"
+                        defaultValue={u.joined_at ? new Date(u.joined_at).toISOString().slice(0, 10) : ""}
+                        className="h-8 w-[140px] text-xs"
+                        onBlur={async (e) => {
+                          const v = e.target.value;
+                          if (!v) return;
+                          const { error } = await supabase.from("profiles")
+                            .update({ joined_at: new Date(v).toISOString() })
+                            .eq("user_id", u.user_id);
+                          if (error) toast.error(error.message);
+                          else { toast.success("Join date updated"); load(); }
+                        }}
+                      />
+                    </td>
                     <td>
                       <div className="flex flex-wrap gap-1">
                         {ROLES.map((r) => {

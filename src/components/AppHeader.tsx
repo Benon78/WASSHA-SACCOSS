@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { Wallet, LogOut, Bell } from "lucide-react";
+import { Wallet, LogOut } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
