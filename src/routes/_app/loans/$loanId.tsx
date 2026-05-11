@@ -143,8 +143,8 @@ function LoanDetail() {
                   header: {
                     title: "Loan Statement",
                     subtitle: loan.loan_number,
-                    memberName: prof?.full_name,
-                    memberNumber: prof?.member_number,
+                    memberName: prof?.full_name ?? undefined,
+                    memberNumber: prof?.member_number ?? undefined,
                   },
                   loan,
                   repayments: rep ?? [],
