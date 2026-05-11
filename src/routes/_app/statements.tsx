@@ -48,8 +48,8 @@ function StatementsPage() {
   useEffect(() => { fetchData(); /* eslint-disable-line */ }, [user?.id]);
 
   const headerInfo = {
-    memberName: profile?.full_name,
-    memberNumber: profile?.member_number,
+    memberName: profile?.full_name ?? undefined,
+    memberNumber: profile?.member_number ?? undefined,
     periodLabel: `${fmtDate(from)} → ${fmtDate(to)}`,
   };
 
