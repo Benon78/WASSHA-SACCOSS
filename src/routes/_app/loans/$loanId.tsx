@@ -11,7 +11,8 @@ import { useAuth } from "@/lib/auth";
 import { fmtTZS, fmtDate, fmtRelative } from "@/lib/format";
 import { STAGE_LABEL, STAGE_ROLE, nextStage, type LoanStage } from "@/lib/loanStages";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, ArrowRight, FileQuestion, Upload, FileText, Loader2 } from "lucide-react";
+import { CheckCircle2, XCircle, ArrowRight, FileQuestion, Upload, FileText, Loader2, Banknote, FileDown } from "lucide-react";
+import { loanRepaymentPdf } from "@/lib/pdf";
 
 export const Route = createFileRoute("/_app/loans/$loanId")({
   head: () => ({ meta: [{ title: "Loan details — WASSHA SACCOS" }] }),
@@ -130,6 +131,29 @@ function LoanDetail() {
                 <p className="text-base font-bold text-success">{fmtTZS(loan.amount_approved)}</p>
               </div>
             )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                const { data: prof } = await supabase.from("profiles").select("*").eq("user_id", loan.member_id).maybeSingle();
+                const { data: rep } = await supabase.from("transactions").select("*")
+                  .eq("user_id", loan.member_id).eq("tx_type", "repayment")
+                  .order("created_at", { ascending: true });
+                const doc = loanRepaymentPdf({
+                  header: {
+                    title: "Loan Statement",
+                    subtitle: loan.loan_number,
+                    memberName: prof?.full_name ?? undefined,
+                    memberNumber: prof?.member_number ?? undefined,
+                  },
+                  loan,
+                  repayments: rep ?? [],
+                });
+                doc.save(`${loan.loan_number}.pdf`);
+              }}
+            >
+              <FileDown className="mr-2 h-4 w-4" /> PDF
+            </Button>
           </div>
         </div>
 

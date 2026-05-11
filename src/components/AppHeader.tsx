@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { Wallet, LogOut, Bell } from "lucide-react";
+import { Wallet, LogOut } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -29,7 +29,7 @@ export function AppHeader() {
           <nav className="hidden items-center gap-6 text-sm font-medium text-muted-foreground md:flex">
             <Link to="/dashboard" className="transition hover:text-foreground" activeProps={{ className: "text-foreground" }}>Dashboard</Link>
             <Link to="/loans" className="transition hover:text-foreground" activeProps={{ className: "text-foreground" }}>My Loans</Link>
-            <Link to="/loans/apply" className="transition hover:text-foreground" activeProps={{ className: "text-foreground" }}>Apply</Link>
+            <Link to="/statements" className="transition hover:text-foreground" activeProps={{ className: "text-foreground" }}>Statements</Link>
             {isStaff && (
               <Link to="/approvals" className="transition hover:text-foreground" activeProps={{ className: "text-foreground" }}>Approvals</Link>
             )}
@@ -41,7 +41,7 @@ export function AppHeader() {
           <nav className="hidden items-center gap-7 text-sm font-medium text-muted-foreground md:flex">
             <a href="#features" className="transition hover:text-foreground">Features</a>
             <a href="#roles" className="transition hover:text-foreground">Roles</a>
-            <a href="#workflow" className="transition hover:text-foreground">Loan Workflow</a>
+            <Link to="/workflow" className="transition hover:text-foreground">Workflow Guide</Link>
           </nav>
         )}
 
@@ -65,6 +65,19 @@ export function AppHeader() {
                       ))}
                     </div>
                   </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile">My profile & 2FA</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/statements">Statements</Link>
+                  </DropdownMenuItem>
+                  {roles.includes("admin") && (
+                    <>
+                      <DropdownMenuItem asChild><Link to="/admin/policies">Loan policies</Link></DropdownMenuItem>
+                      <DropdownMenuItem asChild><Link to="/admin/reports">Reports</Link></DropdownMenuItem>
+                    </>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={async () => { await signOut(); nav({ to: "/" }); }}>
                     <LogOut className="mr-2 h-4 w-4" /> Sign out

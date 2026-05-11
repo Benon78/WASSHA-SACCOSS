@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          entity: string
+          entity_id: string | null
+          id: string
+          meta: Json | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          entity: string
+          entity_id?: string | null
+          id?: string
+          meta?: Json | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          entity?: string
+          entity_id?: string | null
+          id?: string
+          meta?: Json | null
+        }
+        Relationships: []
+      }
       loan_approvals: {
         Row: {
           approver_id: string
@@ -95,6 +125,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      loan_policies: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          effective_from: string
+          id: string
+          interest_rate: number
+          max_term_months: number
+          min_membership_months: number
+          min_savings: number
+          notes: string | null
+          savings_multiplier: number
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string
+          id?: string
+          interest_rate?: number
+          max_term_months?: number
+          min_membership_months?: number
+          min_savings?: number
+          notes?: string | null
+          savings_multiplier?: number
+          version: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string
+          id?: string
+          interest_rate?: number
+          max_term_months?: number
+          min_membership_months?: number
+          min_savings?: number
+          notes?: string | null
+          savings_multiplier?: number
+          version?: number
+        }
+        Relationships: []
       }
       loans: {
         Row: {
@@ -264,6 +336,28 @@ export type Database = {
     }
     Functions: {
       calculate_eligibility: { Args: { _user_id: string }; Returns: Json }
+      current_policy: {
+        Args: never
+        Returns: {
+          created_at: string
+          created_by: string | null
+          effective_from: string
+          id: string
+          interest_rate: number
+          max_term_months: number
+          min_membership_months: number
+          min_savings: number
+          notes: string | null
+          savings_multiplier: number
+          version: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "loan_policies"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       get_active_loan_balance: { Args: { _user_id: string }; Returns: number }
       get_savings_balance: { Args: { _user_id: string }; Returns: number }
       has_role: {
