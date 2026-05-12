@@ -177,6 +177,7 @@ export type Database = {
           id: string
           interest_rate: number
           loan_number: string
+          loan_type: Database["public"]["Enums"]["loan_type"]
           member_id: string
           outstanding_balance: number
           purpose: string
@@ -193,6 +194,7 @@ export type Database = {
           id?: string
           interest_rate?: number
           loan_number?: string
+          loan_type?: Database["public"]["Enums"]["loan_type"]
           member_id: string
           outstanding_balance?: number
           purpose: string
@@ -209,6 +211,7 @@ export type Database = {
           id?: string
           interest_rate?: number
           loan_number?: string
+          loan_type?: Database["public"]["Enums"]["loan_type"]
           member_id?: string
           outstanding_balance?: number
           purpose?: string
@@ -216,6 +219,30 @@ export type Database = {
           status?: Database["public"]["Enums"]["loan_status"]
           term_months?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      notification_preferences: {
+        Row: {
+          channel_email: boolean
+          channel_sms: boolean
+          sms_phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          channel_email?: boolean
+          channel_sms?: boolean
+          sms_phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          channel_email?: boolean
+          channel_sms?: boolean
+          sms_phone?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -288,6 +315,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          loan_id: string | null
           tx_type: Database["public"]["Enums"]["tx_type"]
           user_id: string
         }
@@ -296,6 +324,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          loan_id?: string | null
           tx_type: Database["public"]["Enums"]["tx_type"]
           user_id: string
         }
@@ -304,10 +333,19 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          loan_id?: string | null
           tx_type?: Database["public"]["Enums"]["tx_type"]
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "transactions_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -391,6 +429,7 @@ export type Database = {
         | "rejected"
         | "disbursed"
         | "completed"
+      loan_type: "development" | "chapchap" | "emergency"
       notif_type:
         | "deposit"
         | "loan_update"
@@ -557,6 +596,7 @@ export const Constants = {
         "disbursed",
         "completed",
       ],
+      loan_type: ["development", "chapchap", "emergency"],
       notif_type: [
         "deposit",
         "loan_update",
