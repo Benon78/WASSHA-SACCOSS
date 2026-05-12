@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
-import { Shield, ShieldCheck, Loader2, Trash2 } from "lucide-react";
+import { Shield, ShieldCheck, Loader2, Trash2, Bell } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 export const Route = createFileRoute("/_app/profile")({
   head: () => ({ meta: [{ title: "Profile — WASSHA SACCOS" }] }),
