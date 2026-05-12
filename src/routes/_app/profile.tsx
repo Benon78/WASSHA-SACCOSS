@@ -93,7 +93,7 @@ function ProfilePage() {
 
         <section className="rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
           <h2 className="text-base font-semibold">Personal information</h2>
-          <p className="text-xs text-muted-foreground">Member #{profile?.member_number ?? "—"}</p>
+          <p className="text-xs text-muted-foreground">Member #{profile?.member_number ?? "Pending — your admin will assign one"}</p>
           <form onSubmit={saveProfile} className="mt-4 grid gap-4 md:grid-cols-2">
             <div><Label>Full name</Label><Input value={name} onChange={(e) => setName(e.target.value)} required /></div>
             <div><Label>Phone</Label><Input value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
