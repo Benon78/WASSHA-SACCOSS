@@ -105,6 +105,35 @@ function ProfilePage() {
         </section>
 
         <section className="rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
+          <h2 className="flex items-center gap-2 text-base font-semibold"><Bell className="h-4 w-4 text-primary" /> Notification channels</h2>
+          <p className="text-xs text-muted-foreground">Choose how you receive deposit confirmations, loan approvals and reminders. In-app notifications are always enabled.</p>
+          <div className="mt-4 space-y-4">
+            <label className="flex items-center justify-between rounded-lg border border-border/60 p-3">
+              <div>
+                <p className="text-sm font-medium">Email notifications</p>
+                <p className="text-xs text-muted-foreground">Sent to {user?.email}</p>
+              </div>
+              <Switch checked={prefs.channel_email} onCheckedChange={(v) => setPrefs({ ...prefs, channel_email: v })} />
+            </label>
+            <label className="flex items-center justify-between rounded-lg border border-border/60 p-3">
+              <div>
+                <p className="text-sm font-medium">SMS notifications</p>
+                <p className="text-xs text-muted-foreground">Reminders and approvals via text message</p>
+              </div>
+              <Switch checked={prefs.channel_sms} onCheckedChange={(v) => setPrefs({ ...prefs, channel_sms: v })} />
+            </label>
+            {prefs.channel_sms && (
+              <div>
+                <Label>SMS phone number</Label>
+                <Input placeholder="+255 7XX XXX XXX" value={prefs.sms_phone}
+                  onChange={(e) => setPrefs({ ...prefs, sms_phone: e.target.value })} />
+              </div>
+            )}
+            <Button onClick={savePrefs} className="bg-[image:var(--gradient-primary)] text-primary-foreground">Save preferences</Button>
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="flex items-center gap-2 text-base font-semibold">
