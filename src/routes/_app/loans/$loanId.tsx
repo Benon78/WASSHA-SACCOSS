@@ -11,8 +11,10 @@ import { useAuth } from "@/lib/auth";
 import { fmtTZS, fmtDate, fmtRelative } from "@/lib/format";
 import { STAGE_LABEL, STAGE_ROLE, nextStage, type LoanStage } from "@/lib/loanStages";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, ArrowRight, FileQuestion, Upload, FileText, Loader2, Banknote, FileDown } from "lucide-react";
-import { loanRepaymentPdf } from "@/lib/pdf";
+import { CheckCircle2, XCircle, ArrowRight, FileQuestion, Upload, FileText, Loader2, Banknote, FileDown, Eye, ReceiptText } from "lucide-react";
+import { loanRepaymentPdf, disbursementReceiptPdf } from "@/lib/pdf";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { LOAN_TYPE_LABEL } from "@/lib/loanStages";
 
 export const Route = createFileRoute("/_app/loans/$loanId")({
   head: () => ({ meta: [{ title: "Loan details — WASSHA SACCOS" }] }),
