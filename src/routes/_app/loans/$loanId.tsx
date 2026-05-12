@@ -294,6 +294,20 @@ function LoanDetail() {
           </div>
         </div>
       </div>
+
+      <Dialog open={!!preview} onOpenChange={(o) => !o && setPreview(null)}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader><DialogTitle className="truncate">{preview?.name}</DialogTitle></DialogHeader>
+          {preview && (
+            preview.mime.startsWith("image/")
+              ? <img src={preview.url} alt={preview.name} className="max-h-[70vh] w-full rounded-lg object-contain" />
+              : <iframe src={preview.url} title={preview.name} className="h-[70vh] w-full rounded-lg border" />
+          )}
+          {preview && (
+            <a href={preview.url} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline">Open original in new tab</a>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
