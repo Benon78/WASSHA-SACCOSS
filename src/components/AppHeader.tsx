@@ -72,10 +72,12 @@ export function AppHeader() {
                   <DropdownMenuItem asChild>
                     <Link to="/statements">Statements</Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to="/notifications">All notifications</Link></DropdownMenuItem>
                   {roles.includes("admin") && (
                     <>
                       <DropdownMenuItem asChild><Link to="/admin/policies">Loan policies</Link></DropdownMenuItem>
                       <DropdownMenuItem asChild><Link to="/admin/reports">Reports</Link></DropdownMenuItem>
+                      <DropdownMenuItem asChild><Link to="/admin/audit">Audit log</Link></DropdownMenuItem>
                     </>
                   )}
                   <DropdownMenuSeparator />
