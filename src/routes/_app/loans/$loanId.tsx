@@ -155,23 +155,23 @@ function LoanDetail() {
               onClick={async () => {
                 const { data: prof } = await supabase.from("profiles").select("*").eq("user_id", loan.member_id).maybeSingle();
                 const { data: rep } = await supabase.from("transactions").select("*")
-                  .eq("user_id", loan.member_id).eq("tx_type", "repayment")
+                  .eq("loan_id", loanId).eq("tx_type", "repayment")
                   .order("created_at", { ascending: true });
                 const doc = loanRepaymentPdf({
-                  header: {
-                    title: "Loan Statement",
-                    subtitle: loan.loan_number,
-                    memberName: prof?.full_name ?? undefined,
-                    memberNumber: prof?.member_number ?? undefined,
-                  },
-                  loan,
-                  repayments: rep ?? [],
+                  header: { title: "Loan Statement", subtitle: loan.loan_number,
+                    memberName: prof?.full_name ?? undefined, memberNumber: prof?.member_number ?? undefined },
+                  loan, repayments: rep ?? [],
                 });
                 doc.save(`${loan.loan_number}.pdf`);
               }}
             >
-              <FileDown className="mr-2 h-4 w-4" /> PDF
+              <FileDown className="mr-2 h-4 w-4" /> Statement
             </Button>
+            {(loan.status === "disbursed" || loan.stage === "completed") && (
+              <Button size="sm" onClick={downloadReceipt} className="bg-[image:var(--gradient-primary)] text-primary-foreground">
+                <ReceiptText className="mr-2 h-4 w-4" /> Receipt
+              </Button>
+            )}
           </div>
         </div>
 
