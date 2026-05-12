@@ -232,12 +232,15 @@ function LoanDetail() {
                       <div className="flex items-center gap-2.5">
                         <FileText className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <button onClick={() => downloadDoc(d.file_path, d.file_name)} className="text-sm font-medium hover:text-primary">
+                          <button onClick={() => previewDoc(d)} className="text-sm font-medium hover:text-primary">
                             {d.file_name}
                           </button>
                           <p className="text-xs text-muted-foreground">{(d.file_size / 1024).toFixed(0)} KB · {fmtDate(d.created_at)}</p>
                         </div>
                       </div>
+                      <Button size="sm" variant="ghost" onClick={() => previewDoc(d)}>
+                        <Eye className="h-4 w-4" />
+                      </Button>
                     </li>
                   ))}
                 </ul>
