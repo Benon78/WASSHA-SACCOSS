@@ -25,6 +25,7 @@ function ProfilePage() {
   const [enrolling, setEnrolling] = useState<{ id: string; qr: string; secret: string } | null>(null);
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
+  const [prefs, setPrefs] = useState({ channel_email: true, channel_sms: false, sms_phone: "" });
 
   const loadAll = async () => {
     if (!user) return;
