@@ -15,6 +15,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppStatementsRouteImport } from './routes/_app/statements'
 import { Route as AppProfileRouteImport } from './routes/_app/profile'
+import { Route as AppNotificationsRouteImport } from './routes/_app/notifications'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppApprovalsRouteImport } from './routes/_app/approvals'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
@@ -23,6 +24,7 @@ import { Route as AppLoansApplyRouteImport } from './routes/_app/loans/apply'
 import { Route as AppLoansLoanIdRouteImport } from './routes/_app/loans/$loanId'
 import { Route as AppAdminReportsRouteImport } from './routes/_app/admin.reports'
 import { Route as AppAdminPoliciesRouteImport } from './routes/_app/admin.policies'
+import { Route as AppAdminAuditRouteImport } from './routes/_app/admin.audit'
 
 const WorkflowRoute = WorkflowRouteImport.update({
   id: '/workflow',
@@ -51,6 +53,11 @@ const AppStatementsRoute = AppStatementsRouteImport.update({
 const AppProfileRoute = AppProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNotificationsRoute = AppNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
   getParentRoute: () => AppRoute,
 } as any)
 const AppDashboardRoute = AppDashboardRouteImport.update({
@@ -93,6 +100,11 @@ const AppAdminPoliciesRoute = AppAdminPoliciesRouteImport.update({
   path: '/policies',
   getParentRoute: () => AppAdminRoute,
 } as any)
+const AppAdminAuditRoute = AppAdminAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AppAdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -101,8 +113,10 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AppAdminRouteWithChildren
   '/approvals': typeof AppApprovalsRoute
   '/dashboard': typeof AppDashboardRoute
+  '/notifications': typeof AppNotificationsRoute
   '/profile': typeof AppProfileRoute
   '/statements': typeof AppStatementsRoute
+  '/admin/audit': typeof AppAdminAuditRoute
   '/admin/policies': typeof AppAdminPoliciesRoute
   '/admin/reports': typeof AppAdminReportsRoute
   '/loans/$loanId': typeof AppLoansLoanIdRoute
@@ -116,8 +130,10 @@ export interface FileRoutesByTo {
   '/admin': typeof AppAdminRouteWithChildren
   '/approvals': typeof AppApprovalsRoute
   '/dashboard': typeof AppDashboardRoute
+  '/notifications': typeof AppNotificationsRoute
   '/profile': typeof AppProfileRoute
   '/statements': typeof AppStatementsRoute
+  '/admin/audit': typeof AppAdminAuditRoute
   '/admin/policies': typeof AppAdminPoliciesRoute
   '/admin/reports': typeof AppAdminReportsRoute
   '/loans/$loanId': typeof AppLoansLoanIdRoute
@@ -133,8 +149,10 @@ export interface FileRoutesById {
   '/_app/admin': typeof AppAdminRouteWithChildren
   '/_app/approvals': typeof AppApprovalsRoute
   '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/notifications': typeof AppNotificationsRoute
   '/_app/profile': typeof AppProfileRoute
   '/_app/statements': typeof AppStatementsRoute
+  '/_app/admin/audit': typeof AppAdminAuditRoute
   '/_app/admin/policies': typeof AppAdminPoliciesRoute
   '/_app/admin/reports': typeof AppAdminReportsRoute
   '/_app/loans/$loanId': typeof AppLoansLoanIdRoute
@@ -150,8 +168,10 @@ export interface FileRouteTypes {
     | '/admin'
     | '/approvals'
     | '/dashboard'
+    | '/notifications'
     | '/profile'
     | '/statements'
+    | '/admin/audit'
     | '/admin/policies'
     | '/admin/reports'
     | '/loans/$loanId'
@@ -165,8 +185,10 @@ export interface FileRouteTypes {
     | '/admin'
     | '/approvals'
     | '/dashboard'
+    | '/notifications'
     | '/profile'
     | '/statements'
+    | '/admin/audit'
     | '/admin/policies'
     | '/admin/reports'
     | '/loans/$loanId'
@@ -181,8 +203,10 @@ export interface FileRouteTypes {
     | '/_app/admin'
     | '/_app/approvals'
     | '/_app/dashboard'
+    | '/_app/notifications'
     | '/_app/profile'
     | '/_app/statements'
+    | '/_app/admin/audit'
     | '/_app/admin/policies'
     | '/_app/admin/reports'
     | '/_app/loans/$loanId'
@@ -241,6 +265,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProfileRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/notifications': {
+      id: '/_app/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AppNotificationsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/dashboard': {
       id: '/_app/dashboard'
       path: '/dashboard'
@@ -297,15 +328,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminPoliciesRouteImport
       parentRoute: typeof AppAdminRoute
     }
+    '/_app/admin/audit': {
+      id: '/_app/admin/audit'
+      path: '/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AppAdminAuditRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
   }
 }
 
 interface AppAdminRouteChildren {
+  AppAdminAuditRoute: typeof AppAdminAuditRoute
   AppAdminPoliciesRoute: typeof AppAdminPoliciesRoute
   AppAdminReportsRoute: typeof AppAdminReportsRoute
 }
 
 const AppAdminRouteChildren: AppAdminRouteChildren = {
+  AppAdminAuditRoute: AppAdminAuditRoute,
   AppAdminPoliciesRoute: AppAdminPoliciesRoute,
   AppAdminReportsRoute: AppAdminReportsRoute,
 }
@@ -318,6 +358,7 @@ interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRouteWithChildren
   AppApprovalsRoute: typeof AppApprovalsRoute
   AppDashboardRoute: typeof AppDashboardRoute
+  AppNotificationsRoute: typeof AppNotificationsRoute
   AppProfileRoute: typeof AppProfileRoute
   AppStatementsRoute: typeof AppStatementsRoute
   AppLoansLoanIdRoute: typeof AppLoansLoanIdRoute
@@ -329,6 +370,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAdminRoute: AppAdminRouteWithChildren,
   AppApprovalsRoute: AppApprovalsRoute,
   AppDashboardRoute: AppDashboardRoute,
+  AppNotificationsRoute: AppNotificationsRoute,
   AppProfileRoute: AppProfileRoute,
   AppStatementsRoute: AppStatementsRoute,
   AppLoansLoanIdRoute: AppLoansLoanIdRoute,
@@ -347,3 +389,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
