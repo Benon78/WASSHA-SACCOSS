@@ -109,9 +109,24 @@ function LoanDetail() {
     } finally { setBusy(false); }
   };
 
-  const downloadDoc = async (path: string, name: string) => {
-    const { data } = await supabase.storage.from("loan-documents").createSignedUrl(path, 60);
-    if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+  const previewDoc = async (d: any) => {
+    const { data } = await supabase.storage.from("loan-documents").createSignedUrl(d.file_path, 300);
+    if (data?.signedUrl) setPreview({ url: data.signedUrl, name: d.file_name, mime: d.mime_type || "" });
+  };
+
+  const downloadReceipt = async () => {
+    const [{ data: prof }, { data: tx }] = await Promise.all([
+      supabase.from("profiles").select("*").eq("user_id", loan.member_id).maybeSingle(),
+      supabase.from("transactions").select("*").eq("loan_id", loanId).eq("tx_type", "disbursement").maybeSingle(),
+    ]);
+    const doc = disbursementReceiptPdf({
+      header: {
+        title: "Disbursement Receipt", subtitle: loan.loan_number,
+        memberName: prof?.full_name ?? undefined, memberNumber: prof?.member_number ?? undefined,
+      },
+      loan, disbursementTx: tx as any, approvals: [...approvals].reverse(),
+    });
+    doc.save(`${loan.loan_number}-receipt.pdf`);
   };
 
   return (
