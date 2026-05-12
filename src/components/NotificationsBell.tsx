@@ -78,14 +78,24 @@ export function NotificationsBell() {
             </button>
           )}
         </div>
-        <ScrollArea className="h-[360px]">
-          {items.length === 0 ? (
-            <p className="p-6 text-center text-xs text-muted-foreground">No notifications yet.</p>
+        {types.length > 0 && (
+          <div className="flex flex-wrap gap-1 border-b border-border/60 p-2">
+            {["all", ...types].map((t) => (
+              <button key={t} onClick={() => setFilter(t)}
+                className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase transition ${
+                  filter === t ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/70"
+                }`}>{t.replace("_", " ")}</button>
+            ))}
+          </div>
+        )}
+        <ScrollArea className="h-[320px]">
+          {visible.length === 0 ? (
+            <p className="p-6 text-center text-xs text-muted-foreground">No notifications match.</p>
           ) : (
             <ul className="divide-y divide-border/60">
-              {items.map((n) => (
-                <li key={n.id} className={`p-3 ${n.read ? "" : "bg-primary/5"}`}>
-                  <button onClick={() => markOne(n.id)} className="flex w-full items-start gap-2 text-left">
+              {visible.map((n) => {
+                const Inner = (
+                  <div className="flex w-full items-start gap-2 p-3 text-left">
                     <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${n.read ? "bg-muted" : "bg-primary"}`} />
                     <div className="flex-1">
                       <p className="text-sm font-medium leading-snug">{n.title}</p>
@@ -93,12 +103,20 @@ export function NotificationsBell() {
                       <p className="mt-1 text-[10px] text-muted-foreground">{fmtRelative(n.created_at)}</p>
                     </div>
                     {n.read && <Check className="h-3 w-3 text-muted-foreground" />}
-                  </button>
-                </li>
-              ))}
+                  </div>
+                );
+                return (
+                  <li key={n.id} className={n.read ? "" : "bg-primary/5"} onClick={() => markOne(n.id)}>
+                    {n.link ? <Link to={n.link} className="block hover:bg-muted/50">{Inner}</Link> : Inner}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </ScrollArea>
+        <div className="border-t border-border/60 p-2 text-center">
+          <Link to="/notifications" className="text-xs font-medium text-primary hover:underline">View all notifications →</Link>
+        </div>
       </PopoverContent>
     </Popover>
   );
