@@ -31,6 +31,7 @@ function LoanDetail() {
   const [approveAmt, setApproveAmt] = useState("");
   const [busy, setBusy] = useState(false);
   const [uploadFiles, setUploadFiles] = useState<File[]>([]);
+  const [preview, setPreview] = useState<{ url: string; name: string; mime: string } | null>(null);
 
   const load = async () => {
     const [l, a, d] = await Promise.all([
