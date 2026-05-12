@@ -33,6 +33,15 @@ function ProfilePage() {
     setProfile(p); setName(p?.full_name ?? ""); setPhone(p?.phone ?? "");
     const { data: f } = await supabase.auth.mfa.listFactors();
     setFactors(f?.totp ?? []);
+    const { data: pr } = await supabase.from("notification_preferences").select("*").eq("user_id", user.id).maybeSingle();
+    if (pr) setPrefs({ channel_email: pr.channel_email, channel_sms: pr.channel_sms, sms_phone: pr.sms_phone ?? "" });
+  };
+
+  const savePrefs = async () => {
+    if (!user) return;
+    const { error } = await supabase.from("notification_preferences")
+      .upsert({ user_id: user.id, ...prefs, updated_at: new Date().toISOString() });
+    if (error) toast.error(error.message); else toast.success("Notification preferences saved");
   };
 
   useEffect(() => { loadAll(); }, [user?.id]);
