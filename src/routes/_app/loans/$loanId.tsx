@@ -182,8 +182,10 @@ function LoanDetail() {
             <section className="rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
               <h3 className="text-base font-semibold">Application details</h3>
               <dl className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                <div><dt className="text-muted-foreground">Loan type</dt><dd className="font-medium">{LOAN_TYPE_LABEL[loan.loan_type] ?? loan.loan_type ?? "—"}</dd></div>
                 <div><dt className="text-muted-foreground">Term</dt><dd className="font-medium">{loan.term_months} months</dd></div>
                 <div><dt className="text-muted-foreground">Interest rate</dt><dd className="font-medium">{loan.interest_rate}% p.a.</dd></div>
+                <div><dt className="text-muted-foreground">Outstanding</dt><dd className="font-medium">{fmtTZS(loan.outstanding_balance)}</dd></div>
                 <div className="col-span-2"><dt className="text-muted-foreground">Purpose</dt><dd className="font-medium">{loan.purpose}</dd></div>
               </dl>
             </section>
