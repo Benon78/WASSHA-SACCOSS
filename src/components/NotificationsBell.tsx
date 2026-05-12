@@ -16,7 +16,10 @@ interface Notif {
 export function NotificationsBell() {
   const { user } = useAuth();
   const [items, setItems] = useState<Notif[]>([]);
+  const [filter, setFilter] = useState<string>("all");
   const unread = items.filter((i) => !i.read).length;
+  const types = Array.from(new Set(items.map((i) => i.type)));
+  const visible = items.filter((i) => filter === "all" || i.type === filter);
 
   const load = async () => {
     if (!user) return;
