@@ -8,8 +8,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { fmtTZS } from "@/lib/format";
+import { LOAN_TYPE_LABEL, LOAN_TYPE_DESC } from "@/lib/loanStages";
 import { toast } from "sonner";
-import { Loader2, Upload, X } from "lucide-react";
+import { Loader2, Upload, X, Briefcase, Zap, AlertCircle } from "lucide-react";
 
 export const Route = createFileRoute("/_app/loans/apply")({
   head: () => ({ meta: [{ title: "Apply for a loan — WASSHA SACCOS" }] }),
@@ -17,11 +18,13 @@ export const Route = createFileRoute("/_app/loans/apply")({
 });
 
 const MAX = 10 * 1024 * 1024;
+const TYPE_ICON: Record<string, any> = { development: Briefcase, chapchap: Zap, emergency: AlertCircle };
 
 function ApplyPage() {
   const { user } = useAuth();
   const nav = useNavigate();
   const [eligibility, setEligibility] = useState<any>(null);
+  const [loanType, setLoanType] = useState<"development" | "chapchap" | "emergency">("development");
   const [amount, setAmount] = useState("");
   const [purpose, setPurpose] = useState("");
   const [term, setTerm] = useState("12");
@@ -64,22 +67,18 @@ function ApplyPage() {
         amount_requested: amt,
         purpose,
         term_months: Number(term),
+        loan_type: loanType,
         eligibility_limit: eligibility?.max_amount ?? null,
       }).select().single();
       if (error) throw error;
 
-      // Upload documents
       for (const f of files) {
         const path = `${user.id}/${loan.id}/${Date.now()}-${f.name}`;
         const { error: upErr } = await supabase.storage.from("loan-documents").upload(path, f);
         if (upErr) { toast.error(`Upload failed: ${f.name}`); continue; }
         await supabase.from("loan_documents").insert({
-          loan_id: loan.id,
-          file_path: path,
-          file_name: f.name,
-          file_size: f.size,
-          mime_type: f.type,
-          uploaded_by: user.id,
+          loan_id: loan.id, file_path: path, file_name: f.name,
+          file_size: f.size, mime_type: f.type, uploaded_by: user.id,
         });
       }
 
@@ -121,6 +120,30 @@ function ApplyPage() {
         )}
 
         <form onSubmit={submit} className="space-y-5 rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
+          <div className="space-y-2">
+            <Label>Loan type</Label>
+            <div className="grid gap-2 md:grid-cols-3">
+              {(["development", "chapchap", "emergency"] as const).map((t) => {
+                const Icon = TYPE_ICON[t];
+                const active = loanType === t;
+                return (
+                  <button
+                    type="button"
+                    key={t}
+                    onClick={() => setLoanType(t)}
+                    className={`rounded-xl border p-4 text-left transition ${
+                      active ? "border-primary bg-primary/5 shadow-[var(--shadow-card)]" : "border-border hover:border-primary/40"
+                    }`}
+                  >
+                    <Icon className={`mb-2 h-5 w-5 ${active ? "text-primary" : "text-muted-foreground"}`} />
+                    <p className={`text-sm font-semibold ${active ? "text-primary" : ""}`}>{LOAN_TYPE_LABEL[t]}</p>
+                    <p className="mt-1 text-[11px] leading-snug text-muted-foreground">{LOAN_TYPE_DESC[t]}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="amount">Amount (TZS)</Label>

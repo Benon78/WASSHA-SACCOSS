@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
-import { Shield, ShieldCheck, Loader2, Trash2 } from "lucide-react";
+import { Shield, ShieldCheck, Loader2, Trash2, Bell } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 export const Route = createFileRoute("/_app/profile")({
   head: () => ({ meta: [{ title: "Profile — WASSHA SACCOS" }] }),
@@ -24,6 +25,7 @@ function ProfilePage() {
   const [enrolling, setEnrolling] = useState<{ id: string; qr: string; secret: string } | null>(null);
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
+  const [prefs, setPrefs] = useState({ channel_email: true, channel_sms: false, sms_phone: "" });
 
   const loadAll = async () => {
     if (!user) return;
@@ -31,6 +33,15 @@ function ProfilePage() {
     setProfile(p); setName(p?.full_name ?? ""); setPhone(p?.phone ?? "");
     const { data: f } = await supabase.auth.mfa.listFactors();
     setFactors(f?.totp ?? []);
+    const { data: pr } = await supabase.from("notification_preferences").select("*").eq("user_id", user.id).maybeSingle();
+    if (pr) setPrefs({ channel_email: pr.channel_email, channel_sms: pr.channel_sms, sms_phone: pr.sms_phone ?? "" });
+  };
+
+  const savePrefs = async () => {
+    if (!user) return;
+    const { error } = await supabase.from("notification_preferences")
+      .upsert({ user_id: user.id, ...prefs, updated_at: new Date().toISOString() });
+    if (error) toast.error(error.message); else toast.success("Notification preferences saved");
   };
 
   useEffect(() => { loadAll(); }, [user?.id]);
@@ -82,7 +93,7 @@ function ProfilePage() {
 
         <section className="rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
           <h2 className="text-base font-semibold">Personal information</h2>
-          <p className="text-xs text-muted-foreground">Member #{profile?.member_number ?? "—"}</p>
+          <p className="text-xs text-muted-foreground">Member #{profile?.member_number ?? "Pending — your admin will assign one"}</p>
           <form onSubmit={saveProfile} className="mt-4 grid gap-4 md:grid-cols-2">
             <div><Label>Full name</Label><Input value={name} onChange={(e) => setName(e.target.value)} required /></div>
             <div><Label>Phone</Label><Input value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
@@ -91,6 +102,35 @@ function ProfilePage() {
               <Button type="submit" disabled={busy} className="bg-[image:var(--gradient-primary)] text-primary-foreground">Save</Button>
             </div>
           </form>
+        </section>
+
+        <section className="rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
+          <h2 className="flex items-center gap-2 text-base font-semibold"><Bell className="h-4 w-4 text-primary" /> Notification channels</h2>
+          <p className="text-xs text-muted-foreground">Choose how you receive deposit confirmations, loan approvals and reminders. In-app notifications are always enabled.</p>
+          <div className="mt-4 space-y-4">
+            <label className="flex items-center justify-between rounded-lg border border-border/60 p-3">
+              <div>
+                <p className="text-sm font-medium">Email notifications</p>
+                <p className="text-xs text-muted-foreground">Sent to {user?.email}</p>
+              </div>
+              <Switch checked={prefs.channel_email} onCheckedChange={(v) => setPrefs({ ...prefs, channel_email: v })} />
+            </label>
+            <label className="flex items-center justify-between rounded-lg border border-border/60 p-3">
+              <div>
+                <p className="text-sm font-medium">SMS notifications</p>
+                <p className="text-xs text-muted-foreground">Reminders and approvals via text message</p>
+              </div>
+              <Switch checked={prefs.channel_sms} onCheckedChange={(v) => setPrefs({ ...prefs, channel_sms: v })} />
+            </label>
+            {prefs.channel_sms && (
+              <div>
+                <Label>SMS phone number</Label>
+                <Input placeholder="+255 7XX XXX XXX" value={prefs.sms_phone}
+                  onChange={(e) => setPrefs({ ...prefs, sms_phone: e.target.value })} />
+              </div>
+            )}
+            <Button onClick={savePrefs} className="bg-[image:var(--gradient-primary)] text-primary-foreground">Save preferences</Button>
+          </div>
         </section>
 
         <section className="rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">

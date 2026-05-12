@@ -141,3 +141,59 @@ export function loanRepaymentPdf(opts: {
   drawFooter(doc);
   return doc;
 }
+
+export function disbursementReceiptPdf(opts: {
+  header: PdfHeader;
+  loan: any;
+  disbursementTx: { id: string; created_at: string; amount: number } | null;
+  approvals: Array<{ stage: string; decision: string; comment: string | null; created_at: string }>;
+}) {
+  const doc = makeDoc();
+  const startY = drawBrandHeader(doc, { ...opts.header, title: "Disbursement Receipt" });
+  doc.setFontSize(10);
+  doc.setTextColor(50, 50, 50);
+  const tx = opts.disbursementTx;
+  const lines = [
+    `Loan #: ${opts.loan.loan_number}`,
+    `Loan type: ${opts.loan.loan_type ?? "development"}`,
+    `Disbursed amount: ${fmtTZS(opts.loan.amount_approved || opts.loan.amount_requested)}`,
+    `Interest rate: ${opts.loan.interest_rate}% p.a.`,
+    `Term: ${opts.loan.term_months} months`,
+    `Outstanding balance: ${fmtTZS(opts.loan.outstanding_balance)}`,
+    `Status: ${opts.loan.status}`,
+    `Transaction reference: ${tx?.id ?? "—"}`,
+    `Disbursed on: ${tx ? fmtDate(tx.created_at) : "—"}`,
+  ];
+  lines.forEach((l, i) => doc.text(l, 40, startY + i * 14));
+  const tableY = startY + lines.length * 14 + 12;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(...NAVY);
+  doc.text("Approval timeline", 40, tableY);
+
+  autoTable(doc, {
+    startY: tableY + 6,
+    head: [["Date", "Stage", "Decision", "Comment"]],
+    body: opts.approvals.map((a) => [
+      fmtDate(a.created_at),
+      a.stage.replace("_", " "),
+      a.decision.replace("_", " "),
+      a.comment || "—",
+    ]),
+    headStyles: { fillColor: NAVY, textColor: 255, fontStyle: "bold" },
+    styles: { fontSize: 9, cellPadding: 5 },
+  });
+
+  const finalY = (doc as any).lastAutoTable.finalY + 24;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(...NAVY);
+  doc.text("This document confirms the disbursement of the above loan.", 40, finalY);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(80, 80, 80);
+  doc.setFontSize(9);
+  doc.text("Repayments will be applied to this loan only and do not affect your savings balance.", 40, finalY + 14);
+  drawFooter(doc);
+  return doc;
+}

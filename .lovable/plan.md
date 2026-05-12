@@ -1,89 +1,82 @@
-# WASSHA SACCOS — Security Hardening + New Modules
 
-Splitting the work into 4 tracks. Each track is shippable on its own; I'll execute them in this order so security lands first.
+# WASSHA SACCOS — Major Update Plan
 
----
-
-## Track 1 — Security hardening (DB migration)
-
-One migration that fixes every reported issue:
-
-1. **Function leakage** — `get_savings_balance`, `get_active_loan_balance`, `calculate_eligibility`
-   - Add internal guard: `if _user_id <> auth.uid() and not is_staff(auth.uid()) then raise exception 'forbidden'`.
-   - `REVOKE EXECUTE ... FROM anon` on these three + `has_role`, `is_staff`.
-   - Keep `SECURITY DEFINER` (needed to read `user_roles`) but tighten `search_path` and grants.
-
-2. **Realtime channel isolation** — enable RLS on `realtime.messages`, add policy that only allows topics matching `notif-<auth.uid()>`. Update `NotificationsBell` to subscribe on that topic name.
-
-3. **Loan stage transition enforcement** — replace the open `loans staff update` policy with a `BEFORE UPDATE` trigger `enforce_loan_transition()` that checks:
-   - Only the role assigned to the current stage (`STAGE_ROLE`) can advance it.
-   - Stage can only move to the immediate next stage, to `rejected`, or stay put.
-   - `status` transitions validated (pending → approved/rejected; approved → disbursed → completed).
-   - `disbursement → completed` requires `finance` role (records the disbursement, then closes).
-
-4. **Storage policies** — add UPDATE + DELETE policies on `storage.objects` for bucket `loan-documents`, scoped to `is_staff(auth.uid())` OR folder owner (`auth.uid()::text = (storage.foldername(name))[1]`).
-
-5. **Admin lockout protection**
-   - Trigger `protect_last_admin()` on `user_roles` BEFORE DELETE/UPDATE — block if it would leave zero admins.
-   - Tighten `roles admin insert` policy: still requires admin, but document the risk; add audit log row on every change.
-
-6. **Audit log table** — `public.audit_log(id, actor_id, action, entity, entity_id, meta jsonb, created_at)` with RLS (admin-read only). Triggers populate it for: `user_roles` changes, `loans` updates, `loan_policies` changes, `transactions` inserts.
+Grouped by track. One DB migration, then code in order.
 
 ---
 
-## Track 2 — Loan workflow completion
+## Track 1 — Database migration (single file)
 
-7. **Disbursement → Completed action**
-   - In `/loans/$loanId`, when `stage='disbursement'` and viewer has `finance` role: button **"Record disbursement"** → posts a `disbursement` transaction (new tx_type) and moves stage to `completed` + `status='disbursed'`.
-   - When `stage='completed'`, automated repayments tracked via `transactions.tx_type='repayment'`; loan flips to `status='completed'` when `outstanding_balance <= 0` (trigger).
-   - Adds the missing tx_type `disbursement` enum value.
+**A. Savings/Loan separation (core finance fix)**
+- Update `get_savings_balance`: only count `deposit`, `contribution`, `withdrawal`, `fee` — exclude `disbursement` and `repayment` entirely. Savings stays untouched by loan activity.
+- Add `loan_id UUID NULL` to `transactions` (FK to `loans`). Required when `tx_type IN ('repayment','disbursement','fee')` (validation trigger).
+- Update `apply_repayment` trigger: deduct from the **specific loan** (`loan_id` on tx), not "any disbursed loan".
+- Update `post_disbursement_tx` trigger: stamp `loan_id` on the disbursement tx.
 
-8. **Loan policy table** — `public.loan_policies(id, version, interest_rate, min_savings, savings_multiplier, min_membership_months, max_term_months, effective_from, created_by)`.
-   - `calculate_eligibility` reads the latest active policy.
-   - Admin page `/admin/policies` lists versions, lets admin create a new version (immutable history).
+**B. Loan types**
+- New enum `loan_type` with values `development`, `chapchap`, `emergency`.
+- Add `loan_type loan_type NOT NULL DEFAULT 'development'` to `loans`.
+
+**C. Interest rate → 13%**
+- Insert new `loan_policies` version with `interest_rate = 13.0`.
+- Default on `loans.interest_rate` → 13.0.
+
+**D. Security: realtime topic policy**
+- Drop the existing realtime policy and recreate WITHOUT the `OR realtime.topic() LIKE 'realtime:%'` clause. Only `user-notif-<auth.uid()>` allowed.
+
+**E. Member-number is admin-entered**
+- `handle_new_user`: stop auto-generating `member_number` (set NULL).
+- Admin page exposes editable input (already partially there — make required).
+
+**F. Notification preferences**
+- New table `notification_preferences (user_id PK, channel_email bool default true, channel_sms bool default false, sms_phone text)`.
+- RLS: self read/update.
+
+**G. Audit log already exists** — just add UI.
+
+**Note:** Items already in DB (function ownership guards, stage-transition trigger) are confirmed in current schema — no re-work needed.
 
 ---
 
-## Track 3 — Member & admin features
+## Track 2 — Backend / edge function
 
-9. **2FA (TOTP)** in `/profile`
-   - Use Supabase Auth's built-in MFA: `supabase.auth.mfa.enroll({ factorType: 'totp' })`, show QR, verify, list factors, allow unenroll.
-   - New route `/profile` (under `_app`) with: name/phone edit, **Two-factor authentication** card, member number display.
+**SMS via Twilio connector** (server function or edge function):
+- New edge function `send-sms` reading `TWILIO_API_KEY` (will request via secret).
+- DB trigger `notify_dispatch` on `notifications` insert: if user prefs has SMS on and phone set, calls function via `pg_net` — or simpler: client-side hook subscribes and dispatches. **Simpler approach for now**: do nothing automatic; add a "Resend via SMS" + automatic call on loan-status-change notification via a Postgres trigger using `pg_net.http_post` to the edge function.
+- Keep email notifications as the existing in-app notifications for now (no new email infra requested).
 
-10. **Admin: edit member join date** — on `/admin`, add an editable `joined_at` field per member (date input, saves to `profiles.joined_at`).
-
-11. **PDF statements** — client-side generation with `jspdf` + `jspdf-autotable`:
-    - Member: `/statements` page → date range picker → "Download savings statement" + "Download loan repayment statement" → branded PDF.
-    - Per-loan: button on `/loans/$loanId` to download repayment schedule PDF.
-
-12. **Admin reporting center** — `/admin/reports`
-    - Filters: date range, type (loans / contributions / audit log), status.
-    - Export buttons: **CSV** (native), **Excel** (`xlsx` library), **PDF** (`jspdf-autotable`).
+(Note: Will request Twilio connection if user wants to proceed with SMS.)
 
 ---
 
-## Track 4 — UI polish
+## Track 3 — Frontend changes
 
-13. **Hero fixes** on `/`
-    - Remove "Request demo" button.
-    - Fix white-on-white text by ensuring hero copy uses tokens with proper contrast on the gradient background.
-
-14. **Workflow guide** — new public route `/workflow` with a visual end-to-end guide (member apply → approver → finance → manager → disbursement → completion), responsibilities per role, and SLA expectations. Linked from header + landing page.
+1. **Loan apply form**: add loan type radio (development / chapchap / emergency) with descriptions.
+2. **Repayment posting (admin)**: when posting a repayment transaction, require selection of an active loan from a dropdown; persist `loan_id`.
+3. **Statements page**: split into "Savings statement" (savings tx only) and "Loan repayment statement" (per-loan).
+4. **Disbursement receipt PDF**: button on `/loans/$loanId` when `status='disbursed'` or `stage='completed'`. Includes loan number, amount, date, txn id (disbursement tx), full timeline of approvals.
+5. **Disbursement manager approval UI**: in `/approvals`, show loans at `stage='disbursement'` to users with `manager` OR `finance` role with action "Confirm disbursement & complete" → moves to completed.
+6. **Audit log page** `/admin/audit` (separate from reports): date range, action search, entity filter, CSV + PDF export.
+7. **Notifications center page** `/notifications` (full-page) + bell upgrade: type filter chips, read/unread toggle, deep link via `link` field already populated.
+8. **Profile**: notification preferences card (toggle SMS / email, phone for SMS).
+9. **Admin members table**: `member_number` becomes required input field.
+10. **Document preview dialog**: in `/loans/$loanId`, click document → modal showing image inline or embedded PDF (object/iframe with signed URL) — no new tab.
+11. **Header**: add nav links for `/admin/policies`, `/admin/reports`, `/admin/audit`, `/notifications`.
 
 ---
 
 ## Tech notes
 
-- New deps: `jspdf`, `jspdf-autotable`, `xlsx`, `qrcode`.
-- Realtime subscription rename: channel `notif-<uid>` → topic `user-notif-<uid>` so the realtime RLS policy can pattern-match cleanly.
-- All new admin routes guarded by `hasRole('admin')`; reports restricted to admin + manager.
-- No edge functions — everything either DB triggers or client code under existing RLS.
+- New deps: none (already have jspdf, xlsx, qrcode).
+- SMS: optional — will ask user to confirm before requesting Twilio connection.
+- All admin routes guarded by `hasRole('admin')`.
 
 ---
 
 ## Order of operations
+1. **DB migration** (Track 1) — requires approval.
+2. Update existing triggers + types regen.
+3. Frontend: loan types → repayment posting → statements → receipts → audit page → notifications page → profile prefs → doc preview → admin member-number → header links.
+4. SMS (optional, if user confirms).
 
-1. Migration (Track 1 + tables for Track 2/3) — single SQL file, requires approval.
-2. After approval: install deps, then build code in this order: security-related client changes → loan workflow → policies admin → profile/2FA → statements → reports → UI polish.
-
-Confirm and I'll run the migration.
+Confirm and I'll run the migration, then build the rest.

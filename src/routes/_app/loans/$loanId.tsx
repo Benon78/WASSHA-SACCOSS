@@ -11,8 +11,10 @@ import { useAuth } from "@/lib/auth";
 import { fmtTZS, fmtDate, fmtRelative } from "@/lib/format";
 import { STAGE_LABEL, STAGE_ROLE, nextStage, type LoanStage } from "@/lib/loanStages";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, ArrowRight, FileQuestion, Upload, FileText, Loader2, Banknote, FileDown } from "lucide-react";
-import { loanRepaymentPdf } from "@/lib/pdf";
+import { CheckCircle2, XCircle, ArrowRight, FileQuestion, Upload, FileText, Loader2, Banknote, FileDown, Eye, ReceiptText } from "lucide-react";
+import { loanRepaymentPdf, disbursementReceiptPdf } from "@/lib/pdf";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { LOAN_TYPE_LABEL } from "@/lib/loanStages";
 
 export const Route = createFileRoute("/_app/loans/$loanId")({
   head: () => ({ meta: [{ title: "Loan details — WASSHA SACCOS" }] }),
@@ -29,6 +31,7 @@ function LoanDetail() {
   const [approveAmt, setApproveAmt] = useState("");
   const [busy, setBusy] = useState(false);
   const [uploadFiles, setUploadFiles] = useState<File[]>([]);
+  const [preview, setPreview] = useState<{ url: string; name: string; mime: string } | null>(null);
 
   const load = async () => {
     const [l, a, d] = await Promise.all([
@@ -106,9 +109,24 @@ function LoanDetail() {
     } finally { setBusy(false); }
   };
 
-  const downloadDoc = async (path: string, name: string) => {
-    const { data } = await supabase.storage.from("loan-documents").createSignedUrl(path, 60);
-    if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+  const previewDoc = async (d: any) => {
+    const { data } = await supabase.storage.from("loan-documents").createSignedUrl(d.file_path, 300);
+    if (data?.signedUrl) setPreview({ url: data.signedUrl, name: d.file_name, mime: d.mime_type || "" });
+  };
+
+  const downloadReceipt = async () => {
+    const [{ data: prof }, { data: tx }] = await Promise.all([
+      supabase.from("profiles").select("*").eq("user_id", loan.member_id).maybeSingle(),
+      supabase.from("transactions").select("*").eq("loan_id", loanId).eq("tx_type", "disbursement").maybeSingle(),
+    ]);
+    const doc = disbursementReceiptPdf({
+      header: {
+        title: "Disbursement Receipt", subtitle: loan.loan_number,
+        memberName: prof?.full_name ?? undefined, memberNumber: prof?.member_number ?? undefined,
+      },
+      loan, disbursementTx: tx as any, approvals: [...approvals].reverse(),
+    });
+    doc.save(`${loan.loan_number}-receipt.pdf`);
   };
 
   return (
@@ -137,23 +155,23 @@ function LoanDetail() {
               onClick={async () => {
                 const { data: prof } = await supabase.from("profiles").select("*").eq("user_id", loan.member_id).maybeSingle();
                 const { data: rep } = await supabase.from("transactions").select("*")
-                  .eq("user_id", loan.member_id).eq("tx_type", "repayment")
+                  .eq("loan_id", loanId).eq("tx_type", "repayment")
                   .order("created_at", { ascending: true });
                 const doc = loanRepaymentPdf({
-                  header: {
-                    title: "Loan Statement",
-                    subtitle: loan.loan_number,
-                    memberName: prof?.full_name ?? undefined,
-                    memberNumber: prof?.member_number ?? undefined,
-                  },
-                  loan,
-                  repayments: rep ?? [],
+                  header: { title: "Loan Statement", subtitle: loan.loan_number,
+                    memberName: prof?.full_name ?? undefined, memberNumber: prof?.member_number ?? undefined },
+                  loan, repayments: rep ?? [],
                 });
                 doc.save(`${loan.loan_number}.pdf`);
               }}
             >
-              <FileDown className="mr-2 h-4 w-4" /> PDF
+              <FileDown className="mr-2 h-4 w-4" /> Statement
             </Button>
+            {(loan.status === "disbursed" || loan.stage === "completed") && (
+              <Button size="sm" onClick={downloadReceipt} className="bg-[image:var(--gradient-primary)] text-primary-foreground">
+                <ReceiptText className="mr-2 h-4 w-4" /> Receipt
+              </Button>
+            )}
           </div>
         </div>
 
@@ -164,8 +182,10 @@ function LoanDetail() {
             <section className="rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
               <h3 className="text-base font-semibold">Application details</h3>
               <dl className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                <div><dt className="text-muted-foreground">Loan type</dt><dd className="font-medium">{LOAN_TYPE_LABEL[loan.loan_type] ?? loan.loan_type ?? "—"}</dd></div>
                 <div><dt className="text-muted-foreground">Term</dt><dd className="font-medium">{loan.term_months} months</dd></div>
                 <div><dt className="text-muted-foreground">Interest rate</dt><dd className="font-medium">{loan.interest_rate}% p.a.</dd></div>
+                <div><dt className="text-muted-foreground">Outstanding</dt><dd className="font-medium">{fmtTZS(loan.outstanding_balance)}</dd></div>
                 <div className="col-span-2"><dt className="text-muted-foreground">Purpose</dt><dd className="font-medium">{loan.purpose}</dd></div>
               </dl>
             </section>
@@ -214,12 +234,15 @@ function LoanDetail() {
                       <div className="flex items-center gap-2.5">
                         <FileText className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <button onClick={() => downloadDoc(d.file_path, d.file_name)} className="text-sm font-medium hover:text-primary">
+                          <button onClick={() => previewDoc(d)} className="text-sm font-medium hover:text-primary">
                             {d.file_name}
                           </button>
                           <p className="text-xs text-muted-foreground">{(d.file_size / 1024).toFixed(0)} KB · {fmtDate(d.created_at)}</p>
                         </div>
                       </div>
+                      <Button size="sm" variant="ghost" onClick={() => previewDoc(d)}>
+                        <Eye className="h-4 w-4" />
+                      </Button>
                     </li>
                   ))}
                 </ul>
@@ -271,6 +294,20 @@ function LoanDetail() {
           </div>
         </div>
       </div>
+
+      <Dialog open={!!preview} onOpenChange={(o) => !o && setPreview(null)}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader><DialogTitle className="truncate">{preview?.name}</DialogTitle></DialogHeader>
+          {preview && (
+            preview.mime.startsWith("image/")
+              ? <img src={preview.url} alt={preview.name} className="max-h-[70vh] w-full rounded-lg object-contain" />
+              : <iframe src={preview.url} title={preview.name} className="h-[70vh] w-full rounded-lg border" />
+          )}
+          {preview && (
+            <a href={preview.url} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline">Open original in new tab</a>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

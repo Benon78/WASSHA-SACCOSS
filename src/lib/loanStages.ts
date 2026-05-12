@@ -32,6 +32,19 @@ export const STAGE_ROLE: Partial<Record<LoanStage, "approver" | "finance" | "man
   branch_approval: "approver",
   finance_approval: "finance",
   manager_approval: "manager",
+  disbursement: "manager",
+};
+
+export const LOAN_TYPE_LABEL: Record<string, string> = {
+  development: "Development Loan",
+  chapchap: "Chap Chap (Quick) Loan",
+  emergency: "Emergency Loan",
+};
+
+export const LOAN_TYPE_DESC: Record<string, string> = {
+  development: "Long-term financing for business growth, education, asset acquisition, or housing.",
+  chapchap: "Fast-track small loan for short-term needs. Lower limit, faster approval.",
+  emergency: "Urgent loan for medical, bereavement or other unforeseen events. Priority review.",
 };
 
 export const nextStage = (s: LoanStage): LoanStage => {
