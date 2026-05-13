@@ -34,13 +34,17 @@ export function NotificationsBell() {
   useEffect(() => {
     load();
     if (!user) return;
-    // Topic isolated per user via realtime.messages RLS policy
     const ch = supabase
       .channel(`user-notif-${user.id}`, { config: { private: true } } as any)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
         (p) => setItems((prev) => [p.new as Notif, ...prev])
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
+        (p) => setItems((prev) => prev.map((i) => i.id === (p.new as Notif).id ? (p.new as Notif) : i))
       )
       .subscribe();
     return () => { supabase.removeChannel(ch); };

@@ -19,27 +19,42 @@ function NotificationsPage() {
   const [items, setItems] = useState<any[]>([]);
   const [filter, setFilter] = useState("all");
   const [readState, setReadState] = useState<"all" | "unread">("all");
+  const [page, setPage] = useState(0);
+  const PAGE_SIZE = 20;
 
   const load = async () => {
     if (!user) return;
     const { data } = await supabase.from("notifications").select("*")
-      .order("created_at", { ascending: false }).limit(200);
+      .order("created_at", { ascending: false }).limit(500);
     setItems(data ?? []);
   };
 
-  useEffect(() => { load(); }, [user?.id]);
+  useEffect(() => {
+    load();
+    if (!user) return;
+    const ch = supabase
+      .channel(`user-notif-page-${user.id}`, { config: { private: true } } as any)
+      .on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
+        (p: any) => {
+          if (p.eventType === "INSERT") setItems((prev) => [p.new, ...prev]);
+          else if (p.eventType === "UPDATE") setItems((prev) => prev.map((i) => i.id === p.new.id ? p.new : i));
+        })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [user?.id]);
 
   const filtered = items.filter((i) => (filter === "all" || i.type === filter) && (readState === "all" || !i.read));
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pageItems = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  useEffect(() => { setPage(0); }, [filter, readState]);
 
   const markAll = async () => {
     if (!user) return;
     await supabase.from("notifications").update({ read: true }).eq("user_id", user.id).eq("read", false);
-    load();
   };
 
   const toggleRead = async (n: any) => {
     await supabase.from("notifications").update({ read: !n.read }).eq("id", n.id);
-    setItems((p) => p.map((i) => i.id === n.id ? { ...i, read: !n.read } : i));
   };
 
   return (
