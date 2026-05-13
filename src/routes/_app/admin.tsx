@@ -193,6 +193,7 @@ function AdminPage() {
                         }}
                       />
                     </td>
+                    <td>
                       <div className="flex flex-wrap gap-1">
                         {ROLES.map((r) => {
                           const has = u.roles.includes(r);
