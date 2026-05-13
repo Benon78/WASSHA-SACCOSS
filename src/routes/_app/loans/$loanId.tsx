@@ -54,6 +54,8 @@ function LoanDetail() {
   const requiredRole = STAGE_ROLE[stage];
   const canActOnStage = isStaff && requiredRole && roles.includes(requiredRole);
   const isOwner = user?.id === loan.member_id;
+  const uploadsLocked = ["disbursement", "completed", "rejected"].includes(loan.stage) ||
+                        ["disbursed", "completed", "rejected"].includes(loan.status);
 
   const recordApproval = async (decision: "approved" | "rejected" | "forwarded" | "docs_requested") => {
     if (!user) return;
@@ -64,7 +66,7 @@ function LoanDetail() {
       });
       if (aErr) throw aErr;
 
-      let updates: any = {};
+      const updates: Record<string, any> = {};
       if (decision === "approved" || decision === "forwarded") {
         const ns = nextStage(stage);
         updates.stage = ns;
@@ -72,9 +74,8 @@ function LoanDetail() {
           updates.status = "approved";
           updates.amount_approved = Number(approveAmt) || loan.amount_requested;
           updates.outstanding_balance = updates.amount_approved;
-        } else if (ns === "completed") {
-          updates.status = "completed";
         }
+        // Note: completion is now driven by repayments, not by stage transition.
       } else if (decision === "rejected") {
         updates.status = "rejected"; updates.stage = "rejected";
       }
@@ -90,11 +91,15 @@ function LoanDetail() {
     } finally { setBusy(false); }
   };
 
+  const ALLOWED_MIME = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]);
+
   const uploadMore = async () => {
     if (!user || uploadFiles.length === 0) return;
+    if (uploadsLocked) { toast.error("Documents cannot be uploaded once the loan reaches disbursement."); return; }
     setBusy(true);
     try {
       for (const f of uploadFiles) {
+        if (!ALLOWED_MIME.has(f.type)) { toast.error(`${f.name}: only PDF, JPG, PNG, WEBP allowed`); continue; }
         const path = `${user.id}/${loanId}/${Date.now()}-${f.name}`;
         const { error } = await supabase.storage.from("loan-documents").upload(path, f);
         if (error) { toast.error(`Failed: ${f.name}`); continue; }
@@ -247,11 +252,11 @@ function LoanDetail() {
                   ))}
                 </ul>
               )}
-              {(isOwner || isStaff) && (
+              {(isOwner || isStaff) && !uploadsLocked && (
                 <div className="mt-4 space-y-2">
                   <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-border p-3 text-sm transition hover:bg-muted/50">
-                    <Upload className="h-4 w-4" /> Upload more documents
-                    <input type="file" multiple accept="application/pdf,image/*"
+                    <Upload className="h-4 w-4" /> Upload more documents (PDF, JPG, PNG, WEBP)
+                    <input type="file" multiple accept="application/pdf,image/jpeg,image/png,image/webp"
                       onChange={(e) => setUploadFiles(Array.from(e.target.files ?? []).slice(0, 5))}
                       className="hidden" />
                   </label>
@@ -262,6 +267,11 @@ function LoanDetail() {
                     </Button>
                   )}
                 </div>
+              )}
+              {uploadsLocked && (isOwner || isStaff) && (
+                <p className="mt-3 rounded-lg border border-border/60 bg-muted/40 p-2 text-xs text-muted-foreground">
+                  Document uploads are locked once the loan reaches disbursement.
+                </p>
               )}
             </section>
           </div>
