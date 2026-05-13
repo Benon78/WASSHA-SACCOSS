@@ -1,6 +1,6 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { fmtTZS, fmtDate } from "./format";
+import { fmtTZS, fmtDate, fmtPeriod } from "./format";
 
 export interface PdfHeader {
   title: string;

@@ -50,16 +50,20 @@ function StatementsPage() {
   const headerInfo = {
     memberName: profile?.full_name ?? undefined,
     memberNumber: profile?.member_number ?? undefined,
-    periodLabel: `${fmtDate(from)} → ${fmtDate(to)}`,
+    periodLabel: `${fmtDate(from)} — ${fmtDate(to)}`,
   };
 
   const downloadSavingsPdf = async () => {
     const { txs: rows } = await fetchData();
-    const isCredit = (t: string) => ["deposit", "contribution", "disbursement"].includes(t);
-    const closing = rows.reduce((s, t) => s + (isCredit(t.tx_type) ? Number(t.amount) : -Number(t.amount)), 0);
+    const opening = Number(profile?.opening_balance ?? 0);
+    const isCredit = (t: string) => ["deposit", "contribution"].includes(t);
+    const closing = rows.reduce(
+      (s, t) => s + (isCredit(t.tx_type) ? Number(t.amount) : (["withdrawal", "fee"].includes(t.tx_type) ? -Number(t.amount) : 0)),
+      opening,
+    );
     const doc = savingsStatementPdf({
       header: { ...headerInfo, title: "Savings Statement" },
-      txs: rows, openingBalance: 0, closingBalance: closing,
+      txs: rows, openingBalance: opening, closingBalance: closing,
     });
     doc.save(`savings-statement-${profile?.member_number ?? "member"}-${from}-${to}.pdf`);
   };
