@@ -153,12 +153,12 @@ function ApplyPage() {
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="amount">Amount (TZS)</Label>
-              <Input id="amount" type="number" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} required />
+              <Label htmlFor="amount">Amount (TZS) — max {fmtTZS(rule.maxAmount)}</Label>
+              <Input id="amount" type="number" min="1" max={rule.maxAmount} value={amount} onChange={(e) => setAmount(e.target.value)} required />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="term">Term (months)</Label>
-              <Input id="term" type="number" min="1" max="60" value={term} onChange={(e) => setTerm(e.target.value)} required />
+              <Label htmlFor="term">Term (months) — max {rule.maxTerm}</Label>
+              <Input id="term" type="number" min="1" max={rule.maxTerm} value={term} onChange={(e) => setTerm(e.target.value)} required />
             </div>
           </div>
           <div className="space-y-1.5">
@@ -167,11 +167,11 @@ function ApplyPage() {
           </div>
 
           <div className="space-y-2">
-            <Label>Supporting documents (PDF or images, up to 5 files, 10MB each)</Label>
+            <Label>Supporting documents (PDF / JPG / PNG / WEBP — up to 5 files, 10MB each)</Label>
             <label className="flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-border bg-muted/30 p-6 transition hover:bg-muted">
               <Upload className="h-5 w-5 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">Click to upload files</span>
-              <input type="file" multiple accept="application/pdf,image/*" onChange={onPick} className="hidden" />
+              <input type="file" multiple accept="application/pdf,image/jpeg,image/png,image/webp" onChange={onPick} className="hidden" />
             </label>
             {files.length > 0 && (
               <ul className="space-y-1">

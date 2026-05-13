@@ -66,7 +66,7 @@ function LoanDetail() {
       });
       if (aErr) throw aErr;
 
-      const updates: Record<string, any> = {};
+      const updates: any = {};
       if (decision === "approved" || decision === "forwarded") {
         const ns = nextStage(stage);
         updates.stage = ns;
