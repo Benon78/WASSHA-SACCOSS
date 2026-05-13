@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { StatCard } from "@/components/StatCard";
-import { LoanWorkflowTimeline } from "@/components/LoanWorkflowTimeline";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -45,24 +44,22 @@ function Dashboard() {
     })();
   }, [user?.id]);
 
-  const activeLoanRecord = loans.find((l) => ["pending", "approved", "disbursed"].includes(l.status));
-
   return (
     <div className="min-h-screen bg-muted/30">
       <AppHeader />
       <div className="container mx-auto space-y-6 px-4 py-6">
         {/* Welcome */}
-        <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-[image:var(--gradient-hero)] p-6 text-primary-foreground shadow-[var(--shadow-card)] md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-[image:var(--gradient-hero)] p-5 text-primary-foreground shadow-[var(--shadow-card)] sm:p-6 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-white/60">Welcome back</p>
-            <h1 className="mt-1 text-2xl font-bold md:text-3xl">
+            <h1 className="mt-1 text-xl font-bold sm:text-2xl md:text-3xl">
               Hello, {profile?.full_name?.split(" ")[0] || "Member"} 👋
             </h1>
-            <p className="mt-1 text-sm text-white/70">
+            <p className="mt-1 text-xs text-white/70 sm:text-sm">
               Member #{profile?.member_number ?? "—"} · {roles.join(", ") || "member"}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button asChild className="bg-white text-secondary hover:bg-white/90">
               <Link to="/loans/apply">
                 <Plus className="mr-2 h-4 w-4" /> Apply for loan
@@ -100,15 +97,6 @@ function Dashboard() {
               ))}
             </ul>
           </div>
-        )}
-
-        {/* Workflow */}
-        {activeLoanRecord && (
-          <LoanWorkflowTimeline
-            currentStage={activeLoanRecord.stage}
-            status={activeLoanRecord.status}
-            loanNumber={activeLoanRecord.loan_number}
-          />
         )}
 
         {/* Transactions */}

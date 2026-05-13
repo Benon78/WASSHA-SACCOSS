@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Session, User } from "@supabase/supabase-js";
 
 export type AppRole = "member" | "approver" | "finance" | "manager" | "admin";
+export type BoardSeat = "chair" | "member_1" | "member_2";
 
 interface AuthCtx {
   user: User | null;

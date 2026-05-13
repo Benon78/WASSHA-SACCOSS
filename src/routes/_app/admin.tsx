@@ -143,6 +143,7 @@ function AdminPage() {
                   <th className="py-2">Name</th>
                   <th>Member #</th>
                   <th>Joined SACCOS</th>
+                  <th>Opening balance (TZS)</th>
                   <th>Roles</th>
                 </tr>
               </thead>
@@ -174,6 +175,21 @@ function AdminPage() {
                             .eq("user_id", u.user_id);
                           if (error) toast.error(error.message);
                           else { toast.success("Join date updated"); load(); }
+                        }}
+                      />
+                    </td>
+                    <td>
+                      <Input
+                        type="number"
+                        defaultValue={u.opening_balance ?? 0}
+                        className="h-8 w-[140px] text-xs"
+                        onBlur={async (e) => {
+                          const v = Number(e.target.value);
+                          if (Number.isNaN(v) || v < 0) return;
+                          const { error } = await supabase.from("profiles")
+                            .update({ opening_balance: v }).eq("user_id", u.user_id);
+                          if (error) toast.error(error.message);
+                          else { toast.success("Opening balance updated"); load(); }
                         }}
                       />
                     </td>

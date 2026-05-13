@@ -82,6 +82,30 @@ export type Database = {
           },
         ]
       }
+      loan_board_members: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          id: string
+          seat: string
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          id?: string
+          seat: string
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          id?: string
+          seat?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       loan_documents: {
         Row: {
           created_at: string
@@ -165,6 +189,27 @@ export type Database = {
           notes?: string | null
           savings_multiplier?: number
           version?: number
+        }
+        Relationships: []
+      }
+      loan_type_rules: {
+        Row: {
+          loan_type: Database["public"]["Enums"]["loan_type"]
+          max_amount: number
+          max_term_months: number
+          notes: string | null
+        }
+        Insert: {
+          loan_type: Database["public"]["Enums"]["loan_type"]
+          max_amount: number
+          max_term_months: number
+          notes?: string | null
+        }
+        Update: {
+          loan_type?: Database["public"]["Enums"]["loan_type"]
+          max_amount?: number
+          max_term_months?: number
+          notes?: string | null
         }
         Relationships: []
       }
@@ -286,6 +331,7 @@ export type Database = {
           id: string
           joined_at: string
           member_number: string | null
+          opening_balance: number
           phone: string | null
           user_id: string
         }
@@ -295,6 +341,7 @@ export type Database = {
           id?: string
           joined_at?: string
           member_number?: string | null
+          opening_balance?: number
           phone?: string | null
           user_id: string
         }
@@ -304,6 +351,7 @@ export type Database = {
           id?: string
           joined_at?: string
           member_number?: string | null
+          opening_balance?: number
           phone?: string | null
           user_id?: string
         }
@@ -398,6 +446,10 @@ export type Database = {
       }
       get_active_loan_balance: { Args: { _user_id: string }; Returns: number }
       get_savings_balance: { Args: { _user_id: string }; Returns: number }
+      has_board_seat: {
+        Args: { _seat: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -423,6 +475,9 @@ export type Database = {
         | "disbursement"
         | "completed"
         | "rejected"
+        | "board_chair"
+        | "board_member_1"
+        | "board_member_2"
       loan_status:
         | "pending"
         | "approved"
@@ -588,6 +643,9 @@ export const Constants = {
         "disbursement",
         "completed",
         "rejected",
+        "board_chair",
+        "board_member_1",
+        "board_member_2",
       ],
       loan_status: [
         "pending",

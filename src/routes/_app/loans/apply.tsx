@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { fmtTZS } from "@/lib/format";
-import { LOAN_TYPE_LABEL, LOAN_TYPE_DESC } from "@/lib/loanStages";
+import { LOAN_TYPE_LABEL, LOAN_TYPE_DESC, LOAN_TYPE_RULES } from "@/lib/loanStages";
 import { toast } from "sonner";
 import { Loader2, Upload, X, Briefcase, Zap, AlertCircle } from "lucide-react";
 
@@ -18,6 +18,7 @@ export const Route = createFileRoute("/_app/loans/apply")({
 });
 
 const MAX = 10 * 1024 * 1024;
+const ALLOWED_MIME = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]);
 const TYPE_ICON: Record<string, any> = { development: Briefcase, chapchap: Zap, emergency: AlertCircle };
 
 function ApplyPage() {
@@ -31,20 +32,26 @@ function ApplyPage() {
   const [files, setFiles] = useState<File[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
+  const rule = LOAN_TYPE_RULES[loanType];
+
   useEffect(() => {
     if (!user) return;
     supabase.rpc("calculate_eligibility", { _user_id: user.id })
       .then(({ data }) => setEligibility(data));
   }, [user?.id]);
 
+  // Clamp term when switching loan type
+  useEffect(() => {
+    if (Number(term) > rule.maxTerm) setTerm(String(rule.maxTerm));
+  }, [loanType]); // eslint-disable-line
+
   const onPick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const fs = Array.from(e.target.files ?? []);
     const ok: File[] = [];
     for (const f of fs) {
       if (f.size > MAX) { toast.error(`${f.name} exceeds 10MB`); continue; }
-      const t = f.type;
-      if (!(t === "application/pdf" || t.startsWith("image/"))) {
-        toast.error(`${f.name}: only PDF and images allowed`); continue;
+      if (!ALLOWED_MIME.has(f.type)) {
+        toast.error(`${f.name}: only PDF, JPG, PNG, WEBP allowed`); continue;
       }
       ok.push(f);
     }
@@ -146,12 +153,12 @@ function ApplyPage() {
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="amount">Amount (TZS)</Label>
-              <Input id="amount" type="number" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} required />
+              <Label htmlFor="amount">Amount (TZS) — max {fmtTZS(rule.maxAmount)}</Label>
+              <Input id="amount" type="number" min="1" max={rule.maxAmount} value={amount} onChange={(e) => setAmount(e.target.value)} required />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="term">Term (months)</Label>
-              <Input id="term" type="number" min="1" max="60" value={term} onChange={(e) => setTerm(e.target.value)} required />
+              <Label htmlFor="term">Term (months) — max {rule.maxTerm}</Label>
+              <Input id="term" type="number" min="1" max={rule.maxTerm} value={term} onChange={(e) => setTerm(e.target.value)} required />
             </div>
           </div>
           <div className="space-y-1.5">
@@ -160,11 +167,11 @@ function ApplyPage() {
           </div>
 
           <div className="space-y-2">
-            <Label>Supporting documents (PDF or images, up to 5 files, 10MB each)</Label>
+            <Label>Supporting documents (PDF / JPG / PNG / WEBP — up to 5 files, 10MB each)</Label>
             <label className="flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-border bg-muted/30 p-6 transition hover:bg-muted">
               <Upload className="h-5 w-5 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">Click to upload files</span>
-              <input type="file" multiple accept="application/pdf,image/*" onChange={onPick} className="hidden" />
+              <input type="file" multiple accept="application/pdf,image/jpeg,image/png,image/webp" onChange={onPick} className="hidden" />
             </label>
             {files.length > 0 && (
               <ul className="space-y-1">
