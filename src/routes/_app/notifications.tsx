@@ -83,18 +83,18 @@ function NotificationsPage() {
         </div>
 
         <ul className="space-y-2">
-          {filtered.length === 0 ? (
+          {pageItems.length === 0 ? (
             <li className="rounded-2xl border border-border/70 bg-card p-12 text-center text-sm text-muted-foreground">No notifications match these filters.</li>
-          ) : filtered.map((n) => {
+          ) : pageItems.map((n) => {
             const Body = (
               <div className="flex items-start gap-3 p-4">
                 <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${n.read ? "bg-muted" : "bg-primary"}`} />
-                <div className="flex-1">
-                  <div className="flex items-center justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="text-sm font-semibold">{n.title}</p>
                     <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase text-muted-foreground">{n.type.replace("_", " ")}</span>
                   </div>
-                  {n.body && <p className="mt-1 text-sm text-muted-foreground">{n.body}</p>}
+                  {n.body && <p className="mt-1 text-sm text-muted-foreground break-words">{n.body}</p>}
                   <p className="mt-1 text-[11px] text-muted-foreground">{fmtRelative(n.created_at)}</p>
                 </div>
                 <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleRead(n); }}
@@ -112,6 +112,16 @@ function NotificationsPage() {
             );
           })}
         </ul>
+
+        {filtered.length > PAGE_SIZE && (
+          <div className="flex items-center justify-between gap-2 pt-2">
+            <p className="text-xs text-muted-foreground">Page {page + 1} of {totalPages} · {filtered.length} total</p>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>Previous</Button>
+              <Button size="sm" variant="outline" disabled={page + 1 >= totalPages} onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}>Next</Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
