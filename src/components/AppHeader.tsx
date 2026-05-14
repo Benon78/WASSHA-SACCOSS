@@ -13,6 +13,7 @@ import { NotificationsBell } from "@/components/NotificationsBell";
 
 export function AppHeader() {
   const { user, roles, isStaff, signOut } = useAuth();
+  const { t, lang, setLang } = useI18n();
   const nav = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
