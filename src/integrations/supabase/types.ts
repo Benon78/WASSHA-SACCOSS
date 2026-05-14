@@ -218,6 +218,8 @@ export type Database = {
           amount_approved: number | null
           amount_requested: number
           created_at: string
+          disbursement_confirmed_at: string | null
+          disbursement_confirmed_by: string | null
           eligibility_limit: number | null
           id: string
           interest_rate: number
@@ -235,6 +237,8 @@ export type Database = {
           amount_approved?: number | null
           amount_requested: number
           created_at?: string
+          disbursement_confirmed_at?: string | null
+          disbursement_confirmed_by?: string | null
           eligibility_limit?: number | null
           id?: string
           interest_rate?: number
@@ -252,6 +256,8 @@ export type Database = {
           amount_approved?: number | null
           amount_requested?: number
           created_at?: string
+          disbursement_confirmed_at?: string | null
+          disbursement_confirmed_by?: string | null
           eligibility_limit?: number | null
           id?: string
           interest_rate?: number
@@ -421,6 +427,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_register_existing_loan: {
+        Args: {
+          _amount: number
+          _loan_type: Database["public"]["Enums"]["loan_type"]
+          _member_id: string
+          _outstanding: number
+          _purpose?: string
+          _stage: Database["public"]["Enums"]["loan_stage"]
+          _term_months: number
+        }
+        Returns: string
+      }
       calculate_eligibility: { Args: { _user_id: string }; Returns: Json }
       current_policy: {
         Args: never
