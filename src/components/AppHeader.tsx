@@ -19,22 +19,23 @@ export function AppHeader() {
 
   const navLinks = user ? (
     <>
-      <Link to="/dashboard" className="transition hover:text-foreground" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>Dashboard</Link>
-      <Link to="/loans" className="transition hover:text-foreground" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>My Loans</Link>
-      <Link to="/statements" className="transition hover:text-foreground" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>Statements</Link>
-      <Link to="/notifications" className="transition hover:text-foreground" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>Notifications</Link>
+      <Link to="/dashboard" className="transition hover:text-foreground" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>{t("nav_dashboard")}</Link>
+      <Link to="/loans" className="transition hover:text-foreground" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>{t("nav_loans")}</Link>
+      <Link to="/statements" className="transition hover:text-foreground" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>{t("nav_statements")}</Link>
+      <Link to="/notifications" className="transition hover:text-foreground" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>{t("nav_notifications")}</Link>
       {isStaff && (
-        <Link to="/approvals" className="transition hover:text-foreground" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>Approvals</Link>
+        <Link to="/approvals" className="transition hover:text-foreground" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>{t("nav_approvals")}</Link>
       )}
       {roles.includes("admin") && (
         <>
-          <Link to="/admin" className="transition hover:text-foreground" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>Admin</Link>
-          <Link to="/admin/policies" className="transition hover:text-foreground" onClick={() => setMobileOpen(false)}>Loan policies</Link>
-          <Link to="/admin/reports" className="transition hover:text-foreground" onClick={() => setMobileOpen(false)}>Reports</Link>
-          <Link to="/admin/audit" className="transition hover:text-foreground" onClick={() => setMobileOpen(false)}>Audit log</Link>
+          <Link to="/admin" className="transition hover:text-foreground" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>{t("nav_admin")}</Link>
+          <Link to="/admin/board" className="transition hover:text-foreground" onClick={() => setMobileOpen(false)}>{t("nav_board")}</Link>
+          <Link to="/admin/policies" className="transition hover:text-foreground" onClick={() => setMobileOpen(false)}>{t("nav_policies")}</Link>
+          <Link to="/admin/reports" className="transition hover:text-foreground" onClick={() => setMobileOpen(false)}>{t("nav_reports")}</Link>
+          <Link to="/admin/audit" className="transition hover:text-foreground" onClick={() => setMobileOpen(false)}>{t("nav_audit")}</Link>
         </>
       )}
-      <Link to="/profile" className="transition hover:text-foreground" onClick={() => setMobileOpen(false)}>My profile</Link>
+      <Link to="/profile" className="transition hover:text-foreground" onClick={() => setMobileOpen(false)}>{t("nav_profile")}</Link>
     </>
   ) : (
     <>
@@ -42,6 +43,21 @@ export function AppHeader() {
       <a href="#roles" className="transition hover:text-foreground" onClick={() => setMobileOpen(false)}>Roles</a>
       <Link to="/workflow" className="transition hover:text-foreground" onClick={() => setMobileOpen(false)}>Workflow Guide</Link>
     </>
+  );
+
+  const langSwitcher = (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" aria-label={t("language")}>
+          <Languages className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel className="text-xs">{t("language")}</DropdownMenuLabel>
+        <DropdownMenuItem onClick={() => setLang("en")}>{lang === "en" ? "✓ " : ""}English</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setLang("sw")}>{lang === "sw" ? "✓ " : ""}Kiswahili</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 
   return (
