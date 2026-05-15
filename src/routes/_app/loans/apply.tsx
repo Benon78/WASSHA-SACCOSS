@@ -63,6 +63,7 @@ function ApplyPage() {
     if (!user) return;
     const amt = Number(amount);
     if (!amt || amt <= 0) return toast.error("Enter a valid amount");
+    if (files.length === 0) return toast.error("Please upload at least one supporting document.");
     if (eligibility && !eligibility.eligible) return toast.error("You are not currently eligible.");
     if (eligibility && amt > Number(eligibility.max_amount)) {
       return toast.error(`Amount exceeds your limit of ${fmtTZS(eligibility.max_amount)}`);
