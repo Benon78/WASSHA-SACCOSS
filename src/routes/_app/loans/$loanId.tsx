@@ -199,6 +199,11 @@ function LoanDetail() {
             </section>
 
             {/* Staff actions */}
+            {isStaff && requiredRole && roles.includes(requiredRole) && isOwner && (
+              <section className="rounded-2xl border border-warning/40 bg-warning/5 p-4 text-sm text-warning-foreground">
+                You cannot act on your own loan. Another {requiredRole} must review this application.
+              </section>
+            )}
             {canActOnStage && (
               <section className="rounded-2xl border-2 border-primary/30 bg-card p-6 shadow-[var(--shadow-card)]">
                 <h3 className="text-base font-semibold">Action required at: {STAGE_LABEL[stage]}</h3>
@@ -227,6 +232,42 @@ function LoanDetail() {
                     <XCircle className="mr-2 h-4 w-4" /> Reject
                   </Button>
                 </div>
+              </section>
+            )}
+
+            {/* Manager: confirm disbursement */}
+            {canConfirmDisbursement && (
+              <section className="rounded-2xl border-2 border-success/40 bg-success/5 p-6 shadow-[var(--shadow-card)]">
+                <h3 className="text-base font-semibold">Confirm disbursement</h3>
+                <p className="text-xs text-muted-foreground">
+                  Confirm that {fmtTZS(loan.amount_approved ?? loan.amount_requested)} has been paid to the member. This advances the loan to completed and posts the disbursement transaction.
+                </p>
+                <Button
+                  className="mt-4 bg-success text-success-foreground hover:bg-success/90"
+                  disabled={busy}
+                  onClick={async () => {
+                    if (!user) return;
+                    if (!confirm("Confirm that funds have been disbursed to the member?")) return;
+                    setBusy(true);
+                    try {
+                      const { error } = await supabase.from("loans").update({
+                        disbursement_confirmed_at: new Date().toISOString(),
+                        disbursement_confirmed_by: user.id,
+                        stage: "completed",
+                      }).eq("id", loanId);
+                      if (error) throw error;
+                      await supabase.from("loan_approvals").insert({
+                        loan_id: loanId, stage: "disbursement", approver_id: user.id,
+                        decision: "approved", comment: "Disbursement confirmed by manager",
+                      });
+                      toast.success("Disbursement confirmed");
+                      await load();
+                    } catch (e: any) { toast.error(e.message); }
+                    finally { setBusy(false); }
+                  }}
+                >
+                  <Banknote className="mr-2 h-4 w-4" /> Confirm disbursement
+                </Button>
               </section>
             )}
 
