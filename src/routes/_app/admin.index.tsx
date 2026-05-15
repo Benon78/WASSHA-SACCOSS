@@ -110,7 +110,79 @@ function AdminPage() {
     <div className="min-h-screen bg-muted/30">
       <AppHeader />
       <div className="container mx-auto space-y-6 px-4 py-6">
-        <h1 className="text-2xl font-bold">Admin</h1>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-2xl font-bold">Admin</h1>
+          <Dialog open={regOpen} onOpenChange={setRegOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-[image:var(--gradient-primary)] text-primary-foreground">
+                <FilePlus2 className="mr-2 h-4 w-4" /> {t("register_existing_loan")}
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{t("register_existing_loan")}</DialogTitle>
+              </DialogHeader>
+              <p className="text-xs text-muted-foreground">{t("register_existing_intro")}</p>
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-xs">Member</Label>
+                  <Select value={reg.member_id} onValueChange={(v) => setReg({ ...reg, member_id: v })}>
+                    <SelectTrigger><SelectValue placeholder="Select member" /></SelectTrigger>
+                    <SelectContent>
+                      {users.map((u) => (
+                        <SelectItem key={u.user_id} value={u.user_id}>
+                          {u.member_number ? `${u.member_number} — ` : ""}{u.full_name || u.user_id.slice(0, 8)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs">Original amount (TZS)</Label>
+                    <Input type="number" value={reg.amount} onChange={(e) => setReg({ ...reg, amount: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Outstanding (TZS)</Label>
+                    <Input type="number" value={reg.outstanding} onChange={(e) => setReg({ ...reg, outstanding: e.target.value })} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <Label className="text-xs">Loan type</Label>
+                    <Select value={reg.loan_type} onValueChange={(v) => setReg({ ...reg, loan_type: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {["development", "chapchap", "emergency"].map((x) => <SelectItem key={x} value={x}>{x}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs">Term (months)</Label>
+                    <Input type="number" value={reg.term_months} onChange={(e) => setReg({ ...reg, term_months: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Stage</Label>
+                    <Select value={reg.stage} onValueChange={(v) => setReg({ ...reg, stage: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {["disbursement", "completed"].map((x) => <SelectItem key={x} value={x}>{x}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs">Purpose</Label>
+                  <Input value={reg.purpose} onChange={(e) => setReg({ ...reg, purpose: e.target.value })} placeholder="Pre-existing loan migrated by admin" />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setRegOpen(false)}>{t("cancel")}</Button>
+                <Button onClick={submitRegister} className="bg-[image:var(--gradient-primary)] text-primary-foreground">{t("save")}</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
 
         <section className="rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
           <h2 className="text-base font-semibold">Record transaction</h2>
