@@ -179,19 +179,28 @@ function AdminPage() {
                       />
                     </td>
                     <td>
-                      <Input
-                        type="number"
-                        defaultValue={u.opening_balance ?? 0}
-                        className="h-8 w-[140px] text-xs"
-                        onBlur={async (e) => {
-                          const v = Number(e.target.value);
-                          if (Number.isNaN(v) || v < 0) return;
-                          const { error } = await supabase.from("profiles")
-                            .update({ opening_balance: v }).eq("user_id", u.user_id);
-                          if (error) toast.error(error.message);
-                          else { toast.success("Opening balance updated"); load(); }
-                        }}
-                      />
+                      {Number(u.opening_balance ?? 0) > 0 ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium">{Number(u.opening_balance).toLocaleString()}</span>
+                          <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] uppercase text-muted-foreground">locked</span>
+                        </div>
+                      ) : (
+                        <Input
+                          type="number"
+                          defaultValue={0}
+                          className="h-8 w-[140px] text-xs"
+                          onBlur={async (e) => {
+                            const v = Number(e.target.value);
+                            if (Number.isNaN(v) || v < 0) return;
+                            if (v === 0) return;
+                            if (!confirm(`Set opening balance to TZS ${v.toLocaleString()}? This can only be set once.`)) return;
+                            const { error } = await supabase.from("profiles")
+                              .update({ opening_balance: v }).eq("user_id", u.user_id);
+                            if (error) toast.error(error.message);
+                            else { toast.success("Opening balance set"); load(); }
+                          }}
+                        />
+                      )}
                     </td>
                     <td>
                       <div className="flex flex-wrap gap-1">
