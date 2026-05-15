@@ -52,8 +52,11 @@ function LoanDetail() {
 
   const stage = loan.stage as LoanStage;
   const requiredRole = STAGE_ROLE[stage];
-  const canActOnStage = isStaff && requiredRole && roles.includes(requiredRole);
   const isOwner = user?.id === loan.member_id;
+  // Conflict-of-interest: a staff member cannot act on their own loan application.
+  const canActOnStage = isStaff && requiredRole && roles.includes(requiredRole) && !isOwner;
+  const isManager = roles.includes("manager");
+  const canConfirmDisbursement = isManager && stage === "disbursement" && !isOwner && !loan.disbursement_confirmed_at;
   const uploadsLocked = ["disbursement", "completed", "rejected"].includes(loan.stage) ||
                         ["disbursed", "completed", "rejected"].includes(loan.status);
 
