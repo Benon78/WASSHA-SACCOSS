@@ -18,6 +18,7 @@ export const Route = createFileRoute("/_app/dashboard")({
 
 function Dashboard() {
   const { user, roles, isStaff } = useAuth();
+  const { t } = useI18n();
   const [savings, setSavings] = useState(0);
   const [activeLoan, setActiveLoan] = useState(0);
   const [eligibility, setEligibility] = useState<any>(null);
@@ -25,25 +26,35 @@ function Dashboard() {
   const [txs, setTxs] = useState<any[]>([]);
   const [profile, setProfile] = useState<any>(null);
 
+  const refresh = useCallback(async () => {
+    if (!user) return;
+    const [p, s, a, e, l, tx] = await Promise.all([
+      supabase.from("profiles").select("*").eq("user_id", user.id).maybeSingle(),
+      supabase.rpc("get_savings_balance", { _user_id: user.id }),
+      supabase.rpc("get_active_loan_balance", { _user_id: user.id }),
+      supabase.rpc("calculate_eligibility", { _user_id: user.id }),
+      supabase.from("loans").select("*").eq("member_id", user.id).order("created_at", { ascending: false }).limit(3),
+      supabase.from("transactions").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(6),
+    ]);
+    setProfile(p.data);
+    setSavings(Number(s.data ?? 0));
+    setActiveLoan(Number(a.data ?? 0));
+    setEligibility(e.data);
+    setLoans(l.data ?? []);
+    setTxs(tx.data ?? []);
+  }, [user?.id]);
+
   useEffect(() => {
     if (!user) return;
-    (async () => {
-      const [p, s, a, e, l, t] = await Promise.all([
-        supabase.from("profiles").select("*").eq("user_id", user.id).maybeSingle(),
-        supabase.rpc("get_savings_balance", { _user_id: user.id }),
-        supabase.rpc("get_active_loan_balance", { _user_id: user.id }),
-        supabase.rpc("calculate_eligibility", { _user_id: user.id }),
-        supabase.from("loans").select("*").eq("member_id", user.id).order("created_at", { ascending: false }).limit(3),
-        supabase.from("transactions").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(6),
-      ]);
-      setProfile(p.data);
-      setSavings(Number(s.data ?? 0));
-      setActiveLoan(Number(a.data ?? 0));
-      setEligibility(e.data);
-      setLoans(l.data ?? []);
-      setTxs(t.data ?? []);
-    })();
-  }, [user?.id]);
+    refresh();
+    const ch = supabase
+      .channel(`dash-${user.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "transactions", filter: `user_id=eq.${user.id}` }, () => refresh())
+      .on("postgres_changes", { event: "*", schema: "public", table: "loans", filter: `member_id=eq.${user.id}` }, () => refresh())
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles", filter: `user_id=eq.${user.id}` }, () => refresh())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [user?.id, refresh]);
 
   return (
     <div className="min-h-screen bg-muted/30">
