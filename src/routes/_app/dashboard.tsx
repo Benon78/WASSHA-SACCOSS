@@ -63,23 +63,23 @@ function Dashboard() {
         {/* Welcome */}
         <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-[image:var(--gradient-hero)] p-5 text-primary-foreground shadow-[var(--shadow-card)] sm:p-6 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-white/60">Welcome back</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-white/80">{t("welcome_back")}</p>
             <h1 className="mt-1 text-xl font-bold sm:text-2xl md:text-3xl">
-              Hello, {profile?.full_name?.split(" ")[0] || "Member"} 👋
+              {profile?.full_name?.split(" ")[0] || t("member")} 👋
             </h1>
-            <p className="mt-1 text-xs text-white/70 sm:text-sm">
-              Member #{profile?.member_number ?? "—"} · {roles.join(", ") || "member"}
+            <p className="mt-1 text-xs text-white/80 sm:text-sm">
+              {t("member_number")}: {profile?.member_number ?? "—"} · {roles.join(", ") || "member"}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Button asChild className="bg-white text-secondary hover:bg-white/90">
               <Link to="/loans/apply">
-                <Plus className="mr-2 h-4 w-4" /> Apply for loan
+                <Plus className="mr-2 h-4 w-4" /> {t("apply_for_loan")}
               </Link>
             </Button>
             {isStaff && (
-              <Button asChild variant="outline" className="border-white/25 bg-white/5 text-white hover:bg-white/10 hover:text-white">
-                <Link to="/approvals">Open approvals</Link>
+              <Button asChild variant="outline" className="border-white/30 bg-white/10 text-white hover:bg-white/20 hover:text-white">
+                <Link to="/approvals">{t("open_approvals")}</Link>
               </Button>
             )}
           </div>
@@ -87,16 +87,15 @@ function Dashboard() {
 
         {/* KPIs */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard label="Total savings" value={fmtTZS(savings)} icon={PiggyBank} tone="primary" />
-          <StatCard label="Active loan balance" value={fmtTZS(activeLoan)} icon={Banknote} tone="navy" />
+          <StatCard label={t("total_savings")} value={fmtTZS(savings)} icon={PiggyBank} tone="primary" />
+          <StatCard label={t("active_loan_balance")} value={fmtTZS(activeLoan)} icon={Banknote} tone="navy" />
           <StatCard
-            label="Eligible to borrow"
+            label={t("eligible_to_borrow")}
             value={fmtTZS(eligibility?.max_amount ?? 0)}
             icon={TrendingUp}
             tone={eligibility?.eligible ? "success" : "warning"}
-            delta={eligibility?.eligible ? "Ready to apply" : "See reasons below"}
           />
-          <StatCard label="Active loans" value={String(loans.filter((l) => ["pending","approved","disbursed"].includes(l.status)).length)} icon={Wallet} tone="warning" />
+          <StatCard label={t("active_loans")} value={String(loans.filter((l) => ["pending","approved","disbursed"].includes(l.status)).length)} icon={Wallet} tone="warning" />
         </div>
 
         {/* Eligibility reasons */}
