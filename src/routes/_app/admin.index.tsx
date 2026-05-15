@@ -1,5 +1,5 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, type AppRole } from "@/lib/auth";
@@ -7,8 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { fmtTZS } from "@/lib/format";
+import { useI18n } from "@/lib/i18n";
+import { FilePlus2 } from "lucide-react";
 
 export const Route = createFileRoute("/_app/admin/")({
   head: () => ({ meta: [{ title: "Admin — WASSHA SACCOS" }] }),
@@ -19,12 +22,15 @@ const ROLES: AppRole[] = ["member", "approver", "finance", "manager", "admin"];
 
 function AdminPage() {
   const { hasRole, loading } = useAuth();
+  const { t } = useI18n();
   const [users, setUsers] = useState<any[]>([]);
   const [activeLoans, setActiveLoans] = useState<any[]>([]);
   const [tx, setTx] = useState({ user_id: "", amount: "", tx_type: "deposit", description: "", loan_id: "" });
   const [memberNumberDraft, setMemberNumberDraft] = useState<Record<string, string>>({});
+  const [regOpen, setRegOpen] = useState(false);
+  const [reg, setReg] = useState({ member_id: "", amount: "", outstanding: "", stage: "disbursement", loan_type: "development", term_months: "12", purpose: "" });
 
-  const load = async () => {
+  const load = useCallback(async () => {
     const [{ data: profiles }, { data: roles }, { data: loans }] = await Promise.all([
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("user_roles").select("*"),
@@ -36,9 +42,35 @@ function AdminPage() {
     }));
     setUsers(merged);
     setActiveLoans(loans ?? []);
-  };
+  }, []);
 
-  useEffect(() => { if (hasRole("admin")) load(); }, []);
+  useEffect(() => {
+    if (!hasRole("admin")) return;
+    load();
+    const ch = supabase.channel("admin-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "loans" }, () => load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "transactions" }, () => load())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [load, hasRole]);
+
+  const submitRegister = async () => {
+    if (!reg.member_id || !reg.amount) return toast.error("Member and amount are required");
+    const amount = Number(reg.amount);
+    const outstanding = Number(reg.outstanding || reg.amount);
+    const term = Number(reg.term_months || 12);
+    if (!(amount > 0) || outstanding < 0 || !(term > 0)) return toast.error("Invalid numbers");
+    const { error } = await supabase.rpc("admin_register_existing_loan", {
+      _member_id: reg.member_id, _amount: amount, _outstanding: outstanding,
+      _stage: reg.stage as any, _loan_type: reg.loan_type as any,
+      _term_months: term, _purpose: reg.purpose || "Pre-existing loan migrated by admin",
+    });
+    if (error) return toast.error(error.message);
+    toast.success("Existing loan registered");
+    setRegOpen(false);
+    setReg({ member_id: "", amount: "", outstanding: "", stage: "disbursement", loan_type: "development", term_months: "12", purpose: "" });
+    load();
+  };
 
   if (loading) return null;
   if (!hasRole("admin")) return <Navigate to="/dashboard" />;
