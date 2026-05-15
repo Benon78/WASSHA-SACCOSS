@@ -87,11 +87,32 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:description", content: "WASSHA Connect is a web-based SACCOS management system for financial transparency and efficient loan processing." },
       { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/smfIg4vFevcom7fmKb37R3n7jP53/social-images/social-1778231011056-logo.webp" },
       { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/smfIg4vFevcom7fmKb37R3n7jP53/social-images/social-1778231011056-logo.webp" },
+      { property: "og:site_name", content: "WASSHA SACCOS" },
     ],
     links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "canonical", href: "https://wassha-saccos.lovable.app/" },
+    ],
+    scripts: [
       {
-        rel: "stylesheet",
-        href: appCss,
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              name: "WASSHA SACCOS",
+              url: "https://wassha-saccos.lovable.app",
+              logo: "https://storage.googleapis.com/gpt-engineer-file-uploads/smfIg4vFevcom7fmKb37R3n7jP53/social-images/social-1778231011056-logo.webp",
+            },
+            {
+              "@type": "WebSite",
+              name: "WASSHA SACCOS",
+              url: "https://wassha-saccos.lovable.app",
+              inLanguage: ["en", "sw"],
+            },
+          ],
+        }),
       },
     ],
   }),
@@ -122,7 +143,9 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <I18nProvider>
         <AuthProvider>
-          <Outlet />
+          <main id="main-content">
+            <Outlet />
+          </main>
           <Toaster />
         </AuthProvider>
       </I18nProvider>
