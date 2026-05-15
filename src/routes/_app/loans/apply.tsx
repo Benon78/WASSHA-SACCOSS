@@ -168,7 +168,7 @@ function ApplyPage() {
           </div>
 
           <div className="space-y-2">
-            <Label>Supporting documents (PDF / JPG / PNG / WEBP — up to 5 files, 10MB each)</Label>
+            <Label>Supporting documents <span className="text-destructive">*</span> (PDF / JPG / PNG / WEBP — at least one, up to 5 files, 10MB each)</Label>
             <label className="flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-border bg-muted/30 p-6 transition hover:bg-muted">
               <Upload className="h-5 w-5 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">Click to upload files</span>
