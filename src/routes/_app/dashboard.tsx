@@ -114,10 +114,10 @@ function Dashboard() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <div className="rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-base font-semibold">Recent transactions</h3>
+              <h2 className="text-base font-semibold">{t("recent_transactions")}</h2>
             </div>
             {txs.length === 0 ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">No transactions yet.</p>
+              <p className="py-6 text-center text-sm text-muted-foreground">{t("no_transactions")}</p>
             ) : (
               <ul className="divide-y divide-border/70">
                 {txs.map((tx) => {
@@ -145,13 +145,13 @@ function Dashboard() {
 
           <div className="rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-base font-semibold">Recent loans</h3>
+              <h2 className="text-base font-semibold">{t("recent_loans")}</h2>
               <Link to="/loans" className="inline-flex items-center text-xs font-semibold text-primary hover:underline">
-                View all <ChevronRight className="h-3.5 w-3.5" />
+                {t("view_all")} <ChevronRight className="h-3.5 w-3.5" />
               </Link>
             </div>
             {loans.length === 0 ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">No loans yet. Apply for your first loan.</p>
+              <p className="py-6 text-center text-sm text-muted-foreground">{t("no_loans")}</p>
             ) : (
               <ul className="divide-y divide-border/70">
                 {loans.map((l) => (
