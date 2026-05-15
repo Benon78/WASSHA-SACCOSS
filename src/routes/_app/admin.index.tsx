@@ -1,5 +1,5 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, type AppRole } from "@/lib/auth";
@@ -7,8 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { fmtTZS } from "@/lib/format";
+import { useI18n } from "@/lib/i18n";
+import { FilePlus2 } from "lucide-react";
 
 export const Route = createFileRoute("/_app/admin/")({
   head: () => ({ meta: [{ title: "Admin — WASSHA SACCOS" }] }),
@@ -19,12 +22,15 @@ const ROLES: AppRole[] = ["member", "approver", "finance", "manager", "admin"];
 
 function AdminPage() {
   const { hasRole, loading } = useAuth();
+  const { t } = useI18n();
   const [users, setUsers] = useState<any[]>([]);
   const [activeLoans, setActiveLoans] = useState<any[]>([]);
   const [tx, setTx] = useState({ user_id: "", amount: "", tx_type: "deposit", description: "", loan_id: "" });
   const [memberNumberDraft, setMemberNumberDraft] = useState<Record<string, string>>({});
+  const [regOpen, setRegOpen] = useState(false);
+  const [reg, setReg] = useState({ member_id: "", amount: "", outstanding: "", stage: "disbursement", loan_type: "development", term_months: "12", purpose: "" });
 
-  const load = async () => {
+  const load = useCallback(async () => {
     const [{ data: profiles }, { data: roles }, { data: loans }] = await Promise.all([
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("user_roles").select("*"),
@@ -36,9 +42,35 @@ function AdminPage() {
     }));
     setUsers(merged);
     setActiveLoans(loans ?? []);
-  };
+  }, []);
 
-  useEffect(() => { if (hasRole("admin")) load(); }, []);
+  useEffect(() => {
+    if (!hasRole("admin")) return;
+    load();
+    const ch = supabase.channel("admin-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "loans" }, () => load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "transactions" }, () => load())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [load, hasRole]);
+
+  const submitRegister = async () => {
+    if (!reg.member_id || !reg.amount) return toast.error("Member and amount are required");
+    const amount = Number(reg.amount);
+    const outstanding = Number(reg.outstanding || reg.amount);
+    const term = Number(reg.term_months || 12);
+    if (!(amount > 0) || outstanding < 0 || !(term > 0)) return toast.error("Invalid numbers");
+    const { error } = await supabase.rpc("admin_register_existing_loan", {
+      _member_id: reg.member_id, _amount: amount, _outstanding: outstanding,
+      _stage: reg.stage as any, _loan_type: reg.loan_type as any,
+      _term_months: term, _purpose: reg.purpose || "Pre-existing loan migrated by admin",
+    });
+    if (error) return toast.error(error.message);
+    toast.success("Existing loan registered");
+    setRegOpen(false);
+    setReg({ member_id: "", amount: "", outstanding: "", stage: "disbursement", loan_type: "development", term_months: "12", purpose: "" });
+    load();
+  };
 
   if (loading) return null;
   if (!hasRole("admin")) return <Navigate to="/dashboard" />;
@@ -78,7 +110,79 @@ function AdminPage() {
     <div className="min-h-screen bg-muted/30">
       <AppHeader />
       <div className="container mx-auto space-y-6 px-4 py-6">
-        <h1 className="text-2xl font-bold">Admin</h1>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-2xl font-bold">Admin</h1>
+          <Dialog open={regOpen} onOpenChange={setRegOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-[image:var(--gradient-primary)] text-primary-foreground">
+                <FilePlus2 className="mr-2 h-4 w-4" /> {t("register_existing_loan")}
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{t("register_existing_loan")}</DialogTitle>
+              </DialogHeader>
+              <p className="text-xs text-muted-foreground">{t("register_existing_intro")}</p>
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-xs">Member</Label>
+                  <Select value={reg.member_id} onValueChange={(v) => setReg({ ...reg, member_id: v })}>
+                    <SelectTrigger><SelectValue placeholder="Select member" /></SelectTrigger>
+                    <SelectContent>
+                      {users.map((u) => (
+                        <SelectItem key={u.user_id} value={u.user_id}>
+                          {u.member_number ? `${u.member_number} — ` : ""}{u.full_name || u.user_id.slice(0, 8)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs">Original amount (TZS)</Label>
+                    <Input type="number" value={reg.amount} onChange={(e) => setReg({ ...reg, amount: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Outstanding (TZS)</Label>
+                    <Input type="number" value={reg.outstanding} onChange={(e) => setReg({ ...reg, outstanding: e.target.value })} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <Label className="text-xs">Loan type</Label>
+                    <Select value={reg.loan_type} onValueChange={(v) => setReg({ ...reg, loan_type: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {["development", "chapchap", "emergency"].map((x) => <SelectItem key={x} value={x}>{x}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs">Term (months)</Label>
+                    <Input type="number" value={reg.term_months} onChange={(e) => setReg({ ...reg, term_months: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Stage</Label>
+                    <Select value={reg.stage} onValueChange={(v) => setReg({ ...reg, stage: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {["disbursement", "completed"].map((x) => <SelectItem key={x} value={x}>{x}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs">Purpose</Label>
+                  <Input value={reg.purpose} onChange={(e) => setReg({ ...reg, purpose: e.target.value })} placeholder="Pre-existing loan migrated by admin" />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setRegOpen(false)}>{t("cancel")}</Button>
+                <Button onClick={submitRegister} className="bg-[image:var(--gradient-primary)] text-primary-foreground">{t("save")}</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
 
         <section className="rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
           <h2 className="text-base font-semibold">Record transaction</h2>

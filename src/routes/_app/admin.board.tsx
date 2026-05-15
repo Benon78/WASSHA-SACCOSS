@@ -95,7 +95,96 @@ function BoardPage() {
             </div>
           ))}
         </div>
+
+        <ProxySection staff={staff} />
       </div>
     </div>
+  );
+}
+
+function ProxySection({ staff }: { staff: any[] }) {
+  const [loans, setLoans] = useState<any[]>([]);
+  const [proxies, setProxies] = useState<any[]>([]);
+  const [draft, setDraft] = useState({ loan_id: "", stage: "under_review", delegate_id: "", reason: "" });
+
+  const load = async () => {
+    const [{ data: l }, { data: p }] = await Promise.all([
+      supabase.from("loans").select("id, loan_number, stage, status, member_id").eq("status", "pending").order("created_at", { ascending: false }),
+      supabase.from("loan_proxies").select("*").order("created_at", { ascending: false }).limit(50),
+    ]);
+    setLoans(l ?? []);
+    setProxies(p ?? []);
+  };
+  useEffect(() => { load(); }, []);
+
+  const grant = async () => {
+    if (!draft.loan_id || !draft.delegate_id) return toast.error("Pick a loan and delegate");
+    const { error } = await supabase.from("loan_proxies").insert({
+      loan_id: draft.loan_id, stage: draft.stage as any,
+      delegate_id: draft.delegate_id, granted_by: (await supabase.auth.getUser()).data.user!.id,
+      reason: draft.reason || null,
+    });
+    if (error) return toast.error(error.message);
+    toast.success("Delegation granted (valid 7 days, one-time use)");
+    setDraft({ loan_id: "", stage: "under_review", delegate_id: "", reason: "" });
+    load();
+  };
+
+  const revoke = async (id: string) => {
+    const { error } = await supabase.from("loan_proxies").update({ consumed_at: new Date().toISOString() }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Revoked"); load();
+  };
+
+  const STAGES = ["under_review","finance_approval","board_chair","board_member_1","board_member_2","manager_approval","disbursement"];
+  const nameOf = (uid?: string) => staff.find((s) => s.user_id === uid)?.full_name || uid?.slice(0,8) || "—";
+
+  return (
+    <section className="rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
+      <h2 className="text-base font-semibold">Acting reviewer (proxy)</h2>
+      <p className="text-xs text-muted-foreground">Authorize a different staff member to review a specific loan when the normal reviewer has a conflict. One-time use, expires in 7 days.</p>
+      <div className="mt-4 grid gap-3 md:grid-cols-5">
+        <div className="md:col-span-2">
+          <Label className="text-xs">Loan</Label>
+          <Select value={draft.loan_id} onValueChange={(v) => setDraft({ ...draft, loan_id: v })}>
+            <SelectTrigger><SelectValue placeholder="Select pending loan" /></SelectTrigger>
+            <SelectContent>{loans.map((l) => <SelectItem key={l.id} value={l.id}>{l.loan_number} ({l.stage})</SelectItem>)}</SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label className="text-xs">Stage</Label>
+          <Select value={draft.stage} onValueChange={(v) => setDraft({ ...draft, stage: v })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>{STAGES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label className="text-xs">Delegate</Label>
+          <Select value={draft.delegate_id} onValueChange={(v) => setDraft({ ...draft, delegate_id: v })}>
+            <SelectTrigger><SelectValue placeholder="Staff" /></SelectTrigger>
+            <SelectContent>{staff.map((p) => <SelectItem key={p.user_id} value={p.user_id}>{p.full_name || p.user_id.slice(0,8)}</SelectItem>)}</SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-end">
+          <Button onClick={grant} className="w-full bg-[image:var(--gradient-primary)] text-primary-foreground">Grant</Button>
+        </div>
+      </div>
+      <ul className="mt-5 divide-y divide-border/60 text-sm">
+        {proxies.length === 0 && <li className="py-3 text-muted-foreground">No delegations yet.</li>}
+        {proxies.map((p) => {
+          const loan = loans.find((l) => l.id === p.loan_id);
+          const active = !p.consumed_at && new Date(p.expires_at) > new Date();
+          return (
+            <li key={p.id} className="flex items-center justify-between py-2.5">
+              <div>
+                <p className="font-medium">{loan?.loan_number ?? p.loan_id.slice(0,8)} · {p.stage}</p>
+                <p className="text-xs text-muted-foreground">→ {nameOf(p.delegate_id)} · {active ? "active" : (p.consumed_at ? "consumed" : "expired")}</p>
+              </div>
+              {active && <Button size="sm" variant="outline" onClick={() => revoke(p.id)}>Revoke</Button>}
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }

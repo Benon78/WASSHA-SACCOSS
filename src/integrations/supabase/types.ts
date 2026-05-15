@@ -192,6 +192,50 @@ export type Database = {
         }
         Relationships: []
       }
+      loan_proxies: {
+        Row: {
+          consumed_at: string | null
+          created_at: string
+          delegate_id: string
+          expires_at: string
+          granted_by: string
+          id: string
+          loan_id: string
+          reason: string | null
+          stage: Database["public"]["Enums"]["loan_stage"]
+        }
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string
+          delegate_id: string
+          expires_at?: string
+          granted_by: string
+          id?: string
+          loan_id: string
+          reason?: string | null
+          stage: Database["public"]["Enums"]["loan_stage"]
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string
+          delegate_id?: string
+          expires_at?: string
+          granted_by?: string
+          id?: string
+          loan_id?: string
+          reason?: string | null
+          stage?: Database["public"]["Enums"]["loan_stage"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loan_proxies_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       loan_type_rules: {
         Row: {
           loan_type: Database["public"]["Enums"]["loan_type"]
@@ -464,6 +508,14 @@ export type Database = {
       }
       get_active_loan_balance: { Args: { _user_id: string }; Returns: number }
       get_savings_balance: { Args: { _user_id: string }; Returns: number }
+      has_active_proxy: {
+        Args: {
+          _loan_id: string
+          _stage: Database["public"]["Enums"]["loan_stage"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       has_board_seat: {
         Args: { _seat: string; _user_id: string }
         Returns: boolean

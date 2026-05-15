@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /approvals
+
+Sitemap: https://wassha-saccos.lovable.app/sitemap.xml
