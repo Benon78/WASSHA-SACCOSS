@@ -1,0 +1,18 @@
+# WASSHA SACCOS
+
+> WASSHA SACCOS is a modern Savings and Credit Cooperative Society (SACCOS) management platform serving WASSHA members. It provides member self-service savings, multi-stage loan workflows, real-time notifications and audit-grade reporting.
+
+## Key pages
+- [Home](https://wassha-saccos.lovable.app/): Landing page describing the platform.
+- [Workflow guide](https://wassha-saccos.lovable.app/workflow): How a loan moves through Submitted → Under Review → Finance → Board Chair → Board Member 1 → Board Member 2 → Manager → Disbursement → Completed.
+- [Sign in](https://wassha-saccos.lovable.app/auth): Member, staff and admin authentication.
+
+## What the app does
+- Members track savings, contributions, statements and loan applications.
+- Approvers, finance officers, board members and managers move loans through a strict multi-stage approval workflow with audit logs.
+- Administrators manage members, roles, board seats, loan policies, reports and audit trail.
+- Loan types supported: Development, Chap Chap (Quick), Emergency.
+- Languages: English and Kiswahili.
+
+## Contact
+Lovable preview: https://wassha-saccos.lovable.app
