@@ -20,6 +20,7 @@ import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppApprovalsRouteImport } from './routes/_app/approvals'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
 import { Route as AppLoansIndexRouteImport } from './routes/_app/loans/index'
+import { Route as AppAdminIndexRouteImport } from './routes/_app/admin.index'
 import { Route as AppLoansApplyRouteImport } from './routes/_app/loans/apply'
 import { Route as AppLoansLoanIdRouteImport } from './routes/_app/loans/$loanId'
 import { Route as AppAdminReportsRouteImport } from './routes/_app/admin.reports'
@@ -81,6 +82,11 @@ const AppLoansIndexRoute = AppLoansIndexRouteImport.update({
   path: '/loans/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAdminIndexRoute = AppAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppAdminRoute,
+} as any)
 const AppLoansApplyRoute = AppLoansApplyRouteImport.update({
   id: '/loans/apply',
   path: '/loans/apply',
@@ -128,13 +134,13 @@ export interface FileRoutesByFullPath {
   '/admin/reports': typeof AppAdminReportsRoute
   '/loans/$loanId': typeof AppLoansLoanIdRoute
   '/loans/apply': typeof AppLoansApplyRoute
+  '/admin/': typeof AppAdminIndexRoute
   '/loans/': typeof AppLoansIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/workflow': typeof WorkflowRoute
-  '/admin': typeof AppAdminRouteWithChildren
   '/approvals': typeof AppApprovalsRoute
   '/dashboard': typeof AppDashboardRoute
   '/notifications': typeof AppNotificationsRoute
@@ -146,6 +152,7 @@ export interface FileRoutesByTo {
   '/admin/reports': typeof AppAdminReportsRoute
   '/loans/$loanId': typeof AppLoansLoanIdRoute
   '/loans/apply': typeof AppLoansApplyRoute
+  '/admin': typeof AppAdminIndexRoute
   '/loans': typeof AppLoansIndexRoute
 }
 export interface FileRoutesById {
@@ -166,6 +173,7 @@ export interface FileRoutesById {
   '/_app/admin/reports': typeof AppAdminReportsRoute
   '/_app/loans/$loanId': typeof AppLoansLoanIdRoute
   '/_app/loans/apply': typeof AppLoansApplyRoute
+  '/_app/admin/': typeof AppAdminIndexRoute
   '/_app/loans/': typeof AppLoansIndexRoute
 }
 export interface FileRouteTypes {
@@ -186,13 +194,13 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/loans/$loanId'
     | '/loans/apply'
+    | '/admin/'
     | '/loans/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/workflow'
-    | '/admin'
     | '/approvals'
     | '/dashboard'
     | '/notifications'
@@ -204,6 +212,7 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/loans/$loanId'
     | '/loans/apply'
+    | '/admin'
     | '/loans'
   id:
     | '__root__'
@@ -223,6 +232,7 @@ export interface FileRouteTypes {
     | '/_app/admin/reports'
     | '/_app/loans/$loanId'
     | '/_app/loans/apply'
+    | '/_app/admin/'
     | '/_app/loans/'
   fileRoutesById: FileRoutesById
 }
@@ -312,6 +322,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLoansIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/admin/': {
+      id: '/_app/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AppAdminIndexRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
     '/_app/loans/apply': {
       id: '/_app/loans/apply'
       path: '/loans/apply'
@@ -362,6 +379,7 @@ interface AppAdminRouteChildren {
   AppAdminBoardRoute: typeof AppAdminBoardRoute
   AppAdminPoliciesRoute: typeof AppAdminPoliciesRoute
   AppAdminReportsRoute: typeof AppAdminReportsRoute
+  AppAdminIndexRoute: typeof AppAdminIndexRoute
 }
 
 const AppAdminRouteChildren: AppAdminRouteChildren = {
@@ -369,6 +387,7 @@ const AppAdminRouteChildren: AppAdminRouteChildren = {
   AppAdminBoardRoute: AppAdminBoardRoute,
   AppAdminPoliciesRoute: AppAdminPoliciesRoute,
   AppAdminReportsRoute: AppAdminReportsRoute,
+  AppAdminIndexRoute: AppAdminIndexRoute,
 }
 
 const AppAdminRouteWithChildren = AppAdminRoute._addFileChildren(
@@ -410,13 +429,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
