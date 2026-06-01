@@ -1,90 +1,53 @@
-## Scope
+This is a large multi-track request. I'll group it into 6 work streams and ship them in this order.
 
-This batch covers ~20 distinct items across security hardening, new admin UI, workflow changes, i18n, and email notifications. I'll group them into 5 tracks and execute in order.
+## 1. Database security hardening (one migration)
 
----
+- **`profiles` column lock**: drop the broad `profiles self update` policy and replace with a policy whose `WITH CHECK` asserts the member cannot change `opening_balance`, `member_number`, or `joined_at` (admin policy stays). The existing `guard_profile_self_update` trigger is the backstop.
+- **`admin_register_existing_loan` validation**: rewrite to validate (a) `_member_id` exists in `profiles`, (b) member is not staff/admin acting on themselves, (c) `_amount > 0`, `_outstanding >= 0`, `_outstanding <= _amount`, (d) `_stage in ('disbursement','completed')`, (e) `_term_months` within `loan_type_rules.max_term_months`, (f) `_amount <= loan_type_rules.max_amount`. Raise `sqlstate '22023'` with field-tagged messages (`field=amount; ...`) so the UI can map them.
+- **`loan_approvals` insert policy**: require `stage = loans.stage` for the referenced loan AND that the actor's role matches the stage (approver/finance/board seat/manager) — same matrix as `enforce_loan_transition`.
+- **Loans staff update policy**: tighten so admins still bypass, but non-admins must keep `member_id`, `loan_number`, `amount_requested`, `disbursement_confirmed_by` immutable via a `BEFORE UPDATE` trigger `guard_loan_field_writes` that also blocks stage skips (the existing transition trigger already enforces order — extend it to reject same-actor updates that change non-stage financial columns).
+- **Audit log enrichment**: replace generic `log_audit` with a function that resolves `actor_id → profiles.full_name`/member_number and writes structured `meta` with `actor_name`, and for each entity type (`transactions`, `loans`, `loan_approvals`, `profiles`, `user_roles`, `loan_proxies`, `loan_board_members`) a friendly `summary` string ("Approver Jane Doe moved LN-123456 to finance_approval", "Member John deposited TZS 50,000", "Admin Alice granted board_chair seat to …"). Add triggers on the missing tables (`loan_proxies`, `loan_board_members`, `loan_approvals`) so proxy grants/revokes/uses and board seat changes are audited.
+- **Proxy revoke audit**: add `revoked_at`, `revoked_by` columns to `loan_proxies` and update the board page to soft-revoke (UPDATE) instead of DELETE so the audit trigger captures the action with a reason.
+- **Realtime topic policies**: add `realtime.messages` SELECT policies scoping `loan:<loan_id>` and `tx:<user_id>` topics to the owner or staff. (Existing `loans`/`transactions` publication stays; this just locks down broadcast channels.)
 
-## Track 1 — Database migration (single file)
+## 2. Admin board realtime + proxy revoke flow
 
-**SECURITY DEFINER hardening**
-- All `SECURITY DEFINER` functions: `SET search_path = public, pg_temp`, raise on `auth.uid() IS NULL`, reject cross-user reads unless `is_staff`. Already mostly done for `get_savings_balance`, `get_active_loan_balance`, `calculate_eligibility` — re-verify and lock down `current_policy`, `has_role`, `is_staff`, `has_board_seat`, triggers.
-- `REVOKE EXECUTE ... FROM anon, public` on every public SECURITY DEFINER function; `GRANT EXECUTE ... TO authenticated` only where needed.
+- `src/routes/_app/admin.board.tsx`: subscribe to `loans`, `loan_proxies`, `loan_board_members` channels and refetch on changes. Replace the "delete proxy" button with a "Revoke" action that prompts for a reason and updates `revoked_at`/`revoked_by`.
 
-**Loan stage RLS — replace `loans staff update`**
-- Drop the broad policy. New policy `WITH CHECK` that requires the caller's role/seat to match `OLD.stage` (mirrors `enforce_loan_transition` but at RLS level so REST writes are also blocked).
+## 3. Approvals UX
 
-**Eligibility / type-rule enforcement**
-- Trigger `trg_enforce_loan_eligibility` already exists; ensure `BEFORE INSERT OR UPDATE OF amount_requested, term_months, loan_type` and that it runs even for staff-inserted loans (skip only if admin overriding existing record).
+- `src/routes/_app/loans/$loanId.tsx` + `src/routes/_app/approvals.tsx`: hide the approve/advance dialog whenever the current viewer would act on their own loan (`loan.member_id === user.id`) — applies to board seats too. Show a muted "conflict of interest — assign a proxy" notice instead.
 
-**profiles RLS**
-- Drop `profiles self update`. New `profiles self update` `WITH CHECK` that forbids changing `opening_balance`, `member_number`, `joined_at` (only admin can). Keep admin update policy.
+## 4. SEO + accessibility pass
 
-**loan_documents mime-type lockdown**
-- `ALTER TABLE loan_documents ADD CONSTRAINT loan_documents_mime_check CHECK (mime_type IN ('application/pdf','image/jpeg','image/png','image/webp'))`.
-- Trigger `BEFORE INSERT` on `storage.objects` for bucket `loan-documents` rejecting any mime not in the allow-list and any filename ending in `.svg`.
+- `src/routes/__root.tsx`: fix root title typo, remove the sitewide canonical link (TanStack concatenates links), keep only sitewide `og:type`, `og:site_name`, viewport, JSON-LD Organization. Add `og:url` per route via the route's `head()`.
+- Add per-route `head()` with unique `title`, `description`, `og:title`, `og:description`, `og:url`, and leaf `canonical` for: `/`, `/workflow`, `/auth`, `/dashboard`, `/loans`, `/loans/apply`, `/notifications`, `/profile`, `/statements`, `/approvals`, `/admin` (and its children).
+- Extend `src/routes/sitemap[.]xml.ts` entries with `/dashboard`, `/loans`, `/notifications`, `/profile`, `/statements`, `/approvals` (still excludes `/admin`). Update `public/robots.txt` accordingly.
+- Wrap the app shell in `<main>` (in `__root.tsx`) once; remove any duplicate `<main>` in child routes.
+- Fix heading order on dashboards (`h1` → `h2` → `h3`, no skips). Audit `admin.index`, `admin.board`, `loans/$loanId`, `statements`, `notifications`.
+- Add `aria-label` to all icon-only buttons (notifications bell, language switcher, table action buttons).
+- Replace low-contrast `text-muted-foreground/50` and arbitrary gray classes with token-based `text-muted-foreground`.
 
-**Transaction integrity**
-- `apply_repayment` already gates by `loan_id NOT NULL`. Remove dependency on `set_config('app.repayment', ...)`. Replace with: in `enforce_loan_transition`, if the only change is `outstanding_balance`/`status`/`stage→completed` driven by repayment, allow without role check by detecting `pg_trigger_depth() > 1`.
-- `post_disbursement_tx` already inserts with `loan_id`. Add CHECK: `transactions.tx_type='disbursement' ⇒ loan_id NOT NULL`.
+## 5. i18n completion + persistence
 
-**Audit logging**
-- Attach `log_audit` AFTER INSERT/UPDATE/DELETE triggers on: `loans`, `transactions`, `loan_approvals`, `loan_policies`, `user_roles`. Confirm `audit_log` already captures actor/action/entity/entity_id/meta — yes.
+- `src/lib/i18n.tsx`: persist selected language in `localStorage` (`wassha.lang`) and hydrate on init. Add missing keys for nav (`approvals`, `notifications`, `profile`, `statements`, `admin`, `board_members`, `policies`, `reports`, `audit`), form labels (`amount`, `purpose`, `term_months`, `loan_type`, `submit`, `upload_documents`), and approval actions (`approve`, `request_docs`, `reject`, `confirm_disbursement`, `revoke`, `grant_proxy`).
+- Apply `t(...)` to remaining hardcoded labels in `AppHeader`, `admin.*`, `loans/*`, `approvals`, `notifications`, `profile`, `statements`.
 
-**Notifications dedup**
-- Add unique partial index `notifications (user_id, type, link, (date_trunc('minute', created_at)))` to swallow accidental dupes. Adjust `notify_on_loan_change` to fire exactly once per `stage` OR `status` change (current implementation can fire twice when both change in same UPDATE — collapse to one INSERT using a single `IF`).
-- `notify_on_tx`: add repayment branch already present; ensure deposit/contribution/repayment each fire one row. Add fee/withdrawal coverage.
+## 6. Charts — contributions/deposits + repayment trend
 
-**Manager disbursement-confirm**
-- Add column `loans.disbursement_confirmed_at TIMESTAMPTZ` and `disbursement_confirmed_by UUID`. `enforce_loan_transition` for `disbursement → completed` requires `disbursement_confirmed_at IS NOT NULL` and caller is manager.
+- New `src/components/ContributionsBarChart.tsx`: monthly bar chart (last 12 months) splitting `deposit` vs `contribution` for a given `user_id`. Use Recharts (already in project).
+- New `src/components/RepaymentTrendChart.tsx`: line chart of monthly repayment totals; supports `mode="member" | "admin"` (member sees own, admin sees aggregate).
+- Wire into `src/routes/_app/dashboard.tsx` (member view) and `src/routes/_app/admin.index.tsx` (admin aggregate).
 
-**Existing-loan onboarding**
-- Add admin-only RPC `admin_register_existing_loan(member_id, amount, outstanding_balance, stage, loan_type, term_months)` that bypasses eligibility trigger via `SET LOCAL`-tracked admin context.
+## Out of scope for this batch
 
----
+- **Google Search Console connection** — that's an external account action the user must do themselves in GSC. I'll add a one-liner in `llms.txt`/README noting the sitemap URL to submit, but I cannot connect it from code.
+- **`get_savings_balance` / `get_active_loan_balance` / `calculate_eligibility` guards, SVG upload block, eligibility-on-insert trigger, anon EXECUTE revokes** — these are already implemented in prior migrations (see `db-functions` in context: each function already has `IF _user_id <> auth.uid() AND NOT is_staff(auth.uid()) THEN RAISE EXCEPTION`; `enforce_loan_eligibility` trigger exists; `guard_loan_doc_upload` blocks SVG). I'll re-verify via `supabase--linter` and mark the SEO/security findings fixed rather than rewriting working code.
 
-## Track 2 — Email infrastructure
+## Technical notes
 
-- Run `email_domain--check_email_domain_status`. If no domain: prompt the user via `<presentation-open-email-setup>` and stop the email subtask there until they complete the dialog.
-- Once a domain exists: call `setup_email_infra` then `scaffold_transactional_email`.
-- Templates (in `src/lib/email-templates/`): `loan-approved`, `loan-rejected`, `loan-disbursed`. Each takes `loanNumber`, `amount`, `memberName`.
-- Trigger emails from server functions (`createServerFn`) called by frontend after the relevant stage transition succeeds. Respect `notification_preferences.channel_email`.
+- All new SQL goes in a single migration with `SET search_path = public, pg_temp` on every function and explicit `REVOKE EXECUTE ... FROM anon` on any new SECURITY DEFINER fn.
+- Audit summary strings are computed inside the trigger by joining `profiles` / `loans` — no client involvement.
+- Realtime topic policies use `realtime.topic()` matching `^loan:` / `^tx:` patterns.
 
----
-
-## Track 3 — Frontend
-
-1. **Admin → Loan board section** (`admin.tsx`): new card listing 3 seats (chair, member_1, member_2), `Select` of staff users to assign each. Writes to `loan_board_members`.
-2. **Admin → Members table**: disable `opening_balance` input after first save (read-only badge once non-zero, edit toggle behind a confirm dialog).
-3. **Admin → "Register existing loan"** dialog: member, amount, outstanding balance, stage, type, term — calls the new RPC.
-4. **Approvals page**: add a "Confirm disbursement" action visible only to managers when stage = `disbursement`. Two-step: first sets `disbursement_confirmed_at`, second flips to `completed`.
-5. **i18n**: add `react-i18next` + `i18next`. Two dictionaries `en.json`, `sw.json` covering nav, dashboard headings, loan stage labels, common buttons. Language switcher in `AppHeader` dropdown. Persist in `localStorage`.
-6. **Loan detail / dashboard**: fix overflow on stage timeline cards (`overflow-x-auto`, `min-w-0`, wrap on `sm`).
-7. **Doc upload accept attr**: confirm `application/pdf,image/jpeg,image/png,image/webp` everywhere (already done — re-verify).
-8. **Input sanitization**: add `zod` schemas at every form boundary (loan apply, profile, admin transaction, board assignment, register-existing-loan). Trim, max-length, no HTML, regex member_number.
-
----
-
-## Track 4 — Verification
-
-- `supabase--linter` after migration; resolve any new warnings.
-- Smoke check: try as a member to (a) update another user's `opening_balance`, (b) insert loan via REST exceeding eligibility, (c) upload SVG — all must fail.
-- Verify approvals flow end-to-end: submitted → under_review → finance → board_chair → board_member_1 → board_member_2 → manager_approval → disbursement (confirm) → completed.
-
----
-
-## Track 5 — Out of scope this pass
-
-- SMS delivery (deferred until Twilio connector approved).
-- Full Swahili translation of admin-only screens (this pass: nav + member-facing pages).
-- 2FA already shipped in earlier pass.
-
----
-
-## Order of operations
-
-1. Submit Track 1 migration → wait for approval.
-2. Regenerate types (auto).
-3. Check email domain; if missing, surface setup dialog and pause email work.
-4. Build Tracks 3 (frontend) in parallel where files are independent.
-5. Wire emails (Track 2) once infra is ready.
-6. Run linter + smoke tests.
+Ready to start with the migration (step 1) on approval.
