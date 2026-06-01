@@ -29,6 +29,7 @@ function AdminPage() {
   const [memberNumberDraft, setMemberNumberDraft] = useState<Record<string, string>>({});
   const [regOpen, setRegOpen] = useState(false);
   const [reg, setReg] = useState({ member_id: "", amount: "", outstanding: "", stage: "disbursement", loan_type: "development", term_months: "12", purpose: "" });
+  const [regErrors, setRegErrors] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
     const [{ data: profiles }, { data: roles }, { data: loans }] = await Promise.all([
@@ -55,17 +56,27 @@ function AdminPage() {
   }, [load, hasRole]);
 
   const submitRegister = async () => {
-    if (!reg.member_id || !reg.amount) return toast.error("Member and amount are required");
+    setRegErrors({});
+    const errs: Record<string, string> = {};
+    if (!reg.member_id) errs.member_id = "Select a member";
     const amount = Number(reg.amount);
     const outstanding = Number(reg.outstanding || reg.amount);
     const term = Number(reg.term_months || 12);
-    if (!(amount > 0) || outstanding < 0 || !(term > 0)) return toast.error("Invalid numbers");
+    if (!(amount > 0)) errs.amount = "Must be greater than zero";
+    if (outstanding < 0) errs.outstanding = "Cannot be negative";
+    if (outstanding > amount) errs.outstanding = "Cannot exceed original amount";
+    if (!(term > 0)) errs.term_months = "Must be at least 1 month";
+    if (Object.keys(errs).length) { setRegErrors(errs); return toast.error("Fix the highlighted fields"); }
     const { error } = await supabase.rpc("admin_register_existing_loan", {
       _member_id: reg.member_id, _amount: amount, _outstanding: outstanding,
       _stage: reg.stage as any, _loan_type: reg.loan_type as any,
       _term_months: term, _purpose: reg.purpose || "Pre-existing loan migrated by admin",
     });
-    if (error) return toast.error(error.message);
+    if (error) {
+      const m = /field=([a-z_]+);\s*(.+)/i.exec(error.message);
+      if (m) { setRegErrors({ [m[1]]: m[2] }); return toast.error(m[2]); }
+      return toast.error(error.message);
+    }
     toast.success("Existing loan registered");
     setRegOpen(false);
     setReg({ member_id: "", amount: "", outstanding: "", stage: "disbursement", loan_type: "development", term_months: "12", purpose: "" });

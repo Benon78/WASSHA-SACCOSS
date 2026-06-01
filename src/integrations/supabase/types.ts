@@ -202,6 +202,9 @@ export type Database = {
           id: string
           loan_id: string
           reason: string | null
+          revoke_reason: string | null
+          revoked_at: string | null
+          revoked_by: string | null
           stage: Database["public"]["Enums"]["loan_stage"]
         }
         Insert: {
@@ -213,6 +216,9 @@ export type Database = {
           id?: string
           loan_id: string
           reason?: string | null
+          revoke_reason?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
           stage: Database["public"]["Enums"]["loan_stage"]
         }
         Update: {
@@ -224,6 +230,9 @@ export type Database = {
           id?: string
           loan_id?: string
           reason?: string | null
+          revoke_reason?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
           stage?: Database["public"]["Enums"]["loan_stage"]
         }
         Relationships: [

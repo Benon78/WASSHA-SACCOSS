@@ -10,6 +10,8 @@ import { fmtTZS, fmtDate } from "@/lib/format";
 import {
   Wallet, PiggyBank, TrendingUp, Banknote, ArrowUpRight, ArrowDownRight, ChevronRight, Plus,
 } from "lucide-react";
+import { ContributionsBarChart } from "@/components/ContributionsBarChart";
+import { RepaymentTrendChart } from "@/components/RepaymentTrendChart";
 
 export const Route = createFileRoute("/_app/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — WASSHA SACCOS" }] }),
@@ -107,6 +109,14 @@ function Dashboard() {
                 <li key={i} className="flex gap-2"><span className="text-warning">•</span> {r.message}</li>
               ))}
             </ul>
+          </div>
+        )}
+
+        {/* Charts */}
+        {user && (
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <ContributionsBarChart userId={user.id} />
+            <RepaymentTrendChart mode="member" userId={user.id} />
           </div>
         )}
 
