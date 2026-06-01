@@ -28,6 +28,7 @@ function AdminPage() {
   const [tx, setTx] = useState({ user_id: "", amount: "", tx_type: "deposit", description: "", loan_id: "" });
   const [memberNumberDraft, setMemberNumberDraft] = useState<Record<string, string>>({});
   const [regOpen, setRegOpen] = useState(false);
+  const [reg, setReg] = useState({ member_id: "", amount: "", outstanding: "", stage: "disbursement", loan_type: "development", term_months: "12", purpose: "" });
   const [regErrors, setRegErrors] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
