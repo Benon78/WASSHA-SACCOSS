@@ -10,6 +10,8 @@ import { fmtTZS, fmtDate } from "@/lib/format";
 import {
   Wallet, PiggyBank, TrendingUp, Banknote, ArrowUpRight, ArrowDownRight, ChevronRight, Plus,
 } from "lucide-react";
+import { ContributionsBarChart } from "@/components/ContributionsBarChart";
+import { RepaymentTrendChart } from "@/components/RepaymentTrendChart";
 
 export const Route = createFileRoute("/_app/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — WASSHA SACCOS" }] }),
