@@ -112,6 +112,14 @@ function Dashboard() {
           </div>
         )}
 
+        {/* Charts */}
+        {user && (
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <ContributionsBarChart userId={user.id} />
+            <RepaymentTrendChart mode="member" userId={user.id} />
+          </div>
+        )}
+
         {/* Transactions */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <div className="rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
