@@ -1,6 +1,12 @@
 User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /admin/
 Disallow: /approvals
+Disallow: /dashboard
+Disallow: /loans
+Disallow: /statements
+Disallow: /notifications
+Disallow: /profile
 
 Sitemap: https://wassha-saccos.lovable.app/sitemap.xml

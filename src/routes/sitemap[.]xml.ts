@@ -7,16 +7,13 @@ export const Route = createFileRoute("/sitemap.xml")({
   server: {
     handlers: {
       GET: async () => {
+        // Only public, indexable routes belong in the sitemap.
+        // Authenticated routes (dashboard, loans, statements, profile, notifications,
+        // approvals, admin/*) are blocked in robots.txt and intentionally omitted here.
         const entries = [
           { path: "/", changefreq: "weekly", priority: "1.0" },
           { path: "/workflow", changefreq: "monthly", priority: "0.8" },
           { path: "/auth", changefreq: "yearly", priority: "0.5" },
-          { path: "/dashboard", changefreq: "daily", priority: "0.7" },
-          { path: "/loans", changefreq: "daily", priority: "0.7" },
-          { path: "/loans/apply", changefreq: "monthly", priority: "0.6" },
-          { path: "/statements", changefreq: "weekly", priority: "0.6" },
-          { path: "/notifications", changefreq: "daily", priority: "0.4" },
-          { path: "/profile", changefreq: "monthly", priority: "0.4" },
         ];
         const urls = entries.map((e) =>
           `  <url>\n    <loc>${BASE_URL}${e.path}</loc>\n    <changefreq>${e.changefreq}</changefreq>\n    <priority>${e.priority}</priority>\n  </url>`,

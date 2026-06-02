@@ -11,7 +11,29 @@ export const Route = createFileRoute("/workflow")({
     meta: [
       { title: "Loan Workflow Guide — WASSHA SACCOS" },
       { name: "description", content: "Step-by-step guide to the WASSHA SACCOS loan approval workflow: who acts at each stage, what they do, and expected SLAs." },
+      { property: "og:title", content: "Loan Workflow Guide — WASSHA SACCOS" },
+      { property: "og:description", content: "Submission → review → finance → board → manager → disbursement, explained." },
+      { property: "og:url", content: "https://wassha-saccos.lovable.app/workflow" },
     ],
+    links: [{ rel: "canonical", href: "https://wassha-saccos.lovable.app/workflow" }],
+    scripts: [{
+      type: "application/ld+json",
+      children: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "HowTo",
+        name: "WASSHA SACCOS loan approval workflow",
+        description: "End-to-end loan approval steps in WASSHA SACCOS.",
+        step: [
+          { "@type": "HowToStep", name: "Submitted", text: "Member submits the loan application with supporting documents." },
+          { "@type": "HowToStep", name: "Under Review", text: "Approver verifies member details, eligibility, and documents." },
+          { "@type": "HowToStep", name: "Finance Approval", text: "Finance reviews against treasury and risk policy." },
+          { "@type": "HowToStep", name: "Board Approval", text: "Board chair and members 1 & 2 sign off in sequence." },
+          { "@type": "HowToStep", name: "Manager Approval", text: "Manager grants final authorization." },
+          { "@type": "HowToStep", name: "Disbursement", text: "Manager confirms disbursement and funds are released." },
+          { "@type": "HowToStep", name: "Completed", text: "Loan auto-completes once outstanding balance reaches zero." },
+        ],
+      }),
+    }],
   }),
   component: WorkflowGuide,
 });

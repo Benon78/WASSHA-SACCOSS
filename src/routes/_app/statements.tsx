@@ -11,8 +11,15 @@ import { savingsStatementPdf, loanRepaymentPdf } from "@/lib/pdf";
 import { downloadCSV } from "@/lib/exporters";
 import { FileDown, FileSpreadsheet, FileText } from "lucide-react";
 
+import { pageHead } from "@/lib/seo";
+
 export const Route = createFileRoute("/_app/statements")({
-  head: () => ({ meta: [{ title: "Statements — WASSHA SACCOS" }] }),
+  head: () => pageHead({
+    path: "/statements",
+    title: "Statements — WASSHA SACCOS",
+    description: "Download monthly savings, contributions, and loan repayment statements as PDF or CSV.",
+    noIndex: true,
+  }),
   component: StatementsPage,
 });
 

@@ -13,7 +13,11 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Secure SACCOS management for members, approvers, managers, and admins. Transparent loans, real-time notifications, fintech-grade UX." },
       { property: "og:title", content: "WASSHA SACCOS — Modern Savings & Loans Platform" },
       { property: "og:description", content: "Transparent loans, member self-service, secure approvals." },
+      { property: "og:url", content: "https://wassha-saccos.lovable.app/" },
+      { name: "twitter:title", content: "WASSHA SACCOS" },
+      { name: "twitter:description", content: "Transparent loans, member self-service, secure approvals." },
     ],
+    links: [{ rel: "canonical", href: "https://wassha-saccos.lovable.app/" }],
   }),
   component: Landing,
 });

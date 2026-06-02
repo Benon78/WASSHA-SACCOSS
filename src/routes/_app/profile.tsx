@@ -11,8 +11,15 @@ import { toast } from "sonner";
 import { Shield, ShieldCheck, Loader2, Trash2, Bell } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
+import { pageHead } from "@/lib/seo";
+
 export const Route = createFileRoute("/_app/profile")({
-  head: () => ({ meta: [{ title: "Profile — WASSHA SACCOS" }] }),
+  head: () => pageHead({
+    path: "/profile",
+    title: "My Profile — WASSHA SACCOS",
+    description: "Manage your member profile, contact details, notification preferences, and two-factor authentication.",
+    noIndex: true,
+  }),
   component: ProfilePage,
 });
 

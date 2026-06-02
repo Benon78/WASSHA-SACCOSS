@@ -42,13 +42,15 @@ function AuditPage() {
     const { data, error } = await q;
     setBusy(false);
     if (error) { toast.error(error.message); return []; }
-    let flat = (data ?? []).map((r) => ({
+    let flat = (data ?? []).map((r: any) => ({
       date: fmtDate(r.created_at),
       action: r.action,
       entity: r.entity,
+      summary: r.meta?.summary ?? "—",
+      actor: r.meta?.actor_name ?? "—",
+      actor_no: r.meta?.actor_member_no ?? "—",
+      roles: r.meta?.actor_roles ?? "—",
       entity_id: r.entity_id,
-      actor: r.actor_id,
-      meta: JSON.stringify(r.meta).slice(0, 160),
     }));
     if (search.trim()) {
       const s = search.toLowerCase();

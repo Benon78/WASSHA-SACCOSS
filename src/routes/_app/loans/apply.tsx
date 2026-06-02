@@ -12,8 +12,15 @@ import { LOAN_TYPE_LABEL, LOAN_TYPE_DESC, LOAN_TYPE_RULES } from "@/lib/loanStag
 import { toast } from "sonner";
 import { Loader2, Upload, X, Briefcase, Zap, AlertCircle } from "lucide-react";
 
+import { pageHead } from "@/lib/seo";
+
 export const Route = createFileRoute("/_app/loans/apply")({
-  head: () => ({ meta: [{ title: "Apply for a loan — WASSHA SACCOS" }] }),
+  head: () => pageHead({
+    path: "/loans/apply",
+    title: "Apply for a loan — WASSHA SACCOS",
+    description: "Submit a development, chap-chap, or emergency loan application with supporting documents.",
+    noIndex: true,
+  }),
   component: ApplyPage,
 });
 

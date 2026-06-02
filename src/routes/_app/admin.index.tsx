@@ -136,9 +136,11 @@ function AdminPage() {
               <p className="text-xs text-muted-foreground">{t("register_existing_intro")}</p>
               <div className="space-y-3">
                 <div>
-                  <Label className="text-xs">Member</Label>
+                  <Label className="text-xs" htmlFor="reg-member">Member</Label>
                   <Select value={reg.member_id} onValueChange={(v) => setReg({ ...reg, member_id: v })}>
-                    <SelectTrigger><SelectValue placeholder="Select member" /></SelectTrigger>
+                    <SelectTrigger id="reg-member" aria-invalid={!!regErrors.member_id} className={regErrors.member_id ? "border-destructive" : ""}>
+                      <SelectValue placeholder="Select member" />
+                    </SelectTrigger>
                     <SelectContent>
                       {users.map((u) => (
                         <SelectItem key={u.user_id} value={u.user_id}>
@@ -147,44 +149,56 @@ function AdminPage() {
                       ))}
                     </SelectContent>
                   </Select>
+                  {regErrors.member_id && <p className="mt-1 text-xs text-destructive">{regErrors.member_id}</p>}
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-xs">Original amount (TZS)</Label>
-                    <Input type="number" value={reg.amount} onChange={(e) => setReg({ ...reg, amount: e.target.value })} />
+                    <Label className="text-xs" htmlFor="reg-amount">Original amount (TZS)</Label>
+                    <Input id="reg-amount" type="number" value={reg.amount} aria-invalid={!!regErrors.amount}
+                      className={regErrors.amount ? "border-destructive focus-visible:ring-destructive" : ""}
+                      onChange={(e) => setReg({ ...reg, amount: e.target.value })} />
+                    {regErrors.amount && <p className="mt-1 text-xs text-destructive">{regErrors.amount}</p>}
                   </div>
                   <div>
-                    <Label className="text-xs">Outstanding (TZS)</Label>
-                    <Input type="number" value={reg.outstanding} onChange={(e) => setReg({ ...reg, outstanding: e.target.value })} />
+                    <Label className="text-xs" htmlFor="reg-outstanding">Outstanding (TZS)</Label>
+                    <Input id="reg-outstanding" type="number" value={reg.outstanding} aria-invalid={!!regErrors.outstanding}
+                      className={regErrors.outstanding ? "border-destructive focus-visible:ring-destructive" : ""}
+                      onChange={(e) => setReg({ ...reg, outstanding: e.target.value })} />
+                    {regErrors.outstanding && <p className="mt-1 text-xs text-destructive">{regErrors.outstanding}</p>}
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <Label className="text-xs">Loan type</Label>
+                    <Label className="text-xs" htmlFor="reg-type">Loan type</Label>
                     <Select value={reg.loan_type} onValueChange={(v) => setReg({ ...reg, loan_type: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger id="reg-type" className={regErrors.loan_type ? "border-destructive" : ""}><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {["development", "chapchap", "emergency"].map((x) => <SelectItem key={x} value={x}>{x}</SelectItem>)}
                       </SelectContent>
                     </Select>
+                    {regErrors.loan_type && <p className="mt-1 text-xs text-destructive">{regErrors.loan_type}</p>}
                   </div>
                   <div>
-                    <Label className="text-xs">Term (months)</Label>
-                    <Input type="number" value={reg.term_months} onChange={(e) => setReg({ ...reg, term_months: e.target.value })} />
+                    <Label className="text-xs" htmlFor="reg-term">Term (months)</Label>
+                    <Input id="reg-term" type="number" value={reg.term_months} aria-invalid={!!regErrors.term_months}
+                      className={regErrors.term_months ? "border-destructive focus-visible:ring-destructive" : ""}
+                      onChange={(e) => setReg({ ...reg, term_months: e.target.value })} />
+                    {regErrors.term_months && <p className="mt-1 text-xs text-destructive">{regErrors.term_months}</p>}
                   </div>
                   <div>
-                    <Label className="text-xs">Stage</Label>
+                    <Label className="text-xs" htmlFor="reg-stage">Stage</Label>
                     <Select value={reg.stage} onValueChange={(v) => setReg({ ...reg, stage: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger id="reg-stage" className={regErrors.stage ? "border-destructive" : ""}><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {["disbursement", "completed"].map((x) => <SelectItem key={x} value={x}>{x}</SelectItem>)}
                       </SelectContent>
                     </Select>
+                    {regErrors.stage && <p className="mt-1 text-xs text-destructive">{regErrors.stage}</p>}
                   </div>
                 </div>
                 <div>
-                  <Label className="text-xs">Purpose</Label>
-                  <Input value={reg.purpose} onChange={(e) => setReg({ ...reg, purpose: e.target.value })} placeholder="Pre-existing loan migrated by admin" />
+                  <Label className="text-xs" htmlFor="reg-purpose">Purpose</Label>
+                  <Input id="reg-purpose" value={reg.purpose} onChange={(e) => setReg({ ...reg, purpose: e.target.value })} placeholder="Pre-existing loan migrated by admin" />
                 </div>
               </div>
               <DialogFooter>

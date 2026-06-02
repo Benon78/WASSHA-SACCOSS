@@ -13,8 +13,15 @@ import {
 import { ContributionsBarChart } from "@/components/ContributionsBarChart";
 import { RepaymentTrendChart } from "@/components/RepaymentTrendChart";
 
+import { pageHead } from "@/lib/seo";
+
 export const Route = createFileRoute("/_app/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — WASSHA SACCOS" }] }),
+  head: () => pageHead({
+    path: "/dashboard",
+    title: "Dashboard — WASSHA SACCOS",
+    description: "Your SACCOS dashboard: savings balance, active loans, eligibility, and recent activity at a glance.",
+    noIndex: true,
+  }),
   component: Dashboard,
 });
 
