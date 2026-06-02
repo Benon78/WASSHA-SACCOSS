@@ -7,8 +7,15 @@ import { fmtRelative } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Bell, Check, CheckCheck } from "lucide-react";
 
+import { pageHead } from "@/lib/seo";
+
 export const Route = createFileRoute("/_app/notifications")({
-  head: () => ({ meta: [{ title: "Notifications — WASSHA SACCOS" }] }),
+  head: () => pageHead({
+    path: "/notifications",
+    title: "Notifications — WASSHA SACCOS",
+    description: "All loan, deposit, document, and system notifications in one inbox.",
+    noIndex: true,
+  }),
   component: NotificationsPage,
 });
 

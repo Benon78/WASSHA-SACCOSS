@@ -8,8 +8,15 @@ import { fmtTZS, fmtDate } from "@/lib/format";
 import { STAGE_LABEL, type LoanStage } from "@/lib/loanStages";
 import { Plus, FileText } from "lucide-react";
 
+import { pageHead } from "@/lib/seo";
+
 export const Route = createFileRoute("/_app/loans/")({
-  head: () => ({ meta: [{ title: "My Loans — WASSHA SACCOS" }] }),
+  head: () => pageHead({
+    path: "/loans",
+    title: "My Loans — WASSHA SACCOS",
+    description: "Track your loan applications, balances, and repayment status across the SACCOS approval workflow.",
+    noIndex: true,
+  }),
   component: LoansList,
 });
 

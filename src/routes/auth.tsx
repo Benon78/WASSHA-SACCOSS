@@ -12,7 +12,16 @@ const search = z.object({ redirect: z.string().optional() });
 
 export const Route = createFileRoute("/auth")({
   validateSearch: search,
-  head: () => ({ meta: [{ title: "Sign in — WASSHA SACCOS" }] }),
+  head: () => ({
+    meta: [
+      { title: "Sign in — WASSHA SACCOS" },
+      { name: "description", content: "Sign in or create a member account on the WASSHA SACCOS savings and loans platform." },
+      { property: "og:title", content: "Sign in — WASSHA SACCOS" },
+      { property: "og:description", content: "Member sign-in for WASSHA SACCOS." },
+      { property: "og:url", content: "https://wassha-saccos.lovable.app/auth" },
+    ],
+    links: [{ rel: "canonical", href: "https://wassha-saccos.lovable.app/auth" }],
+  }),
   component: AuthPage,
 });
 
