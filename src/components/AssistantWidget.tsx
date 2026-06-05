@@ -127,7 +127,7 @@ export function AssistantWidget() {
 
             {loadingHistory || initial === null ? (
               <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-                <Shimmer>{t("loading")}…</Shimmer>
+                <Shimmer>{`${t("loading")}…`}</Shimmer>
               </div>
             ) : (
               <AssistantChatBody
@@ -170,8 +170,7 @@ function AssistantChatBody({
     if (status === "ready") inputRef.current?.focus();
   }, [status]);
 
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = () => {
     const text = input.trim();
     if (!text || status === "submitted" || status === "streaming") return;
     void sendMessage({ text });
@@ -211,7 +210,7 @@ function AssistantChatBody({
           {status === "submitted" && (
             <Message from="assistant">
               <MessageContent>
-                <Shimmer>{t("ai_thinking")}…</Shimmer>
+                <Shimmer>{`${t("ai_thinking")}…`}</Shimmer>
               </MessageContent>
             </Message>
           )}
