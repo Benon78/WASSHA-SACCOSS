@@ -110,7 +110,7 @@ ${JSON.stringify(ctx, null, 2)}${adminContext}`;
         const result = streamText({
           model,
           system,
-          messages: convertToModelMessages(messages),
+          messages: await convertToModelMessages(messages),
           onError: ({ error }) => {
             console.error("[ai/chat] stream error", error);
           },
