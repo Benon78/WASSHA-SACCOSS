@@ -1,6 +1,7 @@
 import { Outlet, createFileRoute, Navigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import { Loader2 } from "lucide-react";
+import { AssistantWidget } from "@/components/AssistantWidget";
 
 export const Route = createFileRoute("/_app")({
   component: AppLayout,
@@ -16,5 +17,11 @@ function AppLayout() {
     );
   }
   if (!user) return <Navigate to="/auth" search={{ redirect: window.location.pathname }} />;
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+      <AssistantWidget />
+    </>
+  );
 }
+
