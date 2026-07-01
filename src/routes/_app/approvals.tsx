@@ -4,7 +4,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { fmtTZS, fmtDate } from "@/lib/format";
-import { STAGE_LABEL, STAGE_ROLE, type LoanStage } from "@/lib/loanStages";
+import { STAGE_LABEL, STAGE_ROLE, STAGE_BOARD_SEAT, type LoanStage } from "@/lib/loanStages";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Inbox } from "lucide-react";
 
