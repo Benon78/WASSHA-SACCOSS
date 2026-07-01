@@ -4,7 +4,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { fmtTZS, fmtDate } from "@/lib/format";
-import { STAGE_LABEL, STAGE_ROLE, type LoanStage } from "@/lib/loanStages";
+import { STAGE_LABEL, STAGE_ROLE, STAGE_BOARD_SEAT, type LoanStage } from "@/lib/loanStages";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Inbox } from "lucide-react";
 
@@ -14,7 +14,7 @@ export const Route = createFileRoute("/_app/approvals")({
 });
 
 function ApprovalsQueue() {
-  const { roles, isStaff, loading } = useAuth();
+  const { roles, boardSeats, isStaff, loading } = useAuth();
   const [loans, setLoans] = useState<any[]>([]);
   const [tab, setTab] = useState<"mine" | "all" | "history">("mine");
 
@@ -35,9 +35,13 @@ function ApprovalsQueue() {
   if (loading) return null;
   if (!isStaff) return <Navigate to="/dashboard" />;
 
-  const myStages: LoanStage[] = (Object.entries(STAGE_ROLE) as [LoanStage, string][])
+  const roleStages: LoanStage[] = (Object.entries(STAGE_ROLE) as [LoanStage, string][])
     .filter(([, role]) => roles.includes(role as any))
     .map(([s]) => s);
+  const seatStages: LoanStage[] = (Object.entries(STAGE_BOARD_SEAT) as [LoanStage, string][])
+    .filter(([, seat]) => boardSeats.includes(seat as any))
+    .map(([s]) => s);
+  const myStages: LoanStage[] = [...roleStages, ...seatStages];
 
   const mine = loans.filter((l) => myStages.includes(l.stage) && l.status === "pending");
   const allOpen = loans.filter((l) => l.status === "pending");

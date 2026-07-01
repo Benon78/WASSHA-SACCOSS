@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { fmtTZS, fmtDate, fmtRelative } from "@/lib/format";
-import { STAGE_LABEL, STAGE_ROLE, nextStage, type LoanStage } from "@/lib/loanStages";
+import { STAGE_LABEL, STAGE_ROLE, STAGE_BOARD_SEAT, nextStage, type LoanStage } from "@/lib/loanStages";
 import { toast } from "sonner";
 import { CheckCircle2, XCircle, ArrowRight, FileQuestion, Upload, FileText, Loader2, Banknote, FileDown, Eye, ReceiptText } from "lucide-react";
 import { loanRepaymentPdf, disbursementReceiptPdf } from "@/lib/pdf";
@@ -23,7 +23,7 @@ export const Route = createFileRoute("/_app/loans/$loanId")({
 
 function LoanDetail() {
   const { loanId } = useParams({ from: "/_app/loans/$loanId" });
-  const { user, roles, isStaff } = useAuth();
+  const { user, roles, boardSeats, isStaff } = useAuth();
   const [loan, setLoan] = useState<any>(null);
   const [approvals, setApprovals] = useState<any[]>([]);
   const [docs, setDocs] = useState<any[]>([]);
@@ -52,9 +52,13 @@ function LoanDetail() {
 
   const stage = loan.stage as LoanStage;
   const requiredRole = STAGE_ROLE[stage];
+  const requiredSeat = STAGE_BOARD_SEAT[stage];
   const isOwner = user?.id === loan.member_id;
   // Conflict-of-interest: a staff member cannot act on their own loan application.
-  const canActOnStage = isStaff && requiredRole && roles.includes(requiredRole) && !isOwner;
+  const hasStageAuthority =
+    (requiredRole && roles.includes(requiredRole)) ||
+    (requiredSeat && boardSeats.includes(requiredSeat));
+  const canActOnStage = isStaff && hasStageAuthority && !isOwner;
   const isManager = roles.includes("manager");
   const canConfirmDisbursement = isManager && stage === "disbursement" && !isOwner && !loan.disbursement_confirmed_at;
   const uploadsLocked = ["disbursement", "completed", "rejected"].includes(loan.stage) ||
@@ -199,9 +203,9 @@ function LoanDetail() {
             </section>
 
             {/* Staff actions */}
-            {isStaff && requiredRole && roles.includes(requiredRole) && isOwner && (
+            {isStaff && hasStageAuthority && isOwner && (
               <section className="rounded-2xl border border-warning/40 bg-warning/5 p-4 text-sm text-warning-foreground">
-                You cannot act on your own loan. Another {requiredRole} must review this application.
+                You cannot act on your own loan. Another authorised approver must review this application.
               </section>
             )}
             {canActOnStage && (

@@ -9,9 +9,11 @@ interface AuthCtx {
   user: User | null;
   session: Session | null;
   roles: AppRole[];
+  boardSeats: BoardSeat[];
   loading: boolean;
   isStaff: boolean;
   hasRole: (r: AppRole) => boolean;
+  hasBoardSeat: (s: BoardSeat) => boolean;
   signOut: () => Promise<void>;
   refreshRoles: () => Promise<void>;
 }
@@ -22,11 +24,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
+  const [boardSeats, setBoardSeats] = useState<BoardSeat[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadRoles = async (uid: string) => {
-    const { data } = await supabase.from("user_roles").select("role").eq("user_id", uid);
-    setRoles((data ?? []).map((r: any) => r.role as AppRole));
+    const [{ data: r }, { data: b }] = await Promise.all([
+      supabase.from("user_roles").select("role").eq("user_id", uid),
+      supabase.from("loan_board_members").select("seat").eq("user_id", uid),
+    ]);
+    setRoles((r ?? []).map((x: any) => x.role as AppRole));
+    setBoardSeats((b ?? []).map((x: any) => x.seat as BoardSeat));
   };
 
   useEffect(() => {
@@ -37,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setTimeout(() => loadRoles(s.user.id), 0);
       } else {
         setRoles([]);
+        setBoardSeats([]);
       }
     });
     supabase.auth.getSession().then(({ data: { session: s } }) => {
@@ -49,9 +57,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value: AuthCtx = {
-    user, session, roles, loading,
-    isStaff: roles.some((r) => ["approver", "finance", "manager", "admin"].includes(r)),
+    user, session, roles, boardSeats, loading,
+    isStaff: roles.some((r) => ["approver", "finance", "manager", "admin"].includes(r)) || boardSeats.length > 0,
     hasRole: (r) => roles.includes(r),
+    hasBoardSeat: (s) => boardSeats.includes(s),
     signOut: async () => { await supabase.auth.signOut(); },
     refreshRoles: async () => { if (user) await loadRoles(user.id); },
   };
