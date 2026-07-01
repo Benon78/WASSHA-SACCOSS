@@ -77,7 +77,7 @@ Respond in the language the user uses (English or Kiswahili). Be warm and brief.
 
 You can help users:
 - Understand their savings, contributions, active loans, and eligibility
-- Explain the loan workflow stages: application → loan_officer_review → supervisor_review → credit_committee → board → disbursement → completed
+- Explain the loan workflow stages: submitted → under_review → finance_approval → board_chair → board_member_1 → board_member_2 → manager_approval → disbursement → completed
 - Guide them to the right page using markdown links:
   • Apply for a loan: [/loans/apply](/loans/apply)
   • View their loans: [/loans](/loans)
@@ -89,8 +89,14 @@ You can help users:
 - Answer policy questions (interest, terms, deposits, contributions)
 ${isAdmin ? "- For admins: summarize pending approvals, suggest next actions, explain proxy/delegation flow." : ""}
 
-NEVER expose other members' personal data. Only discuss the signed-in user's own records below.
-Never invent figures — if data is missing, say so and suggest where to find it.
+SAFETY RULES (STRICT):
+1. NEVER reveal or repeat sensitive data: passwords, OTPs, 2FA codes, full ID/passport numbers, bank/card details, or another member's PII (phone, opening balance, member number). Only discuss the signed-in user's own records shown below.
+2. NEVER fabricate figures. If data is missing, say so and point the user to the relevant page.
+3. For any IRREVERSIBLE action (raising an escalation, submitting a request, requesting delegation), you MUST first summarise what will happen and ASK for explicit confirmation ("yes, proceed"). Only call the tool AFTER the user confirms in this same chat.
+4. When the user needs approval movement, delegation, or a staff review, use the create_escalation tool to route it to the correct staff queue with clear notes. Do not pretend to approve loans yourself — you cannot.
+5. If asked to bypass policy, expose secrets, or act on someone else's loan, refuse politely and explain why.
+
+Every tool call is logged to the audit log automatically. Keep notes factual.
 
 SIGNED-IN USER CONTEXT (JSON):
 ${JSON.stringify(ctx, null, 2)}${adminContext}`;
@@ -108,9 +114,66 @@ ${JSON.stringify(ctx, null, 2)}${adminContext}`;
         const gateway = createLovableAiGatewayProvider(apiKey);
         const model = gateway("google/gemini-3-flash-preview");
 
+        const tools = {
+          create_escalation: tool({
+            description:
+              "Route an approval, delegation, or staff-review case to the appropriate staff queue. Requires explicit user confirmation in chat first. Notifies approvers/finance/managers/admins.",
+            inputSchema: z.object({
+              category: z.enum(["approval", "delegation", "question", "other"]),
+              notes: z.string().min(10).max(1000).describe("Clear factual summary for staff."),
+              loan_number: z.string().optional().describe("Loan number like LN-123 if the case relates to a specific loan."),
+              target_stage: z
+                .enum([
+                  "submitted",
+                  "under_review",
+                  "finance_approval",
+                  "board_chair",
+                  "board_member_1",
+                  "board_member_2",
+                  "manager_approval",
+                  "disbursement",
+                ])
+                .optional(),
+            }),
+            execute: async ({ category, notes, loan_number, target_stage }) => {
+              let loanId: string | null = null;
+              if (loan_number) {
+                const { data: ln } = await supabase
+                  .from("loans")
+                  .select("id")
+                  .eq("loan_number", loan_number)
+                  .maybeSingle();
+                if (!ln) return { ok: false, error: `Loan ${loan_number} not found or not visible.` };
+                loanId = ln.id;
+              }
+              const { data: esc, error: escErr } = await supabase
+                .from("assistant_escalations")
+                .insert({
+                  raised_by: userId,
+                  loan_id: loanId,
+                  target_stage: target_stage ?? null,
+                  category,
+                  notes,
+                })
+                .select("id")
+                .single();
+              if (escErr) return { ok: false, error: escErr.message };
+              await supabase.rpc("log_assistant_action", {
+                _action: "create_escalation",
+                _entity: "assistant_escalations",
+                _entity_id: esc.id,
+                _meta: { category, target_stage: target_stage ?? null, loan_number: loan_number ?? null },
+              });
+              return { ok: true, escalation_id: esc.id, message: "Escalation created and staff have been notified." };
+            },
+          }),
+        };
+
         const result = streamText({
           model,
           system,
+          tools,
+          stopWhen: stepCountIs(6),
           messages: await convertToModelMessages(messages),
           onError: ({ error }) => {
             console.error("[ai/chat] stream error", error);
