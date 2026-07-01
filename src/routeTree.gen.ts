@@ -27,6 +27,7 @@ import { Route as AppLoansApplyRouteImport } from './routes/_app/loans/apply'
 import { Route as AppLoansLoanIdRouteImport } from './routes/_app/loans/$loanId'
 import { Route as AppAdminReportsRouteImport } from './routes/_app/admin.reports'
 import { Route as AppAdminPoliciesRouteImport } from './routes/_app/admin.policies'
+import { Route as AppAdminEscalationsRouteImport } from './routes/_app/admin.escalations'
 import { Route as AppAdminBoardRouteImport } from './routes/_app/admin.board'
 import { Route as AppAdminAuditRouteImport } from './routes/_app/admin.audit'
 
@@ -119,6 +120,11 @@ const AppAdminPoliciesRoute = AppAdminPoliciesRouteImport.update({
   path: '/policies',
   getParentRoute: () => AppAdminRoute,
 } as any)
+const AppAdminEscalationsRoute = AppAdminEscalationsRouteImport.update({
+  id: '/escalations',
+  path: '/escalations',
+  getParentRoute: () => AppAdminRoute,
+} as any)
 const AppAdminBoardRoute = AppAdminBoardRouteImport.update({
   id: '/board',
   path: '/board',
@@ -144,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/admin/audit': typeof AppAdminAuditRoute
   '/admin/board': typeof AppAdminBoardRoute
+  '/admin/escalations': typeof AppAdminEscalationsRoute
   '/admin/policies': typeof AppAdminPoliciesRoute
   '/admin/reports': typeof AppAdminReportsRoute
   '/loans/$loanId': typeof AppLoansLoanIdRoute
@@ -164,6 +171,7 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/admin/audit': typeof AppAdminAuditRoute
   '/admin/board': typeof AppAdminBoardRoute
+  '/admin/escalations': typeof AppAdminEscalationsRoute
   '/admin/policies': typeof AppAdminPoliciesRoute
   '/admin/reports': typeof AppAdminReportsRoute
   '/loans/$loanId': typeof AppLoansLoanIdRoute
@@ -187,6 +195,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/_app/admin/audit': typeof AppAdminAuditRoute
   '/_app/admin/board': typeof AppAdminBoardRoute
+  '/_app/admin/escalations': typeof AppAdminEscalationsRoute
   '/_app/admin/policies': typeof AppAdminPoliciesRoute
   '/_app/admin/reports': typeof AppAdminReportsRoute
   '/_app/loans/$loanId': typeof AppLoansLoanIdRoute
@@ -210,6 +219,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/admin/audit'
     | '/admin/board'
+    | '/admin/escalations'
     | '/admin/policies'
     | '/admin/reports'
     | '/loans/$loanId'
@@ -230,6 +240,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/admin/audit'
     | '/admin/board'
+    | '/admin/escalations'
     | '/admin/policies'
     | '/admin/reports'
     | '/loans/$loanId'
@@ -252,6 +263,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/_app/admin/audit'
     | '/_app/admin/board'
+    | '/_app/admin/escalations'
     | '/_app/admin/policies'
     | '/_app/admin/reports'
     | '/_app/loans/$loanId'
@@ -397,6 +409,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminPoliciesRouteImport
       parentRoute: typeof AppAdminRoute
     }
+    '/_app/admin/escalations': {
+      id: '/_app/admin/escalations'
+      path: '/escalations'
+      fullPath: '/admin/escalations'
+      preLoaderRoute: typeof AppAdminEscalationsRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
     '/_app/admin/board': {
       id: '/_app/admin/board'
       path: '/board'
@@ -417,6 +436,7 @@ declare module '@tanstack/react-router' {
 interface AppAdminRouteChildren {
   AppAdminAuditRoute: typeof AppAdminAuditRoute
   AppAdminBoardRoute: typeof AppAdminBoardRoute
+  AppAdminEscalationsRoute: typeof AppAdminEscalationsRoute
   AppAdminPoliciesRoute: typeof AppAdminPoliciesRoute
   AppAdminReportsRoute: typeof AppAdminReportsRoute
   AppAdminIndexRoute: typeof AppAdminIndexRoute
@@ -425,6 +445,7 @@ interface AppAdminRouteChildren {
 const AppAdminRouteChildren: AppAdminRouteChildren = {
   AppAdminAuditRoute: AppAdminAuditRoute,
   AppAdminBoardRoute: AppAdminBoardRoute,
+  AppAdminEscalationsRoute: AppAdminEscalationsRoute,
   AppAdminPoliciesRoute: AppAdminPoliciesRoute,
   AppAdminReportsRoute: AppAdminReportsRoute,
   AppAdminIndexRoute: AppAdminIndexRoute,

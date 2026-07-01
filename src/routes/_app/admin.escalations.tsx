@@ -50,8 +50,8 @@ function EscalationsPage() {
     };
   }, [load]);
 
-  const update = async (id: string, patch: Partial<Escalation>) => {
-    const { error } = await supabase.from("assistant_escalations").update(patch).eq("id", id);
+  const update = async (id: string, patch: { status?: string; resolution?: string | null }) => {
+    const { error } = await supabase.from("assistant_escalations").update(patch as never).eq("id", id);
     if (error) toast.error(error.message);
     else toast.success("Updated");
   };
