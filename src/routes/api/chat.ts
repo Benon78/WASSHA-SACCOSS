@@ -193,6 +193,12 @@ ${JSON.stringify(ctx, null, 2)}${adminContext}`;
                 role: "assistant",
                 content: assistantText,
               });
+              await supabase.rpc("log_assistant_action", {
+                _action: "reply",
+                _entity: "ai_messages",
+                _entity_id: null,
+                _meta: { preview: assistantText.slice(0, 240) },
+              });
             }
           },
         });
