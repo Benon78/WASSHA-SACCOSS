@@ -38,6 +38,56 @@ export type Database = {
         }
         Relationships: []
       }
+      assistant_escalations: {
+        Row: {
+          assigned_to: string | null
+          category: string
+          created_at: string
+          id: string
+          loan_id: string | null
+          notes: string
+          raised_by: string
+          resolution: string | null
+          status: string
+          target_stage: Database["public"]["Enums"]["loan_stage"] | null
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          category: string
+          created_at?: string
+          id?: string
+          loan_id?: string | null
+          notes: string
+          raised_by: string
+          resolution?: string | null
+          status?: string
+          target_stage?: Database["public"]["Enums"]["loan_stage"] | null
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          loan_id?: string | null
+          notes?: string
+          raised_by?: string
+          resolution?: string | null
+          status?: string
+          target_stage?: Database["public"]["Enums"]["loan_stage"] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assistant_escalations_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           action: string
@@ -561,6 +611,15 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      log_assistant_action: {
+        Args: {
+          _action: string
+          _entity: string
+          _entity_id: string
+          _meta: Json
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "member" | "approver" | "finance" | "manager" | "admin"
