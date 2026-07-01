@@ -57,9 +57,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value: AuthCtx = {
-    user, session, roles, loading,
-    isStaff: roles.some((r) => ["approver", "finance", "manager", "admin"].includes(r)),
+    user, session, roles, boardSeats, loading,
+    isStaff: roles.some((r) => ["approver", "finance", "manager", "admin"].includes(r)) || boardSeats.length > 0,
     hasRole: (r) => roles.includes(r),
+    hasBoardSeat: (s) => boardSeats.includes(s),
     signOut: async () => { await supabase.auth.signOut(); },
     refreshRoles: async () => { if (user) await loadRoles(user.id); },
   };
