@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 import { fmtTZS, fmtDate } from "@/lib/format";
+import { LOAN_TYPE_LABEL } from "@/lib/loanStages";
 import {
   Wallet, PiggyBank, TrendingUp, Banknote, ArrowUpRight, ArrowDownRight, ChevronRight, Plus,
 } from "lucide-react";
@@ -42,7 +43,7 @@ function Dashboard() {
       supabase.rpc("get_savings_balance", { _user_id: user.id }),
       supabase.rpc("get_active_loan_balance", { _user_id: user.id }),
       supabase.rpc("calculate_eligibility", { _user_id: user.id }),
-      supabase.from("loans").select("*").eq("member_id", user.id).order("created_at", { ascending: false }).limit(3),
+      supabase.from("loans").select("id,loan_number,loan_type,stage,status,amount_approved,amount_requested,outstanding_balance,fee_amount,fee_outstanding,created_at").eq("member_id", user.id).order("created_at", { ascending: false }),
       supabase.from("transactions").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(6),
     ]);
     setProfile(p.data);
@@ -105,6 +106,28 @@ function Dashboard() {
             tone={eligibility?.eligible ? "success" : "warning"}
           />
           <StatCard label={t("active_loans")} value={String(loans.filter((l) => ["pending","approved","disbursed"].includes(l.status)).length)} icon={Wallet} tone="warning" />
+        </div>
+
+        {/* Outstanding by loan type */}
+        <div className="rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
+          <h2 className="text-base font-semibold">Loan balances by type</h2>
+          <p className="text-xs text-muted-foreground">Principal and returned-fee balances shown separately for each loan product.</p>
+          <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+            {(["development", "chapchap", "emergency"] as const).map((type) => {
+              const typeLoans = loans.filter((l) => l.loan_type === type && ["approved", "disbursed"].includes(l.status));
+              const principal = typeLoans.reduce((s, l) => s + Number(l.outstanding_balance ?? 0), 0);
+              const fee = typeLoans.reduce((s, l) => s + Number(l.fee_outstanding ?? 0), 0);
+              const count = typeLoans.length;
+              return (
+                <div key={type} className={`rounded-xl border ${count ? "border-primary/30 bg-primary/5" : "border-border/60 bg-muted/30"} p-4`}>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{LOAN_TYPE_LABEL[type]}</p>
+                  <p className="mt-2 text-lg font-bold text-foreground">{fmtTZS(principal)}</p>
+                  <p className="text-xs text-muted-foreground">Principal outstanding · {count} active</p>
+                  <p className="mt-2 text-sm font-medium text-warning">{fmtTZS(fee)} <span className="text-xs font-normal text-muted-foreground">fee due</span></p>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* Eligibility reasons */}
@@ -171,10 +194,10 @@ function Dashboard() {
               <p className="py-6 text-center text-sm text-muted-foreground">{t("no_loans")}</p>
             ) : (
               <ul className="divide-y divide-border/70">
-                {loans.map((l) => (
+                {loans.slice(0, 3).map((l) => (
                   <li key={l.id} className="flex items-center justify-between py-3">
                     <div>
-                      <p className="text-sm font-semibold">{l.loan_number}</p>
+                      <p className="text-sm font-semibold">{l.loan_number} <span className="ml-1 text-xs font-normal text-muted-foreground">· {LOAN_TYPE_LABEL[l.loan_type] ?? l.loan_type}</span></p>
                       <p className="text-xs text-muted-foreground capitalize">{l.stage.replace(/_/g, " ")}</p>
                     </div>
                     <span className="text-sm font-semibold">{fmtTZS(l.amount_requested)}</span>
