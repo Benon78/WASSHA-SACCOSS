@@ -93,7 +93,7 @@ function AdminPage() {
   };
 
   const memberLoans = useMemo(() => activeLoans.filter((l) => l.member_id === tx.user_id), [activeLoans, tx.user_id]);
-  const needsLoanLink = ["repayment", "fee"].includes(tx.tx_type);
+  const needsLoanLink = ["repayment", "fee", "loan_fee"].includes(tx.tx_type);
 
   const recordTx = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -211,7 +211,7 @@ function AdminPage() {
 
         <section className="rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
           <h2 className="text-base font-semibold">Record transaction</h2>
-          <p className="text-xs text-muted-foreground">Manually post a deposit, contribution, fee or loan repayment. Repayments and fees must be linked to a specific loan.</p>
+          <p className="text-xs text-muted-foreground">Deposit, contribution, withdrawal, standalone fee, loan-fee payment or repayment. Loan repayments and loan-fee payments must be linked to a specific loan and will not touch the member's savings balance.</p>
           <form onSubmit={recordTx} className="mt-4 grid gap-3 md:grid-cols-6">
             <div className="md:col-span-2">
               <Label className="text-xs">Member</Label>
@@ -231,8 +231,8 @@ function AdminPage() {
               <Select value={tx.tx_type} onValueChange={(v) => setTx({ ...tx, tx_type: v, loan_id: "" })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {["deposit", "contribution", "withdrawal", "fee", "repayment"].map((t) =>
-                    <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  {["deposit", "contribution", "withdrawal", "fee", "loan_fee", "repayment"].map((t) =>
+                    <SelectItem key={t} value={t}>{t === "loan_fee" ? "Loan fee (returned fee)" : t}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>

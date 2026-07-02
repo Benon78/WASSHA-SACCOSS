@@ -370,8 +370,8 @@ function LoanDetail() {
           <DialogHeader><DialogTitle className="truncate">{preview?.name}</DialogTitle></DialogHeader>
           {preview && (
             preview.mime.startsWith("image/")
-              ? <img src={preview.url} alt={preview.name} className="max-h-[70vh] w-full rounded-lg object-contain" />
-              : <iframe src={preview.url} title={preview.name} className="h-[70vh] w-full rounded-lg border" />
+              ? <img src={preview.url} alt={`Supporting document for loan ${loan.loan_number}: ${preview.name}`} className="max-h-[70vh] w-full rounded-lg object-contain" />
+              : <iframe src={preview.url} title={`Supporting document ${preview.name} for loan ${loan.loan_number}`} className="h-[70vh] w-full rounded-lg border" />
           )}
           {preview && (
             <a href={preview.url} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline">Open original in new tab</a>
