@@ -18,6 +18,7 @@ import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AppStatementsRouteImport } from './routes/_app/statements'
 import { Route as AppProfileRouteImport } from './routes/_app/profile'
 import { Route as AppNotificationsRouteImport } from './routes/_app/notifications'
+import { Route as AppEscalationsRouteImport } from './routes/_app/escalations'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppApprovalsRouteImport } from './routes/_app/approvals'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
@@ -73,6 +74,11 @@ const AppProfileRoute = AppProfileRouteImport.update({
 const AppNotificationsRoute = AppNotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppEscalationsRoute = AppEscalationsRouteImport.update({
+  id: '/escalations',
+  path: '/escalations',
   getParentRoute: () => AppRoute,
 } as any)
 const AppDashboardRoute = AppDashboardRouteImport.update({
@@ -144,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AppAdminRouteWithChildren
   '/approvals': typeof AppApprovalsRoute
   '/dashboard': typeof AppDashboardRoute
+  '/escalations': typeof AppEscalationsRoute
   '/notifications': typeof AppNotificationsRoute
   '/profile': typeof AppProfileRoute
   '/statements': typeof AppStatementsRoute
@@ -165,6 +172,7 @@ export interface FileRoutesByTo {
   '/workflow': typeof WorkflowRoute
   '/approvals': typeof AppApprovalsRoute
   '/dashboard': typeof AppDashboardRoute
+  '/escalations': typeof AppEscalationsRoute
   '/notifications': typeof AppNotificationsRoute
   '/profile': typeof AppProfileRoute
   '/statements': typeof AppStatementsRoute
@@ -189,6 +197,7 @@ export interface FileRoutesById {
   '/_app/admin': typeof AppAdminRouteWithChildren
   '/_app/approvals': typeof AppApprovalsRoute
   '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/escalations': typeof AppEscalationsRoute
   '/_app/notifications': typeof AppNotificationsRoute
   '/_app/profile': typeof AppProfileRoute
   '/_app/statements': typeof AppStatementsRoute
@@ -213,6 +222,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/approvals'
     | '/dashboard'
+    | '/escalations'
     | '/notifications'
     | '/profile'
     | '/statements'
@@ -234,6 +244,7 @@ export interface FileRouteTypes {
     | '/workflow'
     | '/approvals'
     | '/dashboard'
+    | '/escalations'
     | '/notifications'
     | '/profile'
     | '/statements'
@@ -257,6 +268,7 @@ export interface FileRouteTypes {
     | '/_app/admin'
     | '/_app/approvals'
     | '/_app/dashboard'
+    | '/_app/escalations'
     | '/_app/notifications'
     | '/_app/profile'
     | '/_app/statements'
@@ -344,6 +356,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof AppNotificationsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/escalations': {
+      id: '/_app/escalations'
+      path: '/escalations'
+      fullPath: '/escalations'
+      preLoaderRoute: typeof AppEscalationsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/dashboard': {
@@ -459,6 +478,7 @@ interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRouteWithChildren
   AppApprovalsRoute: typeof AppApprovalsRoute
   AppDashboardRoute: typeof AppDashboardRoute
+  AppEscalationsRoute: typeof AppEscalationsRoute
   AppNotificationsRoute: typeof AppNotificationsRoute
   AppProfileRoute: typeof AppProfileRoute
   AppStatementsRoute: typeof AppStatementsRoute
@@ -471,6 +491,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAdminRoute: AppAdminRouteWithChildren,
   AppApprovalsRoute: AppApprovalsRoute,
   AppDashboardRoute: AppDashboardRoute,
+  AppEscalationsRoute: AppEscalationsRoute,
   AppNotificationsRoute: AppNotificationsRoute,
   AppProfileRoute: AppProfileRoute,
   AppStatementsRoute: AppStatementsRoute,
