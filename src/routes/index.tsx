@@ -34,29 +34,31 @@ function Landing() {
           style={{ background: "var(--gradient-hero)" }}
           aria-hidden
         />
+        {/* Dark overlay to guarantee AA contrast for white hero text */}
+        <div className="absolute inset-0 -z-10 bg-slate-950/60" aria-hidden />
         <div className="absolute inset-0 -z-10 opacity-40" aria-hidden
           style={{ backgroundImage: "radial-gradient(60% 50% at 80% 0%, oklch(0.78 0.17 60 / 0.4), transparent 60%)" }} />
         <div className="container mx-auto px-4 py-20 md:py-28">
-          <div className="mx-auto max-w-3xl text-center text-primary-foreground">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium backdrop-blur">
+          <div className="mx-auto max-w-3xl text-center text-white">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/15 px-3 py-1 text-xs font-medium text-white backdrop-blur">
               <Sparkles className="h-3.5 w-3.5" /> Built for modern SACCOS operations
             </span>
-            <h1 className="mt-5 text-4xl font-bold leading-[1.05] tracking-tight md:text-6xl">
+            <h1 className="mt-5 text-4xl font-bold leading-[1.05] tracking-tight text-white md:text-6xl [text-shadow:0_2px_12px_rgb(0_0_0_/_0.4)]">
               The fintech-grade<br />
               <span className="bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">SACCOS platform</span> your members deserve
             </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-base text-white/95 md:text-lg">
+            <p className="mx-auto mt-5 max-w-2xl text-base text-white md:text-lg">
               Transparent savings, intelligent loan workflows, and real-time notifications — purpose built for WASSHA SACCOS members, approvers, and administrators.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Button size="lg" asChild className="bg-[image:var(--gradient-primary)] text-primary-foreground shadow-[var(--shadow-elegant)] hover:opacity-95">
                 <Link to="/dashboard">Explore Member Dashboard <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
               </Button>
-              <Button size="lg" asChild variant="outline" className="border-white/40 bg-white/10 text-white hover:bg-white/20 hover:text-white">
+              <Button size="lg" asChild variant="outline" className="border-white/60 bg-white/15 text-white hover:bg-white/25 hover:text-white">
                 <Link to="/workflow">View workflow guide</Link>
               </Button>
             </div>
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-white/85">
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-white/95">
               <span className="inline-flex items-center gap-1.5"><Lock className="h-3.5 w-3.5" /> Bank-grade security</span>
               <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5" /> Role-based access</span>
               <span className="inline-flex items-center gap-1.5"><Smartphone className="h-3.5 w-3.5" /> Mobile-first</span>

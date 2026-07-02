@@ -33,12 +33,15 @@ function LoanDetail() {
   const [uploadFiles, setUploadFiles] = useState<File[]>([]);
   const [preview, setPreview] = useState<{ url: string; name: string; mime: string } | null>(null);
 
+  const [notFound, setNotFound] = useState(false);
+
   const load = async () => {
     const [l, a, d] = await Promise.all([
       supabase.from("loans").select("*").eq("id", loanId).maybeSingle(),
       supabase.from("loan_approvals").select("*").eq("loan_id", loanId).order("created_at", { ascending: false }),
       supabase.from("loan_documents").select("*").eq("loan_id", loanId).order("created_at", { ascending: false }),
     ]);
+    if (!l.data) { setNotFound(true); return; }
     setLoan(l.data);
     setApprovals(a.data ?? []);
     setDocs(d.data ?? []);
@@ -48,6 +51,15 @@ function LoanDetail() {
 
   useEffect(() => { load(); }, [loanId]);
 
+  useEffect(() => {
+    if (notFound) {
+      toast.error("This loan no longer exists.");
+      const t = setTimeout(() => { window.location.href = "/loans"; }, 800);
+      return () => clearTimeout(t);
+    }
+  }, [notFound]);
+
+  if (notFound) return <div className="min-h-screen bg-muted/30"><AppHeader /><div className="container mx-auto p-12 text-center text-muted-foreground">Loan not found — redirecting to your loans…</div></div>;
   if (!loan) return <div className="min-h-screen bg-muted/30"><AppHeader /><div className="container mx-auto p-12 text-center text-muted-foreground">Loading…</div></div>;
 
   const stage = loan.stage as LoanStage;
