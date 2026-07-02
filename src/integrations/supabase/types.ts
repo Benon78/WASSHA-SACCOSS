@@ -348,6 +348,8 @@ export type Database = {
           disbursement_confirmed_at: string | null
           disbursement_confirmed_by: string | null
           eligibility_limit: number | null
+          fee_amount: number
+          fee_outstanding: number
           id: string
           interest_rate: number
           loan_number: string
@@ -367,6 +369,8 @@ export type Database = {
           disbursement_confirmed_at?: string | null
           disbursement_confirmed_by?: string | null
           eligibility_limit?: number | null
+          fee_amount?: number
+          fee_outstanding?: number
           id?: string
           interest_rate?: number
           loan_number?: string
@@ -386,6 +390,8 @@ export type Database = {
           disbursement_confirmed_at?: string | null
           disbursement_confirmed_by?: string | null
           eligibility_limit?: number | null
+          fee_amount?: number
+          fee_outstanding?: number
           id?: string
           interest_rate?: number
           loan_number?: string
@@ -566,6 +572,10 @@ export type Database = {
         }
         Returns: string
       }
+      calc_returned_fee: {
+        Args: { _amount: number; _rate: number; _term: number }
+        Returns: number
+      }
       calculate_eligibility: { Args: { _user_id: string }; Returns: Json }
       current_policy: {
         Args: never
@@ -662,6 +672,7 @@ export type Database = {
         | "fee"
         | "repayment"
         | "disbursement"
+        | "loan_fee"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -833,6 +844,7 @@ export const Constants = {
         "fee",
         "repayment",
         "disbursement",
+        "loan_fee",
       ],
     },
   },
