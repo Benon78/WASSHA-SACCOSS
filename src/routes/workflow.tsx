@@ -74,7 +74,7 @@ function WorkflowGuide() {
                 <div className="flex-1">
                   <div className="flex flex-wrap items-baseline gap-3">
                     <span className="text-xs font-semibold uppercase tracking-wider text-primary">Stage {i + 1}</span>
-                    <h3 className="text-lg font-bold text-foreground">{s.name}</h3>
+                    <h2 className="text-lg font-bold text-foreground">{s.name}</h2>
                     <span className="rounded-full bg-secondary/10 px-2.5 py-0.5 text-xs font-semibold text-secondary">{s.who}</span>
                   </div>
                   <p className="mt-2 text-sm text-muted-foreground">{s.action}</p>
