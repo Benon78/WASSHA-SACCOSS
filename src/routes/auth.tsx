@@ -14,11 +14,13 @@ export const Route = createFileRoute("/auth")({
   validateSearch: search,
   head: () => ({
     meta: [
-      { title: "Sign in — WASSHA SACCOS" },
-      { name: "description", content: "Sign in or create a member account on the WASSHA SACCOS savings and loans platform." },
-      { property: "og:title", content: "Sign in — WASSHA SACCOS" },
-      { property: "og:description", content: "Member sign-in for WASSHA SACCOS." },
+      { title: "Sign in or create your account — WASSHA SACCOS" },
+      { name: "description", content: "Sign in to WASSHA SACCOS to manage your savings, track loan applications through every approval stage, download statements, and receive real-time notifications for deposits, approvals and repayments." },
+      { property: "og:title", content: "Sign in or create your account — WASSHA SACCOS" },
+      { property: "og:description", content: "Access your WASSHA SACCOS member dashboard: savings balances, loan applications, real-time approval tracking, statements and secure notifications — all in one place." },
       { property: "og:url", content: "https://wassha-saccos.lovable.app/auth" },
+      { name: "twitter:title", content: "Sign in — WASSHA SACCOS" },
+      { name: "twitter:description", content: "Access your WASSHA SACCOS member dashboard: savings, loans, statements and real-time notifications." },
     ],
     links: [{ rel: "canonical", href: "https://wassha-saccos.lovable.app/auth" }],
   }),
