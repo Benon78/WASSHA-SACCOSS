@@ -82,6 +82,14 @@ function PoliciesPage() {
             <div><Label>Min savings (TZS)</Label><Input type="number" required value={form.min_savings} onChange={(e) => setForm({ ...form, min_savings: e.target.value })} /></div>
             <div><Label>Min membership (months)</Label><Input type="number" required value={form.min_membership_months} onChange={(e) => setForm({ ...form, min_membership_months: e.target.value })} /></div>
             <div><Label>Max term (months)</Label><Input type="number" required value={form.max_term_months} onChange={(e) => setForm({ ...form, max_term_months: e.target.value })} /></div>
+            <div><Label>Processing fee (% of principal)</Label><Input type="number" step="0.1" required value={form.processing_fee_rate} onChange={(e) => setForm({ ...form, processing_fee_rate: e.target.value })} /></div>
+            <div><Label>Late-payment penalty (% / month)</Label><Input type="number" step="0.1" required value={form.late_penalty_rate} onChange={(e) => setForm({ ...form, late_penalty_rate: e.target.value })} /></div>
+            <div><Label>Chap-Chap rate (% p.a.)</Label><Input type="number" step="0.1" required value={form.chapchap_rate} onChange={(e) => setForm({ ...form, chapchap_rate: e.target.value })} /></div>
+            <div className="md:col-span-3 pt-2"><h3 className="text-sm font-semibold text-primary">Emergency tier</h3></div>
+            <div><Label>Emergency rate (% p.a.)</Label><Input type="number" step="0.1" required value={form.emergency_rate} onChange={(e) => setForm({ ...form, emergency_rate: e.target.value })} /></div>
+            <div><Label>Emergency multiplier</Label><Input type="number" step="0.1" required value={form.emergency_multiplier} onChange={(e) => setForm({ ...form, emergency_multiplier: e.target.value })} /></div>
+            <div><Label>Emergency max amount (TZS)</Label><Input type="number" required value={form.emergency_max_amount} onChange={(e) => setForm({ ...form, emergency_max_amount: e.target.value })} /></div>
+            <div><Label>Emergency max term (months)</Label><Input type="number" required value={form.emergency_max_term_months} onChange={(e) => setForm({ ...form, emergency_max_term_months: e.target.value })} /></div>
             <div className="md:col-span-3"><Label>Notes</Label><Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Reason for this policy update..." /></div>
             <div className="md:col-span-3">
               <Button type="submit" disabled={busy} className="bg-[image:var(--gradient-primary)] text-primary-foreground">Publish version</Button>
