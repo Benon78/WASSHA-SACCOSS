@@ -91,6 +91,9 @@ function AdminPage() {
   if (!hasRole("admin")) return <Navigate to="/dashboard" />;
 
   const toggleRole = async (userId: string, role: AppRole, currentlyHas: boolean) => {
+    if (SUPER_ADMIN_ONLY_ROLES.includes(role) && !isSuperAdmin) {
+      return toast.error("Only a Super Admin can assign the Admin role.");
+    }
     if (currentlyHas) await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", role as any);
     else await supabase.from("user_roles").insert({ user_id: userId, role: role as any });
     toast.success("Role updated"); load();
