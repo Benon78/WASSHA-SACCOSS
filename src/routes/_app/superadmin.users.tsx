@@ -377,9 +377,9 @@ function UserActionsMenu({ user, onDone }: { user: UserRow; onDone: () => void }
               </p>
             </div>
           }
-          onConfirmed={(password) => {
+          onConfirmed={async (password) => {
             if (!roleToRemove) { toast.error("Pick a role to remove"); return; }
-            void wrap(
+            await wrap(
               () => removeRole({ data: { userId: user.user_id, password, role: roleToRemove as (typeof APP_ROLES)[number] } }),
               `Role ${roleToRemove} removed`,
             );
