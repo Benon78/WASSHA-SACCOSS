@@ -29,9 +29,12 @@ import { Route as AppSuperadminIndexRouteImport } from './routes/_app/superadmin
 import { Route as AppLoansIndexRouteImport } from './routes/_app/loans/index'
 import { Route as AppAdminIndexRouteImport } from './routes/_app/admin.index'
 import { Route as AppSuperadminUsersRouteImport } from './routes/_app/superadmin.users'
+import { Route as AppSuperadminSettingsRouteImport } from './routes/_app/superadmin.settings'
+import { Route as AppSuperadminSecurityRouteImport } from './routes/_app/superadmin.security'
 import { Route as AppSuperadminRolesRouteImport } from './routes/_app/superadmin.roles'
 import { Route as AppSuperadminPoliciesRouteImport } from './routes/_app/superadmin.policies'
 import { Route as AppSuperadminBranchesRouteImport } from './routes/_app/superadmin.branches'
+import { Route as AppSuperadminAuditRouteImport } from './routes/_app/superadmin.audit'
 import { Route as AppLoansSimulatorRouteImport } from './routes/_app/loans/simulator'
 import { Route as AppLoansApplyRouteImport } from './routes/_app/loans/apply'
 import { Route as AppLoansLoanIdRouteImport } from './routes/_app/loans/$loanId'
@@ -143,6 +146,16 @@ const AppSuperadminUsersRoute = AppSuperadminUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AppSuperadminRoute,
 } as any)
+const AppSuperadminSettingsRoute = AppSuperadminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppSuperadminRoute,
+} as any)
+const AppSuperadminSecurityRoute = AppSuperadminSecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
+  getParentRoute: () => AppSuperadminRoute,
+} as any)
 const AppSuperadminRolesRoute = AppSuperadminRolesRouteImport.update({
   id: '/roles',
   path: '/roles',
@@ -156,6 +169,11 @@ const AppSuperadminPoliciesRoute = AppSuperadminPoliciesRouteImport.update({
 const AppSuperadminBranchesRoute = AppSuperadminBranchesRouteImport.update({
   id: '/branches',
   path: '/branches',
+  getParentRoute: () => AppSuperadminRoute,
+} as any)
+const AppSuperadminAuditRoute = AppSuperadminAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
   getParentRoute: () => AppSuperadminRoute,
 } as any)
 const AppLoansSimulatorRoute = AppLoansSimulatorRouteImport.update({
@@ -235,9 +253,12 @@ export interface FileRoutesByFullPath {
   '/loans/$loanId': typeof AppLoansLoanIdRoute
   '/loans/apply': typeof AppLoansApplyRoute
   '/loans/simulator': typeof AppLoansSimulatorRoute
+  '/superadmin/audit': typeof AppSuperadminAuditRoute
   '/superadmin/branches': typeof AppSuperadminBranchesRoute
   '/superadmin/policies': typeof AppSuperadminPoliciesRoute
   '/superadmin/roles': typeof AppSuperadminRolesRoute
+  '/superadmin/security': typeof AppSuperadminSecurityRoute
+  '/superadmin/settings': typeof AppSuperadminSettingsRoute
   '/superadmin/users': typeof AppSuperadminUsersRoute
   '/admin/': typeof AppAdminIndexRoute
   '/loans/': typeof AppLoansIndexRoute
@@ -267,9 +288,12 @@ export interface FileRoutesByTo {
   '/loans/$loanId': typeof AppLoansLoanIdRoute
   '/loans/apply': typeof AppLoansApplyRoute
   '/loans/simulator': typeof AppLoansSimulatorRoute
+  '/superadmin/audit': typeof AppSuperadminAuditRoute
   '/superadmin/branches': typeof AppSuperadminBranchesRoute
   '/superadmin/policies': typeof AppSuperadminPoliciesRoute
   '/superadmin/roles': typeof AppSuperadminRolesRoute
+  '/superadmin/security': typeof AppSuperadminSecurityRoute
+  '/superadmin/settings': typeof AppSuperadminSettingsRoute
   '/superadmin/users': typeof AppSuperadminUsersRoute
   '/admin': typeof AppAdminIndexRoute
   '/loans': typeof AppLoansIndexRoute
@@ -303,9 +327,12 @@ export interface FileRoutesById {
   '/_app/loans/$loanId': typeof AppLoansLoanIdRoute
   '/_app/loans/apply': typeof AppLoansApplyRoute
   '/_app/loans/simulator': typeof AppLoansSimulatorRoute
+  '/_app/superadmin/audit': typeof AppSuperadminAuditRoute
   '/_app/superadmin/branches': typeof AppSuperadminBranchesRoute
   '/_app/superadmin/policies': typeof AppSuperadminPoliciesRoute
   '/_app/superadmin/roles': typeof AppSuperadminRolesRoute
+  '/_app/superadmin/security': typeof AppSuperadminSecurityRoute
+  '/_app/superadmin/settings': typeof AppSuperadminSettingsRoute
   '/_app/superadmin/users': typeof AppSuperadminUsersRoute
   '/_app/admin/': typeof AppAdminIndexRoute
   '/_app/loans/': typeof AppLoansIndexRoute
@@ -339,9 +366,12 @@ export interface FileRouteTypes {
     | '/loans/$loanId'
     | '/loans/apply'
     | '/loans/simulator'
+    | '/superadmin/audit'
     | '/superadmin/branches'
     | '/superadmin/policies'
     | '/superadmin/roles'
+    | '/superadmin/security'
+    | '/superadmin/settings'
     | '/superadmin/users'
     | '/admin/'
     | '/loans/'
@@ -371,9 +401,12 @@ export interface FileRouteTypes {
     | '/loans/$loanId'
     | '/loans/apply'
     | '/loans/simulator'
+    | '/superadmin/audit'
     | '/superadmin/branches'
     | '/superadmin/policies'
     | '/superadmin/roles'
+    | '/superadmin/security'
+    | '/superadmin/settings'
     | '/superadmin/users'
     | '/admin'
     | '/loans'
@@ -406,9 +439,12 @@ export interface FileRouteTypes {
     | '/_app/loans/$loanId'
     | '/_app/loans/apply'
     | '/_app/loans/simulator'
+    | '/_app/superadmin/audit'
     | '/_app/superadmin/branches'
     | '/_app/superadmin/policies'
     | '/_app/superadmin/roles'
+    | '/_app/superadmin/security'
+    | '/_app/superadmin/settings'
     | '/_app/superadmin/users'
     | '/_app/admin/'
     | '/_app/loans/'
@@ -568,6 +604,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSuperadminUsersRouteImport
       parentRoute: typeof AppSuperadminRoute
     }
+    '/_app/superadmin/settings': {
+      id: '/_app/superadmin/settings'
+      path: '/settings'
+      fullPath: '/superadmin/settings'
+      preLoaderRoute: typeof AppSuperadminSettingsRouteImport
+      parentRoute: typeof AppSuperadminRoute
+    }
+    '/_app/superadmin/security': {
+      id: '/_app/superadmin/security'
+      path: '/security'
+      fullPath: '/superadmin/security'
+      preLoaderRoute: typeof AppSuperadminSecurityRouteImport
+      parentRoute: typeof AppSuperadminRoute
+    }
     '/_app/superadmin/roles': {
       id: '/_app/superadmin/roles'
       path: '/roles'
@@ -587,6 +637,13 @@ declare module '@tanstack/react-router' {
       path: '/branches'
       fullPath: '/superadmin/branches'
       preLoaderRoute: typeof AppSuperadminBranchesRouteImport
+      parentRoute: typeof AppSuperadminRoute
+    }
+    '/_app/superadmin/audit': {
+      id: '/_app/superadmin/audit'
+      path: '/audit'
+      fullPath: '/superadmin/audit'
+      preLoaderRoute: typeof AppSuperadminAuditRouteImport
       parentRoute: typeof AppSuperadminRoute
     }
     '/_app/loans/simulator': {
@@ -689,17 +746,23 @@ const AppAdminRouteWithChildren = AppAdminRoute._addFileChildren(
 )
 
 interface AppSuperadminRouteChildren {
+  AppSuperadminAuditRoute: typeof AppSuperadminAuditRoute
   AppSuperadminBranchesRoute: typeof AppSuperadminBranchesRoute
   AppSuperadminPoliciesRoute: typeof AppSuperadminPoliciesRoute
   AppSuperadminRolesRoute: typeof AppSuperadminRolesRoute
+  AppSuperadminSecurityRoute: typeof AppSuperadminSecurityRoute
+  AppSuperadminSettingsRoute: typeof AppSuperadminSettingsRoute
   AppSuperadminUsersRoute: typeof AppSuperadminUsersRoute
   AppSuperadminIndexRoute: typeof AppSuperadminIndexRoute
 }
 
 const AppSuperadminRouteChildren: AppSuperadminRouteChildren = {
+  AppSuperadminAuditRoute: AppSuperadminAuditRoute,
   AppSuperadminBranchesRoute: AppSuperadminBranchesRoute,
   AppSuperadminPoliciesRoute: AppSuperadminPoliciesRoute,
   AppSuperadminRolesRoute: AppSuperadminRolesRoute,
+  AppSuperadminSecurityRoute: AppSuperadminSecurityRoute,
+  AppSuperadminSettingsRoute: AppSuperadminSettingsRoute,
   AppSuperadminUsersRoute: AppSuperadminUsersRoute,
   AppSuperadminIndexRoute: AppSuperadminIndexRoute,
 }
