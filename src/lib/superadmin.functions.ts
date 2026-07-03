@@ -494,6 +494,46 @@ export const changeUserRole = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+// remove a single role from user_roles
+export const removeUserRole = createServerFn({ method: "POST" })
+  .middleware([requireSuperAdmin])
+  .inputValidator((input: unknown) =>
+    z.object({ ...sensitiveBase, role: z.enum(APP_ROLES) }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(context.userId);
+    await verifyCallerPassword(authUser.user!.email!, data.password);
+
+    if (data.userId === context.userId && (data.role === "admin" || data.role === "super_admin")) {
+      throw new Response("You cannot remove your own Admin or Super Admin role.", { status: 400 });
+    }
+
+    const { data: prev } = await supabaseAdmin
+      .from("user_roles").select("role").eq("user_id", data.userId);
+
+    const { error } = await supabaseAdmin
+      .from("user_roles")
+      .delete()
+      .eq("user_id", data.userId)
+      .eq("role", data.role);
+    if (error) throw new Response(error.message, { status: 400 });
+
+    await writeAudit({
+      action: "user.remove_role",
+      entity: "user_roles",
+      entityId: data.userId,
+      prev,
+      next: { removed: data.role },
+      summary: `Removed role ${data.role} from user ${data.userId}`,
+      actorId: context.userId,
+      meta: context.requestMeta,
+    });
+    return { ok: true };
+  });
+
+
+
 // assign branch
 export const assignBranch = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])

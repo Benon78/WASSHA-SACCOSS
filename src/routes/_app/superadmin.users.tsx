@@ -14,6 +14,7 @@ import {
   unlockUser,
   verifyEmail,
   changeUserRole,
+  removeUserRole,
   forceSignOutUser,
   getUserDetail,
 } from "@/lib/superadmin.functions";
@@ -258,10 +259,12 @@ function UserActionsMenu({ user, onDone }: { user: UserRow; onDone: () => void }
   const unlock = useServerFn(unlockUser);
   const verifyEm = useServerFn(verifyEmail);
   const changeRole = useServerFn(changeUserRole);
+  const removeRole = useServerFn(removeUserRole);
   const forceOut = useServerFn(forceSignOutUser);
 
   const [reason, setReason] = useState("");
   const [roleDraft, setRoleDraft] = useState<(typeof APP_ROLES)[number]>("member");
+  const [roleToRemove, setRoleToRemove] = useState<(typeof APP_ROLES)[number] | "">("");
 
   const wrap = async (fn: () => Promise<unknown>, ok: string) => {
     try {
@@ -342,6 +345,47 @@ function UserActionsMenu({ user, onDone }: { user: UserRow; onDone: () => void }
             )
           }
         />
+
+        <ConfirmWithPassword
+          title="Remove role"
+          description={<>Delete a specific role from <strong>{user.full_name || "this user"}</strong>. This permanently removes the row from user_roles.</>}
+          actionLabel="Remove role"
+          trigger={
+            <DropdownMenuItem
+              onSelect={(e) => {
+                e.preventDefault();
+                setRoleToRemove((user.roles?.[0] as (typeof APP_ROLES)[number]) ?? "");
+              }}
+              disabled={!user.roles || user.roles.length === 0}
+            >
+              <ShieldOff className="mr-2 h-4 w-4" />Remove role…
+            </DropdownMenuItem>
+          }
+          extraFields={
+            <div className="space-y-1.5">
+              <Label>Role to remove</Label>
+              <Select value={roleToRemove} onValueChange={(v) => setRoleToRemove(v as never)}>
+                <SelectTrigger><SelectValue placeholder="Select role" /></SelectTrigger>
+                <SelectContent>
+                  {(user.roles ?? []).map((r) => (
+                    <SelectItem key={r} value={r}>{r}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Only roles currently assigned to this user are listed. Removing the last Admin is blocked by the database.
+              </p>
+            </div>
+          }
+          onConfirmed={async (password) => {
+            if (!roleToRemove) { toast.error("Pick a role to remove"); return; }
+            await wrap(
+              () => removeRole({ data: { userId: user.user_id, password, role: roleToRemove as (typeof APP_ROLES)[number] } }),
+              `Role ${roleToRemove} removed`,
+            );
+          }}
+        />
+
 
         <DropdownMenuSeparator />
         <DropdownMenuLabel>Status</DropdownMenuLabel>
