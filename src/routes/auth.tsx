@@ -50,6 +50,7 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const nav = useNavigate();
   const { redirect: redirectTo } = useSearch({ from: "/auth" });
+  const { user, loading: authLoading, isPasswordRecovery } = useAuth();
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -57,33 +58,70 @@ function AuthPage() {
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Sanitize the redirect target once — safeInternalPath rejects any URL that
+  // isn't a same-origin path and blocks paths that would loop back to /auth
+  // or /reset-password.
+  const safeRedirect = safeInternalPath(redirectTo) ?? "/dashboard";
+
+  // If the user is already signed in (and not in the middle of a password
+  // recovery), don't let them sit on /auth — send them to their destination.
+  // This is what fixes "click sign in and nothing happens" after a recovery
+  // link established a session: the button submits, but if the user was
+  // already signed in the previous nav collapsed into another /auth visit.
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) return;
+    if (isPasswordRecovery) {
+      nav({ to: "/reset-password", replace: true });
+      return;
+    }
+    nav({ to: safeRedirect, replace: true });
+  }, [authLoading, user, isPasswordRecovery, safeRedirect, nav]);
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
+      const parsedEmail = emailSchema.safeParse(email);
+      if (!parsedEmail.success) throw new Error(parsedEmail.error.issues[0]?.message ?? "Invalid email");
+      const cleanEmail = parsedEmail.data;
+
       if (mode === "signup") {
+        const parsedName = nameSchema.safeParse(fullName);
+        if (!parsedName.success) throw new Error(parsedName.error.issues[0]!.message);
+        const parsedPhone = phoneSchema.safeParse(phone);
+        if (!parsedPhone.success) throw new Error(parsedPhone.error.issues[0]!.message);
+        const parsedPwd = passwordSignUpSchema.safeParse(password);
+        if (!parsedPwd.success) throw new Error(parsedPwd.error.issues[0]!.message);
+
         const { error } = await supabase.auth.signUp({
-          email, password,
+          email: cleanEmail,
+          password: parsedPwd.data,
           options: {
             emailRedirectTo: `${window.location.origin}/dashboard`,
-            data: { full_name: fullName, phone },
+            data: { full_name: parsedName.data, phone: parsedPhone.data },
           },
         });
         if (error) throw error;
         toast.success("Account created. Welcome!");
-        nav({ to: (redirectTo as any) || "/dashboard" });
+        nav({ to: safeRedirect, replace: true });
       } else if (mode === "forgot") {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
           redirectTo: `${window.location.origin}/reset-password`,
         });
         if (error) throw error;
         toast.success("Password reset link sent. Please check your email.");
         setMode("signin");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const parsedPwd = passwordSignInSchema.safeParse(password);
+        if (!parsedPwd.success) throw new Error(parsedPwd.error.issues[0]!.message);
+        const { error } = await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password: parsedPwd.data,
+        });
         if (error) throw error;
         toast.success("Signed in");
-        nav({ to: (redirectTo as any) || "/dashboard" });
+        nav({ to: safeRedirect, replace: true });
       }
     } catch (err: any) {
       toast.error(friendlyError(err, "Authentication failed"));
