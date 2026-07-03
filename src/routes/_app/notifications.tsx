@@ -105,6 +105,7 @@ function NotificationsPage() {
                   <p className="mt-1 text-[11px] text-muted-foreground">{fmtRelative(n.created_at)}</p>
                 </div>
                 <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleRead(n); }}
+                  aria-label={n.read ? "Mark notification as unread" : "Mark notification as read"}
                   className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground" title={n.read ? "Mark unread" : "Mark read"}>
                   <Check className="h-4 w-4" />
                 </button>
