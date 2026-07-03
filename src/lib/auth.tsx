@@ -10,7 +10,9 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { recordSession } from "@/lib/session-tracker.functions";
+import { logAuthEvent } from "@/lib/auth-log.functions";
 import type { Session, User } from "@supabase/supabase-js";
+
 import {
   can as canDo,
   hasAnyRole as ctxHasAnyRole,
@@ -100,6 +102,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (nextId && s?.access_token) {
             const marker = s.access_token.split(".").pop()?.slice(-16) ?? nextId;
             setTimeout(() => { void recordSession({ data: { sessionId: marker } }).catch(() => undefined); }, 0);
+            // Log successful sign-in once per identity transition.
+            if (event === "SIGNED_IN") {
+              const provider = (s?.user?.app_metadata as { provider?: string } | undefined)?.provider ?? "email";
+              setTimeout(() => {
+                void logAuthEvent({ data: {
+                  eventType: "login",
+                  userId: nextId,
+                  email: s?.user?.email ?? null,
+                  provider,
+                  sessionId: marker,
+                } }).catch(() => undefined);
+              }, 0);
+            }
           }
           break;
         }
@@ -115,10 +130,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setIsPasswordRecovery(true);
           break;
         case "SIGNED_OUT": {
+          const prevId = currentUserId.current;
           currentUserId.current = null;
           setRoles([]);
           setBoardSeats([]);
           setIsPasswordRecovery(false);
+          if (prevId) {
+            setTimeout(() => {
+              void logAuthEvent({ data: { eventType: "logout", userId: prevId } }).catch(() => undefined);
+            }, 0);
+          }
           // Stop in-flight protected queries before they 401.
           void queryClient.cancelQueries();
           queryClient.clear();
@@ -129,6 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
+
     // Prime the session on mount (covers hard refresh; onAuthStateChange also
     // fires INITIAL_SESSION but we still need to end the loading flash).
     supabase.auth.getSession().then(({ data: { session: s } }) => {
@@ -138,15 +160,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (s?.user) {
         currentUserId.current = s.user.id;
         void loadRoles(s.user.id);
+        // Prime the session tracker immediately so a hard refresh still
+        // shows the current user in Security Center even if INITIAL_SESSION
+        // is delayed or racy.
+        if (s.access_token) {
+          const marker = s.access_token.split(".").pop()?.slice(-16) ?? s.user.id;
+          void recordSession({ data: { sessionId: marker } }).catch(() => undefined);
+        }
       }
       setLoading(false);
     });
 
+    // Heartbeat: while signed in, refresh the session-tracker row every 60s
+    // so the Super Admin → Security Center reliably shows the active session
+    // (last_seen stays fresh, and lost rows are re-inserted).
+    const heartbeat = window.setInterval(() => {
+      supabase.auth.getSession().then(({ data: { session: s } }) => {
+        if (!mounted || !s?.user || !s.access_token) return;
+        const marker = s.access_token.split(".").pop()?.slice(-16) ?? s.user.id;
+        void recordSession({ data: { sessionId: marker } }).catch(() => undefined);
+      });
+    }, 60_000);
+
     return () => {
       mounted = false;
+      window.clearInterval(heartbeat);
       subscription.unsubscribe();
     };
   }, [loadRoles, queryClient]);
+
 
   const permCtx = { roles, boardSeats };
 

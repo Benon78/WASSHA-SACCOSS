@@ -271,7 +271,8 @@ function AdminPage() {
 
         <section className="rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
           <h2 className="text-base font-semibold">Members & roles</h2>
-          <p className="text-xs text-muted-foreground">Assign each member a unique member number. Numbers are not auto-generated.</p>
+          <p className="text-xs text-muted-foreground">Assign each member a unique member number. Numbers are not auto-generated.{!isSuperAdmin && " The Admin and Super Admin roles are managed by a Super Admin only."}</p>
+
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -339,7 +340,7 @@ function AdminPage() {
                       )}
                     </td>
                     <td>
-                      <div className="flex flex-wrap gap-1">
+                      <div className="flex flex-wrap items-center gap-1">
                         {visibleRoles.map((r) => {
                           const has = u.roles.includes(r);
                           return (
@@ -351,8 +352,27 @@ function AdminPage() {
                             </button>
                           );
                         })}
+                        {!isSuperAdmin && SUPER_ADMIN_ONLY_ROLES.map((r) => {
+                          const has = u.roles.includes(r);
+                          return (
+                            <button
+                              key={r}
+                              type="button"
+                              disabled
+                              aria-disabled="true"
+                              title="Only a Super Admin can assign this role"
+                              onClick={() => toast.error("Only a Super Admin can assign the Admin role.")}
+                              className={`cursor-not-allowed rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase opacity-60 ${
+                                has ? "bg-primary/60 text-primary-foreground" : "bg-muted text-muted-foreground"
+                              }`}
+                            >
+                              {r} 🔒
+                            </button>
+                          );
+                        })}
                       </div>
                     </td>
+
                   </tr>
                 ))}
               </tbody>

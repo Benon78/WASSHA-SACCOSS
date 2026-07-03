@@ -8,9 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/friendlyError";
+import { logAuthEvent } from "@/lib/auth-log.functions";
 import { useAuth } from "@/lib/auth";
 import { safeInternalPath } from "@/lib/safeUrl";
 import { Wallet, Loader2 } from "lucide-react";
+
 
 const search = z.object({ redirect: z.string().max(2048).optional() });
 
@@ -78,6 +80,32 @@ function AuthPage() {
     nav({ to: safeRedirect, replace: true });
   }, [authLoading, user, isPasswordRecovery, safeRedirect, nav]);
 
+  // Detect OAuth error redirects (e.g. Google returns to
+  // `/#error=server_error&error_description=failed+to+sign+in+with+vendor`).
+  // Show an inline toast, log the failure, and clean up the URL so a refresh
+  // doesn't re-trigger the message.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const hash = window.location.hash?.startsWith("#") ? window.location.hash.slice(1) : "";
+    if (!hash) return;
+    const params = new URLSearchParams(hash);
+    const err = params.get("error");
+    if (!err) return;
+    const desc = params.get("error_description")?.replace(/\+/g, " ") ?? err;
+    const friendly = translateOAuthError(err, desc);
+    toast.error(friendly, { duration: 8000 });
+    void logAuthEvent({
+      data: {
+        eventType: "failed_login",
+        provider: "google",
+        reason: `${err}: ${desc}`.slice(0, 500),
+      },
+    }).catch(() => undefined);
+    // Strip the hash so refresh is clean.
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+  }, []);
+
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -124,11 +152,31 @@ function AuthPage() {
         nav({ to: safeRedirect, replace: true });
       }
     } catch (err: any) {
-      toast.error(friendlyError(err, "Authentication failed"));
+      const friendly = friendlyError(err, "Authentication failed");
+      const reason = err?.message ?? String(err);
+      // Log every unsuccessful email/password attempt so the Super Admin
+      // Security Center's failed-login counters reflect reality.
+      const parsedForLog = emailSchema.safeParse(email);
+      void logAuthEvent({
+        data: {
+          eventType: mode === "signup" ? "failed_login" : "failed_login",
+          provider: mode === "signup" ? "signup" : "email",
+          email: parsedForLog.success ? parsedForLog.data : null,
+          reason: `${mode}: ${reason}`.slice(0, 500),
+        },
+      }).catch(() => undefined);
+      // Signup errors from Supabase can be terse ("Database error saving new user");
+      // give the user something actionable and keep them on the page.
+      if (mode === "signup" && /database error/i.test(reason)) {
+        toast.error("We couldn't create your account. Please try again in a moment, or contact support if the issue persists.", { duration: 8000 });
+      } else {
+        toast.error(friendly, { duration: 6000 });
+      }
     } finally {
       setLoading(false);
     }
   };
+
 
   const title = mode === "signin" ? "Welcome back" : mode === "signup" ? "Create your member account" : "Reset your password";
   const subtitle = mode === "signin"
@@ -232,11 +280,17 @@ function AuthPage() {
                     toast.success("Signed in with Google");
                     nav({ to: safeRedirect, replace: true });
                   } catch (err: any) {
-                    toast.error(friendlyError(err, "Google sign-in failed"));
+                    const reason = err?.message ?? String(err);
+                    const friendly = translateOAuthError("google_error", reason);
+                    toast.error(friendly, { duration: 8000 });
+                    void logAuthEvent({
+                      data: { eventType: "failed_login", provider: "google", reason: reason.slice(0, 500) },
+                    }).catch(() => undefined);
                   } finally {
                     setLoading(false);
                   }
                 }}
+
                 className="w-full"
               >
                 <svg viewBox="0 0 24 24" className="mr-2 h-4 w-4" aria-hidden>
@@ -279,3 +333,32 @@ function AuthPage() {
     </div>
   );
 }
+
+/**
+ * Translate raw OAuth error codes / descriptions returned by Supabase's
+ * vendor sign-in flow into something we can safely show the user.
+ * Unknown codes fall back to a generic message with the reason appended.
+ */
+function translateOAuthError(code: string, description?: string | null): string {
+  const d = (description ?? "").toLowerCase();
+  if (d.includes("failed to sign in with vendor") || d.includes("server_error")) {
+    return "Google sign-in couldn't be completed right now. Please try again, or use email and password. If this keeps happening the Google provider may need to be reconfigured — contact support.";
+  }
+  if (d.includes("popup") && d.includes("closed")) {
+    return "The Google sign-in window was closed before finishing. Please try again.";
+  }
+  if (d.includes("redirect") || d.includes("origin")) {
+    return "The Google sign-in redirect URL isn't allowed for this site. Please contact support.";
+  }
+  if (d.includes("access_denied")) {
+    return "You cancelled the Google sign-in. Please try again if that wasn't intentional.";
+  }
+  if (d.includes("invalid_request")) {
+    return "Google rejected the sign-in request. Please try again in a moment.";
+  }
+  if (code === "google_error") {
+    return description ? `Google sign-in failed: ${description}` : "Google sign-in failed. Please try again.";
+  }
+  return description ? `Sign-in failed: ${description}` : "Sign-in failed. Please try again.";
+}
+
