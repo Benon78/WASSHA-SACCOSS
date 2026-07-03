@@ -431,7 +431,7 @@ export const updateBranch = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!prev) throw new Response("Branch not found", { status: 404 });
 
-    const patch: Record<string, unknown> = {};
+    
     const patch: { name?: string; address?: string | null; manager_id?: string | null; status?: "active" | "disabled" } = {};
     if (data.name !== undefined) patch.name = data.name;
     if (data.address !== undefined) patch.address = data.address;
