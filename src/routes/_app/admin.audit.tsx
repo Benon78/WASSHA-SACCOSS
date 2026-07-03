@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { downloadCSV, downloadPDF } from "@/lib/exporters";
 import { fmtDate } from "@/lib/format";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/friendlyError";
 import { FileSpreadsheet, FileDown, ShieldCheck, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/_app/admin/audit")({
@@ -44,7 +45,7 @@ function AuditPage() {
     if (entity !== "all") q = q.eq("entity", entity);
     const { data, error } = await q;
     setBusy(false);
-    if (error) { toast.error(error.message); return []; }
+    if (error) { toast.error(friendlyError(error)); return []; }
     let flat = (data ?? []).map((r: any) => ({
       date: fmtDate(r.created_at),
       action: r.action,

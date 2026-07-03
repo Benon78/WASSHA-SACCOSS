@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/friendlyError";
 import { Shield, ShieldCheck, Loader2, Trash2, Bell } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
@@ -48,7 +49,7 @@ function ProfilePage() {
     if (!user) return;
     const { error } = await supabase.from("notification_preferences")
       .upsert({ user_id: user.id, ...prefs, updated_at: new Date().toISOString() });
-    if (error) toast.error(error.message); else toast.success("Notification preferences saved");
+    if (error) toast.error(friendlyError(error)); else toast.success("Notification preferences saved");
   };
 
   useEffect(() => { loadAll(); }, [user?.id]);
@@ -58,7 +59,7 @@ function ProfilePage() {
     setBusy(true);
     const { error } = await supabase.from("profiles").update({ full_name: name, phone }).eq("user_id", user!.id);
     setBusy(false);
-    if (error) toast.error(error.message); else toast.success("Profile updated");
+    if (error) toast.error(friendlyError(error)); else toast.success("Profile updated");
   };
 
   const startEnroll = async () => {
@@ -68,7 +69,7 @@ function ProfilePage() {
       if (error) throw error;
       const qr = await QRCode.toDataURL(data.totp.uri, { width: 220, margin: 1 });
       setEnrolling({ id: data.id, qr, secret: data.totp.secret });
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: any) { toast.error(friendlyError(e)); }
     finally { setBusy(false); }
   };
 
@@ -82,14 +83,14 @@ function ProfilePage() {
       if (error) throw error;
       toast.success("Two-factor authentication enabled");
       setEnrolling(null); setCode(""); await loadAll();
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: any) { toast.error(friendlyError(e)); }
     finally { setBusy(false); }
   };
 
   const removeFactor = async (id: string) => {
     if (!confirm("Disable two-factor authentication?")) return;
     const { error } = await supabase.auth.mfa.unenroll({ factorId: id });
-    if (error) toast.error(error.message); else { toast.success("2FA disabled"); loadAll(); }
+    if (error) toast.error(friendlyError(error)); else { toast.success("2FA disabled"); loadAll(); }
   };
 
   return (

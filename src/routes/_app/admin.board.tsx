@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/friendlyError";
 import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/_app/admin/board")({
@@ -62,7 +63,7 @@ function BoardPage() {
     if (!userId) return toast.error("Pick a staff member");
     await supabase.from("loan_board_members").delete().eq("seat", seat);
     const { error } = await supabase.from("loan_board_members").insert({ seat, user_id: userId });
-    if (error) return toast.error(error.message);
+    if (error) return toast.error(friendlyError(error));
     toast.success(`${seat} assigned`); load();
   };
 
@@ -148,7 +149,7 @@ function ProxySection({ staff }: { staff: any[] }) {
       delegate_id: draft.delegate_id, granted_by: (await supabase.auth.getUser()).data.user!.id,
       reason: draft.reason || null,
     });
-    if (error) return toast.error(error.message);
+    if (error) return toast.error(friendlyError(error));
     toast.success("Delegation granted (valid 7 days, one-time use)");
     setDraft({ loan_id: "", stage: "under_review", delegate_id: "", reason: "" });
   };
@@ -162,7 +163,7 @@ function ProxySection({ staff }: { staff: any[] }) {
       revoked_by: u,
       revoke_reason: revokeReason.trim(),
     } as any).eq("id", revokeTarget.id);
-    if (error) return toast.error(error.message);
+    if (error) return toast.error(friendlyError(error));
     toast.success("Proxy revoked");
     setRevokeTarget(null); setRevokeReason("");
   };

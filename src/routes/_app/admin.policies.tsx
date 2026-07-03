@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { fmtDate, fmtTZS } from "@/lib/format";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/friendlyError";
 import { Plus, History } from "lucide-react";
 
 export const Route = createFileRoute("/_app/admin/policies")({
@@ -49,7 +50,7 @@ function PoliciesPage() {
       created_by: user!.id,
     });
     setBusy(false);
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyError(error));
     else { toast.success(`Policy v${nextVersion} created`); load(); }
   };
 

@@ -10,6 +10,7 @@ import { useAuth } from "@/lib/auth";
 import { fmtTZS } from "@/lib/format";
 import { LOAN_TYPE_LABEL, LOAN_TYPE_DESC, LOAN_TYPE_RULES } from "@/lib/loanStages";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/friendlyError";
 import { Loader2, Upload, X, Briefcase, Zap, AlertCircle } from "lucide-react";
 
 import { pageHead } from "@/lib/seo";
@@ -100,7 +101,7 @@ function ApplyPage() {
       toast.success(`Application ${loan.loan_number} submitted`);
       nav({ to: "/loans/$loanId", params: { loanId: loan.id } });
     } catch (err: any) {
-      toast.error(err.message || "Failed to submit");
+      toast.error(friendlyError(err, "Failed to submit"));
     } finally { setSubmitting(false); }
   };
 

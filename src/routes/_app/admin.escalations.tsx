@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/friendlyError";
 import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_app/admin/escalations")({
@@ -35,7 +36,7 @@ function EscalationsPage() {
     let q = supabase.from("assistant_escalations").select("*").order("created_at", { ascending: false });
     if (filter !== "all") q = q.eq("status", filter);
     const { data, error } = await q;
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyError(error));
     else setRows((data as Escalation[]) ?? []);
   }, [filter]);
 
@@ -52,7 +53,7 @@ function EscalationsPage() {
 
   const update = async (id: string, patch: { status?: string; resolution?: string | null }) => {
     const { error } = await supabase.from("assistant_escalations").update(patch as never).eq("id", id);
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyError(error));
     else toast.success("Updated");
   };
 
