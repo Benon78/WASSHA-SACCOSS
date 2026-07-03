@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getSuperAdminStats } from "@/lib/superadmin.functions";
 import { StatCard } from "@/components/StatCard";
 import { StatCardsSkeleton } from "@/components/status/LoadingState";
-import { ErrorState } from "@/components/status/ErrorState";
+import { ErrorState, classifyError } from "@/components/status/ErrorState";
 import { fmtTZS } from "@/lib/format";
 import { Users, Wallet, PiggyBank, TrendingUp, ShieldAlert, Activity, ScanLine, LogIn } from "lucide-react";
 
@@ -23,7 +23,7 @@ function SuperAdminDashboard() {
   });
 
   if (isLoading) return <StatCardsSkeleton count={8} />;
-  if (error) return <ErrorState error={error} onRetry={() => void refetch()} />;
+  if (error) return <ErrorState kind={classifyError(error)} onRetry={() => void refetch()} />;
   if (!data) return null;
 
   return (
@@ -34,34 +34,19 @@ function SuperAdminDashboard() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={Users} label="Total members" value={data.totalMembers.toLocaleString()} accent="primary" />
-        <StatCard icon={Wallet} label="Active loans" value={data.activeLoans.toLocaleString()} accent="success" />
-        <StatCard
-          icon={PiggyBank}
-          label="Portfolio outstanding"
-          value={fmtTZS(data.portfolioOutstanding)}
-          accent="warning"
-        />
-        <StatCard
-          icon={TrendingUp}
-          label="Repayment rate"
-          value={`${data.portfolioRepaymentRate.toFixed(1)}%`}
-          accent="success"
-        />
+        <StatCard icon={Users} label="Total members" value={data.totalMembers.toLocaleString()} tone="primary" />
+        <StatCard icon={Wallet} label="Active loans" value={data.activeLoans.toLocaleString()} tone="success" />
+        <StatCard icon={PiggyBank} label="Portfolio outstanding" value={fmtTZS(data.portfolioOutstanding)} tone="warning" />
+        <StatCard icon={TrendingUp} label="Repayment rate" value={`${data.portfolioRepaymentRate.toFixed(1)}%`} tone="success" />
       </div>
 
       <div>
-        <h2 className="mb-3 text-lg font-semibold">Security & activity (last 24h)</h2>
+        <h2 className="mb-3 text-lg font-semibold">Security &amp; activity (last 24h)</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard icon={LogIn} label="Active sessions" value={data.activeSessions.toLocaleString()} accent="primary" />
-          <StatCard
-            icon={ShieldAlert}
-            label="Failed logins"
-            value={data.failedLogins24h.toLocaleString()}
-            accent={data.failedLogins24h > 10 ? "destructive" : "muted"}
-          />
-          <StatCard icon={Activity} label="Audit events" value={data.auditEvents24h.toLocaleString()} accent="muted" />
-          <StatCard icon={ScanLine} label="Completed loans" value={data.completedLoans.toLocaleString()} accent="success" />
+          <StatCard icon={LogIn} label="Active sessions" value={data.activeSessions.toLocaleString()} tone="primary" />
+          <StatCard icon={ShieldAlert} label="Failed logins" value={data.failedLogins24h.toLocaleString()} tone={data.failedLogins24h > 10 ? "warning" : "primary"} />
+          <StatCard icon={Activity} label="Audit events" value={data.auditEvents24h.toLocaleString()} tone="primary" />
+          <StatCard icon={ScanLine} label="Completed loans" value={data.completedLoans.toLocaleString()} tone="success" />
         </div>
       </div>
 
