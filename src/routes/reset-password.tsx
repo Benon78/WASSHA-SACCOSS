@@ -66,7 +66,7 @@ function ResetPasswordPage() {
       toast.success("Password updated. You're signed in.");
       nav({ to: "/dashboard", replace: true });
     } catch (err) {
-      toast.error(friendlyError(err, "Could not update password"));
+      toast.error(friendlyError(err as Error, "Could not update password"));
     } finally {
       setSubmitting(false);
     }

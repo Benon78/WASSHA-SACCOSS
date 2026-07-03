@@ -63,8 +63,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         supabase.from("user_roles").select("role").eq("user_id", uid),
         supabase.from("loan_board_members").select("seat").eq("user_id", uid),
       ]);
-      setRoles((r ?? []).map((x: { role: AppRole }) => x.role));
-      setBoardSeats((b ?? []).map((x: { seat: BoardSeat }) => x.seat));
+      setRoles(((r ?? []) as Array<{ role: string }>).map((x) => x.role as AppRole));
+      setBoardSeats(((b ?? []) as Array<{ seat: string }>).map((x) => x.seat as BoardSeat));
     } catch {
       // Non-fatal: RLS/network hiccup shouldn't lock the UI.
       setRoles([]);
