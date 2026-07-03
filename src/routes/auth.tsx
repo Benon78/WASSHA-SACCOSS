@@ -17,7 +17,7 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Sign in or create your account — WASSHA SACCOS" },
-      { name: "description", content: "Sign in to WASSHA SACCOS to manage your savings, track loan applications through every approval stage, download statements, and receive real-time notifications for deposits, approvals and repayments." },
+      { name: "description", content: "Sign in to WASSHA SACCOS to manage savings, track loan approvals, download statements and get real-time notifications." },
       { property: "og:title", content: "Sign in or create your account — WASSHA SACCOS" },
       { property: "og:description", content: "Access your WASSHA SACCOS member dashboard: savings balances, loan applications, real-time approval tracking, statements and secure notifications — all in one place." },
       { property: "og:url", content: "https://wassha-saccos.lovable.app/auth" },
