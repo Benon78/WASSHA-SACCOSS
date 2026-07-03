@@ -96,6 +96,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setRoles([]);
             setBoardSeats([]);
           }
+          // Record this session so Super Admin Security Center sees it.
+          if (nextId && s?.access_token) {
+            const marker = s.access_token.split(".").pop()?.slice(-16) ?? nextId;
+            setTimeout(() => { void recordSession({ data: { sessionId: marker } }).catch(() => undefined); }, 0);
+          }
           break;
         }
         case "TOKEN_REFRESHED":
