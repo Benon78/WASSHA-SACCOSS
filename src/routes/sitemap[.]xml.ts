@@ -14,6 +14,7 @@ export const Route = createFileRoute("/sitemap.xml")({
         const entries = [
           { path: "/", changefreq: "weekly", priority: "1.0" },
           { path: "/workflow", changefreq: "monthly", priority: "0.8" },
+          { path: "/guides/choosing-sacco-software", changefreq: "monthly", priority: "0.8" },
           { path: "/auth", changefreq: "yearly", priority: "0.5" },
           { path: "/dashboard", changefreq: "weekly", priority: "0.6" },
           { path: "/approvals", changefreq: "weekly", priority: "0.5" },
