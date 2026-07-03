@@ -259,10 +259,12 @@ function UserActionsMenu({ user, onDone }: { user: UserRow; onDone: () => void }
   const unlock = useServerFn(unlockUser);
   const verifyEm = useServerFn(verifyEmail);
   const changeRole = useServerFn(changeUserRole);
+  const removeRole = useServerFn(removeUserRole);
   const forceOut = useServerFn(forceSignOutUser);
 
   const [reason, setReason] = useState("");
   const [roleDraft, setRoleDraft] = useState<(typeof APP_ROLES)[number]>("member");
+  const [roleToRemove, setRoleToRemove] = useState<(typeof APP_ROLES)[number] | "">("");
 
   const wrap = async (fn: () => Promise<unknown>, ok: string) => {
     try {
