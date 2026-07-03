@@ -352,24 +352,15 @@ function AdminPage() {
                             </button>
                           );
                         })}
-                        {!isSuperAdmin && SUPER_ADMIN_ONLY_ROLES.map((r) => {
-                          const has = u.roles.includes(r);
-                          return (
-                            <button
-                              key={r}
-                              type="button"
-                              disabled
-                              aria-disabled="true"
-                              title="Only a Super Admin can assign this role"
-                              onClick={() => toast.error("Only a Super Admin can assign the Admin role.")}
-                              className={`cursor-not-allowed rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase opacity-60 ${
-                                has ? "bg-primary/60 text-primary-foreground" : "bg-muted text-muted-foreground"
-                              }`}
-                            >
-                              {r} 🔒
-                            </button>
-                          );
-                        })}
+                        {!isSuperAdmin && SUPER_ADMIN_ONLY_ROLES.filter((r) => u.roles.includes(r)).map((r) => (
+                          <span
+                            key={r}
+                            title="Managed by a Super Admin in User Configuration"
+                            className="rounded-full bg-primary/60 px-2 py-0.5 text-[10px] font-semibold uppercase text-primary-foreground"
+                          >
+                            {r}
+                          </span>
+                        ))}
                       </div>
                     </td>
 
