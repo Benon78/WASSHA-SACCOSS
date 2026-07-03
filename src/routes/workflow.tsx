@@ -98,9 +98,9 @@ function WorkflowGuide() {
             </p>
           </div>
           <div className="rounded-2xl border border-warning/30 bg-warning/5 p-5">
-            <h4 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
               <ArrowRight className="h-4 w-4 text-warning" /> Documents requested
-            </h4>
+            </h3>
             <p className="mt-2 text-sm text-muted-foreground">
               When more evidence is needed, staff click <strong>Request documents</strong>. The member is notified and uploads additional files; the workflow stays at the current stage until reviewed again.
             </p>
