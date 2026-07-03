@@ -170,6 +170,51 @@ function ProfilePage() {
                   onChange={(e) => setPrefs({ ...prefs, sms_phone: e.target.value })} />
               </div>
             )}
+
+            <div className="grid gap-3 rounded-lg border border-border/60 p-3 md:grid-cols-2">
+              <div className="md:col-span-2">
+                <p className="text-sm font-medium">Quiet hours</p>
+                <p className="text-xs text-muted-foreground">Non-urgent notifications are held until quiet hours end. Critical alerts still deliver.</p>
+              </div>
+              <div>
+                <Label>Start</Label>
+                <Input type="time" value={prefs.quiet_hours_start}
+                  onChange={(e) => setPrefs({ ...prefs, quiet_hours_start: e.target.value })} />
+              </div>
+              <div>
+                <Label>End</Label>
+                <Input type="time" value={prefs.quiet_hours_end}
+                  onChange={(e) => setPrefs({ ...prefs, quiet_hours_end: e.target.value })} />
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-border/60 p-3">
+              <p className="text-sm font-medium">Delivery frequency</p>
+              <p className="mb-2 text-xs text-muted-foreground">Batch non-urgent items into a digest.</p>
+              <div className="flex flex-wrap gap-2">
+                {(["instant", "hourly", "daily"] as const).map((m) => (
+                  <button key={m} type="button"
+                    onClick={() => setPrefs({ ...prefs, digest_mode: m })}
+                    className={`rounded-full border px-3 py-1 text-xs font-medium capitalize ${prefs.digest_mode === m ? "border-primary bg-primary/10 text-primary" : "border-border/60 text-muted-foreground"}`}>
+                    {m}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-border/60 p-3">
+              <p className="text-sm font-medium">Mute categories</p>
+              <p className="mb-2 text-xs text-muted-foreground">Muted categories are dropped entirely. Critical alerts still deliver.</p>
+              <div className="flex flex-wrap gap-2">
+                {NOTIF_TYPES.map((t) => (
+                  <button key={t.value} type="button" onClick={() => toggleMute(t.value)}
+                    className={`rounded-full border px-3 py-1 text-xs font-medium ${prefs.mute_types.includes(t.value) ? "border-destructive bg-destructive/10 text-destructive" : "border-border/60 text-muted-foreground"}`}>
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <Button onClick={savePrefs} className="bg-[image:var(--gradient-primary)] text-primary-foreground">Save preferences</Button>
           </div>
         </section>
