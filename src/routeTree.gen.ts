@@ -17,6 +17,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GuidesChoosingSaccoSoftwareRouteImport } from './routes/guides.choosing-sacco-software'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as AppSuperadminRouteImport } from './routes/_app/superadmin'
 import { Route as AppStatementsRouteImport } from './routes/_app/statements'
 import { Route as AppProfileRouteImport } from './routes/_app/profile'
 import { Route as AppNotificationsRouteImport } from './routes/_app/notifications'
@@ -76,6 +77,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppSuperadminRoute = AppSuperadminRouteImport.update({
+  id: '/superadmin',
+  path: '/superadmin',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppStatementsRoute = AppStatementsRouteImport.update({
   id: '/statements',
@@ -186,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AppNotificationsRoute
   '/profile': typeof AppProfileRoute
   '/statements': typeof AppStatementsRoute
+  '/superadmin': typeof AppSuperadminRoute
   '/api/chat': typeof ApiChatRoute
   '/guides/choosing-sacco-software': typeof GuidesChoosingSaccoSoftwareRoute
   '/admin/audit': typeof AppAdminAuditRoute
@@ -213,6 +220,7 @@ export interface FileRoutesByTo {
   '/notifications': typeof AppNotificationsRoute
   '/profile': typeof AppProfileRoute
   '/statements': typeof AppStatementsRoute
+  '/superadmin': typeof AppSuperadminRoute
   '/api/chat': typeof ApiChatRoute
   '/guides/choosing-sacco-software': typeof GuidesChoosingSaccoSoftwareRoute
   '/admin/audit': typeof AppAdminAuditRoute
@@ -243,6 +251,7 @@ export interface FileRoutesById {
   '/_app/notifications': typeof AppNotificationsRoute
   '/_app/profile': typeof AppProfileRoute
   '/_app/statements': typeof AppStatementsRoute
+  '/_app/superadmin': typeof AppSuperadminRoute
   '/api/chat': typeof ApiChatRoute
   '/guides/choosing-sacco-software': typeof GuidesChoosingSaccoSoftwareRoute
   '/_app/admin/audit': typeof AppAdminAuditRoute
@@ -273,6 +282,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/profile'
     | '/statements'
+    | '/superadmin'
     | '/api/chat'
     | '/guides/choosing-sacco-software'
     | '/admin/audit'
@@ -300,6 +310,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/profile'
     | '/statements'
+    | '/superadmin'
     | '/api/chat'
     | '/guides/choosing-sacco-software'
     | '/admin/audit'
@@ -329,6 +340,7 @@ export interface FileRouteTypes {
     | '/_app/notifications'
     | '/_app/profile'
     | '/_app/statements'
+    | '/_app/superadmin'
     | '/api/chat'
     | '/guides/choosing-sacco-software'
     | '/_app/admin/audit'
@@ -413,6 +425,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/chat'
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_app/superadmin': {
+      id: '/_app/superadmin'
+      path: '/superadmin'
+      fullPath: '/superadmin'
+      preLoaderRoute: typeof AppSuperadminRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_app/statements': {
       id: '/_app/statements'
@@ -584,6 +603,7 @@ interface AppRouteChildren {
   AppNotificationsRoute: typeof AppNotificationsRoute
   AppProfileRoute: typeof AppProfileRoute
   AppStatementsRoute: typeof AppStatementsRoute
+  AppSuperadminRoute: typeof AppSuperadminRoute
   AppLoansLoanIdRoute: typeof AppLoansLoanIdRoute
   AppLoansApplyRoute: typeof AppLoansApplyRoute
   AppLoansSimulatorRoute: typeof AppLoansSimulatorRoute
@@ -598,6 +618,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppNotificationsRoute: AppNotificationsRoute,
   AppProfileRoute: AppProfileRoute,
   AppStatementsRoute: AppStatementsRoute,
+  AppSuperadminRoute: AppSuperadminRoute,
   AppLoansLoanIdRoute: AppLoansLoanIdRoute,
   AppLoansApplyRoute: AppLoansApplyRoute,
   AppLoansSimulatorRoute: AppLoansSimulatorRoute,
