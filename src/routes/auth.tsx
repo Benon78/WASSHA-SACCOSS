@@ -56,7 +56,7 @@ function AuthPage() {
         nav({ to: (redirectTo as any) || "/dashboard" });
       } else if (mode === "forgot") {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/profile`,
+          redirectTo: `${window.location.origin}/reset-password`,
         });
         if (error) throw error;
         toast.success("Password reset link sent. Please check your email.");

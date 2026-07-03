@@ -1,9 +1,28 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session, User } from "@supabase/supabase-js";
+import {
+  can as canDo,
+  hasAnyRole as ctxHasAnyRole,
+  hasBoardSeat as ctxHasBoardSeat,
+  hasMinRole as ctxHasMinRole,
+  hasRole as ctxHasRole,
+  isStaff as ctxIsStaff,
+  type AppRole,
+  type BoardSeat,
+  type Permission,
+} from "@/lib/permissions";
 
-export type AppRole = "member" | "approver" | "finance" | "manager" | "admin" | "super_admin";
-export type BoardSeat = "chair" | "member_1" | "member_2";
+export type { AppRole, BoardSeat, Permission };
 
 interface AuthCtx {
   user: User | null;
@@ -13,56 +32,146 @@ interface AuthCtx {
   loading: boolean;
   isStaff: boolean;
   hasRole: (r: AppRole) => boolean;
+  hasAnyRole: (r: AppRole[]) => boolean;
+  hasMinRole: (r: AppRole) => boolean;
   hasBoardSeat: (s: BoardSeat) => boolean;
+  can: (p: Permission) => boolean;
   signOut: () => Promise<void>;
   refreshRoles: () => Promise<void>;
+  /** True immediately after a PASSWORD_RECOVERY event. Reset pages watch this. */
+  isPasswordRecovery: boolean;
+  clearPasswordRecovery: () => void;
 }
 
 const Ctx = createContext<AuthCtx | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [boardSeats, setBoardSeats] = useState<BoardSeat[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
 
-  const loadRoles = async (uid: string) => {
-    const [{ data: r }, { data: b }] = await Promise.all([
-      supabase.from("user_roles").select("role").eq("user_id", uid),
-      supabase.from("loan_board_members").select("seat").eq("user_id", uid),
-    ]);
-    setRoles((r ?? []).map((x: any) => x.role as AppRole));
-    setBoardSeats((b ?? []).map((x: any) => x.seat as BoardSeat));
-  };
+  // Track the current user id so we only refetch roles when identity changes.
+  const currentUserId = useRef<string | null>(null);
+
+  const loadRoles = useCallback(async (uid: string) => {
+    try {
+      const [{ data: r }, { data: b }] = await Promise.all([
+        supabase.from("user_roles").select("role").eq("user_id", uid),
+        supabase.from("loan_board_members").select("seat").eq("user_id", uid),
+      ]);
+      setRoles(((r ?? []) as Array<{ role: string }>).map((x) => x.role as AppRole));
+      setBoardSeats(((b ?? []) as Array<{ seat: string }>).map((x) => x.seat as BoardSeat));
+    } catch {
+      // Non-fatal: RLS/network hiccup shouldn't lock the UI.
+      setRoles([]);
+      setBoardSeats([]);
+    }
+  }, []);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
+    let mounted = true;
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
+      if (!mounted) return;
+
+      // Always keep session/user fresh so bearer attacher sees the newest token.
+      setSession(s);
+      setUser(s?.user ?? null);
+
+      switch (event) {
+        case "INITIAL_SESSION":
+        case "SIGNED_IN": {
+          const nextId = s?.user?.id ?? null;
+          if (nextId && nextId !== currentUserId.current) {
+            currentUserId.current = nextId;
+            // Defer to avoid running inside the auth callback stack.
+            setTimeout(() => { void loadRoles(nextId); }, 0);
+          } else if (!nextId) {
+            currentUserId.current = null;
+            setRoles([]);
+            setBoardSeats([]);
+          }
+          break;
+        }
+        case "TOKEN_REFRESHED":
+          // Token rotation — nothing else to reload. Router/query cache stays intact.
+          break;
+        case "USER_UPDATED":
+          if (s?.user?.id) {
+            setTimeout(() => { void loadRoles(s.user!.id); }, 0);
+          }
+          break;
+        case "PASSWORD_RECOVERY":
+          setIsPasswordRecovery(true);
+          break;
+        case "SIGNED_OUT": {
+          currentUserId.current = null;
+          setRoles([]);
+          setBoardSeats([]);
+          setIsPasswordRecovery(false);
+          // Stop in-flight protected queries before they 401.
+          void queryClient.cancelQueries();
+          queryClient.clear();
+          break;
+        }
+        default:
+          break;
+      }
+    });
+
+    // Prime the session on mount (covers hard refresh; onAuthStateChange also
+    // fires INITIAL_SESSION but we still need to end the loading flash).
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      if (!mounted) return;
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
-        setTimeout(() => loadRoles(s.user.id), 0);
-      } else {
-        setRoles([]);
-        setBoardSeats([]);
+        currentUserId.current = s.user.id;
+        void loadRoles(s.user.id);
       }
-    });
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
-      setSession(s);
-      setUser(s?.user ?? null);
-      if (s?.user) loadRoles(s.user.id);
       setLoading(false);
     });
-    return () => subscription.unsubscribe();
-  }, []);
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [loadRoles, queryClient]);
+
+  const permCtx = { roles, boardSeats };
 
   const value: AuthCtx = {
-    user, session, roles, boardSeats, loading,
-    isStaff: roles.some((r) => ["approver", "finance", "manager", "admin", "super_admin"].includes(r)) || boardSeats.length > 0,
-    hasRole: (r) => roles.includes(r) || (r === "admin" && roles.includes("super_admin")),
-    hasBoardSeat: (s) => boardSeats.includes(s),
-    signOut: async () => { await supabase.auth.signOut(); },
-    refreshRoles: async () => { if (user) await loadRoles(user.id); },
+    user,
+    session,
+    roles,
+    boardSeats,
+    loading,
+    isStaff: ctxIsStaff(permCtx),
+    hasRole: (r) => ctxHasRole(permCtx, r),
+    hasAnyRole: (r) => ctxHasAnyRole(permCtx, r),
+    hasMinRole: (r) => ctxHasMinRole(permCtx, r),
+    hasBoardSeat: (s) => ctxHasBoardSeat(permCtx, s),
+    can: (p) => canDo(permCtx, p),
+    signOut: async () => {
+      // Ordered teardown per Sign-Out Hygiene: cancel → clear → signOut.
+      // Navigation happens in the caller so we can use router.navigate() with replace.
+      try {
+        await queryClient.cancelQueries();
+      } catch {
+        /* noop */
+      }
+      queryClient.clear();
+      await supabase.auth.signOut();
+    },
+    refreshRoles: async () => {
+      if (currentUserId.current) await loadRoles(currentUserId.current);
+    },
+    isPasswordRecovery,
+    clearPasswordRecovery: () => setIsPasswordRecovery(false),
   };
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
