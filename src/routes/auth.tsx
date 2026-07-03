@@ -333,3 +333,32 @@ function AuthPage() {
     </div>
   );
 }
+
+/**
+ * Translate raw OAuth error codes / descriptions returned by Supabase's
+ * vendor sign-in flow into something we can safely show the user.
+ * Unknown codes fall back to a generic message with the reason appended.
+ */
+function translateOAuthError(code: string, description?: string | null): string {
+  const d = (description ?? "").toLowerCase();
+  if (d.includes("failed to sign in with vendor") || d.includes("server_error")) {
+    return "Google sign-in couldn't be completed right now. Please try again, or use email and password. If this keeps happening the Google provider may need to be reconfigured — contact support.";
+  }
+  if (d.includes("popup") && d.includes("closed")) {
+    return "The Google sign-in window was closed before finishing. Please try again.";
+  }
+  if (d.includes("redirect") || d.includes("origin")) {
+    return "The Google sign-in redirect URL isn't allowed for this site. Please contact support.";
+  }
+  if (d.includes("access_denied")) {
+    return "You cancelled the Google sign-in. Please try again if that wasn't intentional.";
+  }
+  if (d.includes("invalid_request")) {
+    return "Google rejected the sign-in request. Please try again in a moment.";
+  }
+  if (code === "google_error") {
+    return description ? `Google sign-in failed: ${description}` : "Google sign-in failed. Please try again.";
+  }
+  return description ? `Sign-in failed: ${description}` : "Sign-in failed. Please try again.";
+}
+
