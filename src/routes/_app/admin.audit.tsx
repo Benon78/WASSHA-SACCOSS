@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { downloadCSV, downloadPDF } from "@/lib/exporters";
 import { fmtDate } from "@/lib/format";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/friendlyError";
 import { FileSpreadsheet, FileDown, ShieldCheck, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/_app/admin/audit")({

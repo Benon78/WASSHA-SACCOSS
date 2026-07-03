@@ -11,6 +11,7 @@ import { useAuth } from "@/lib/auth";
 import { fmtTZS, fmtDate, fmtRelative } from "@/lib/format";
 import { STAGE_LABEL, STAGE_ROLE, STAGE_BOARD_SEAT, nextStage, type LoanStage } from "@/lib/loanStages";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/friendlyError";
 import { CheckCircle2, XCircle, ArrowRight, FileQuestion, Upload, FileText, Loader2, Banknote, FileDown, Eye, ReceiptText } from "lucide-react";
 import { loanRepaymentPdf, disbursementReceiptPdf } from "@/lib/pdf";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";

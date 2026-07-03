@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/friendlyError";
 import { getAiHistory, clearAiHistory } from "@/lib/ai-chat.functions";
 import {
   Conversation,

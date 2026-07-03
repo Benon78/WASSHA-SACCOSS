@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/friendlyError";
 import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_app/admin/escalations")({
