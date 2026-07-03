@@ -14,7 +14,15 @@ import { friendlyError } from "@/lib/friendlyError";
 import { FileSpreadsheet, FileText, FileDown, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/_app/admin/reports")({
-  head: () => ({ meta: [{ title: "Reports — Admin" }] }),
+  head: () => ({
+    meta: [
+      { title: "Reports — Admin — WASSHA SACCOS" },
+      { name: "description", content: "Access and export SACCOS performance reports, savings and loan analytics for administrators." },
+      { property: "og:title", content: "Admin Reports — WASSHA SACCOS" },
+      { property: "og:description", content: "Access and export SACCOS performance reports for administrators." },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: ReportsPage,
 });
 
