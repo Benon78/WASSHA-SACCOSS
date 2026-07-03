@@ -340,7 +340,7 @@ function AdminPage() {
                     </td>
                     <td>
                       <div className="flex flex-wrap gap-1">
-                        {ROLES.map((r) => {
+                        {visibleRoles.map((r) => {
                           const has = u.roles.includes(r);
                           return (
                             <button key={r} onClick={() => toggleRole(u.user_id, r, has)}
