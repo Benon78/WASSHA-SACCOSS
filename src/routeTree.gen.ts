@@ -14,6 +14,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as GuidesChoosingSaccoSoftwareRouteImport } from './routes/guides.choosing-sacco-software'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AppStatementsRouteImport } from './routes/_app/statements'
 import { Route as AppProfileRouteImport } from './routes/_app/profile'
@@ -59,6 +60,12 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GuidesChoosingSaccoSoftwareRoute =
+  GuidesChoosingSaccoSoftwareRouteImport.update({
+    id: '/guides/choosing-sacco-software',
+    path: '/guides/choosing-sacco-software',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -173,6 +180,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AppProfileRoute
   '/statements': typeof AppStatementsRoute
   '/api/chat': typeof ApiChatRoute
+  '/guides/choosing-sacco-software': typeof GuidesChoosingSaccoSoftwareRoute
   '/admin/audit': typeof AppAdminAuditRoute
   '/admin/board': typeof AppAdminBoardRoute
   '/admin/escalations': typeof AppAdminEscalationsRoute
@@ -198,6 +206,7 @@ export interface FileRoutesByTo {
   '/profile': typeof AppProfileRoute
   '/statements': typeof AppStatementsRoute
   '/api/chat': typeof ApiChatRoute
+  '/guides/choosing-sacco-software': typeof GuidesChoosingSaccoSoftwareRoute
   '/admin/audit': typeof AppAdminAuditRoute
   '/admin/board': typeof AppAdminBoardRoute
   '/admin/escalations': typeof AppAdminEscalationsRoute
@@ -226,6 +235,7 @@ export interface FileRoutesById {
   '/_app/profile': typeof AppProfileRoute
   '/_app/statements': typeof AppStatementsRoute
   '/api/chat': typeof ApiChatRoute
+  '/guides/choosing-sacco-software': typeof GuidesChoosingSaccoSoftwareRoute
   '/_app/admin/audit': typeof AppAdminAuditRoute
   '/_app/admin/board': typeof AppAdminBoardRoute
   '/_app/admin/escalations': typeof AppAdminEscalationsRoute
@@ -254,6 +264,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/statements'
     | '/api/chat'
+    | '/guides/choosing-sacco-software'
     | '/admin/audit'
     | '/admin/board'
     | '/admin/escalations'
@@ -279,6 +290,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/statements'
     | '/api/chat'
+    | '/guides/choosing-sacco-software'
     | '/admin/audit'
     | '/admin/board'
     | '/admin/escalations'
@@ -306,6 +318,7 @@ export interface FileRouteTypes {
     | '/_app/profile'
     | '/_app/statements'
     | '/api/chat'
+    | '/guides/choosing-sacco-software'
     | '/_app/admin/audit'
     | '/_app/admin/board'
     | '/_app/admin/escalations'
@@ -327,6 +340,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   WorkflowRoute: typeof WorkflowRoute
   ApiChatRoute: typeof ApiChatRoute
+  GuidesChoosingSaccoSoftwareRoute: typeof GuidesChoosingSaccoSoftwareRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -364,6 +378,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guides/choosing-sacco-software': {
+      id: '/guides/choosing-sacco-software'
+      path: '/guides/choosing-sacco-software'
+      fullPath: '/guides/choosing-sacco-software'
+      preLoaderRoute: typeof GuidesChoosingSaccoSoftwareRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat': {
@@ -572,6 +593,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   WorkflowRoute: WorkflowRoute,
   ApiChatRoute: ApiChatRoute,
+  GuidesChoosingSaccoSoftwareRoute: GuidesChoosingSaccoSoftwareRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
