@@ -9,6 +9,7 @@ import {
 } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { recordSession } from "@/lib/session-tracker.functions";
 import type { Session, User } from "@supabase/supabase-js";
 import {
   can as canDo,
