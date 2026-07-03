@@ -152,11 +152,31 @@ function AuthPage() {
         nav({ to: safeRedirect, replace: true });
       }
     } catch (err: any) {
-      toast.error(friendlyError(err, "Authentication failed"));
+      const friendly = friendlyError(err, "Authentication failed");
+      const reason = err?.message ?? String(err);
+      // Log every unsuccessful email/password attempt so the Super Admin
+      // Security Center's failed-login counters reflect reality.
+      const parsedForLog = emailSchema.safeParse(email);
+      void logAuthEvent({
+        data: {
+          eventType: mode === "signup" ? "failed_login" : "failed_login",
+          provider: mode === "signup" ? "signup" : "email",
+          email: parsedForLog.success ? parsedForLog.data : null,
+          reason: `${mode}: ${reason}`.slice(0, 500),
+        },
+      }).catch(() => undefined);
+      // Signup errors from Supabase can be terse ("Database error saving new user");
+      // give the user something actionable and keep them on the page.
+      if (mode === "signup" && /database error/i.test(reason)) {
+        toast.error("We couldn't create your account. Please try again in a moment, or contact support if the issue persists.", { duration: 8000 });
+      } else {
+        toast.error(friendly, { duration: 6000 });
+      }
     } finally {
       setLoading(false);
     }
   };
+
 
   const title = mode === "signin" ? "Welcome back" : mode === "signup" ? "Create your member account" : "Reset your password";
   const subtitle = mode === "signin"
