@@ -40,14 +40,14 @@ function Landing() {
           style={{ backgroundImage: "radial-gradient(60% 50% at 80% 0%, oklch(0.78 0.17 60 / 0.4), transparent 60%)" }} />
         <div className="container mx-auto px-4 py-20 md:py-28">
           <div className="mx-auto max-w-3xl text-center text-white">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/40 bg-white/10 px-3 py-1 text-xs font-medium text-white backdrop-blur">
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/60 bg-primary/15 px-3 py-1 text-xs font-medium text-primary backdrop-blur">
               <Sparkles className="h-3.5 w-3.5" /> Built for modern SACCOS operations
             </span>
             <h1 className="mt-5 text-4xl font-bold leading-[1.05] tracking-tight text-white md:text-6xl [text-shadow:0_2px_16px_rgb(0_0_0_/_0.6)]">
               The fintech-grade<br />
               <span className="bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">SACCOS platform</span> your members deserve
             </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-base text-slate-100 md:text-lg [text-shadow:0_1px_8px_rgb(0_0_0_/_0.5)]">
+            <p className="mx-auto mt-5 max-w-2xl text-base text-primary/90 md:text-lg [text-shadow:0_1px_8px_rgb(0_0_0_/_0.5)]">
               Transparent savings, intelligent loan workflows, and real-time notifications — purpose built for WASSHA SACCOS members, approvers, and administrators.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -58,7 +58,7 @@ function Landing() {
                 <Link to="/workflow">View workflow guide</Link>
               </Button>
             </div>
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-slate-100 [text-shadow:0_1px_6px_rgb(0_0_0_/_0.5)]">
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-medium text-primary [text-shadow:0_1px_6px_rgb(0_0_0_/_0.5)]">
               <span className="inline-flex items-center gap-1.5"><Lock className="h-3.5 w-3.5" /> Bank-grade security</span>
               <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5" /> Role-based access</span>
               <span className="inline-flex items-center gap-1.5"><Smartphone className="h-3.5 w-3.5" /> Mobile-first</span>

@@ -10,15 +10,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { downloadCSV, downloadPDF } from "@/lib/exporters";
 import { fmtDate } from "@/lib/format";
 import { toast } from "sonner";
-import { FileSpreadsheet, FileDown, ShieldCheck, Loader2 } from "lucide-react";
+import { FileSpreadsheet, FileDown, ShieldCheck, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/_app/admin/audit")({
   head: () => ({ meta: [{ title: "Audit log — Admin" }] }),
   component: AuditPage,
 });
 
+const PAGE_SIZE = 25;
+
 function AuditPage() {
   const { hasRole, loading } = useAuth();
+  const [page, setPage] = useState(1);
   const [from, setFrom] = useState(() => new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10));
   const [to, setTo] = useState(() => new Date().toISOString().slice(0, 10));
   const [action, setAction] = useState("all");
@@ -57,6 +60,7 @@ function AuditPage() {
       flat = flat.filter((r) => Object.values(r).some((v) => String(v).toLowerCase().includes(s)));
     }
     setRows(flat);
+    setPage(1);
     return flat;
   };
 
