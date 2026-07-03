@@ -1,5 +1,5 @@
-import { createFileRoute, Link, useNavigate, useSearch, redirect } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
@@ -8,9 +8,27 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/friendlyError";
+import { useAuth } from "@/lib/auth";
+import { safeInternalPath } from "@/lib/safeUrl";
 import { Wallet, Loader2 } from "lucide-react";
 
-const search = z.object({ redirect: z.string().optional() });
+const search = z.object({ redirect: z.string().max(2048).optional() });
+
+const emailSchema = z.string().trim().toLowerCase().email("Enter a valid email").max(254);
+const passwordSignInSchema = z.string().min(1, "Password required").max(128);
+const passwordSignUpSchema = z
+  .string()
+  .min(8, "Password must be at least 8 characters")
+  .max(128, "Password is too long")
+  .refine((v) => /[A-Za-z]/.test(v) && /[0-9]/.test(v), {
+    message: "Include at least one letter and one number",
+  });
+const nameSchema = z.string().trim().min(2, "Enter your full name").max(120);
+const phoneSchema = z
+  .string()
+  .trim()
+  .max(20)
+  .refine((v) => v === "" || /^\+?[0-9\s\-()]{7,20}$/.test(v), { message: "Enter a valid phone number" });
 
 export const Route = createFileRoute("/auth")({
   validateSearch: search,
