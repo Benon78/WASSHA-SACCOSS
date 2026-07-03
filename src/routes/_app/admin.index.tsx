@@ -55,6 +55,8 @@ function AdminPage() {
     const ch = supabase.channel("admin-realtime")
       .on("postgres_changes", { event: "*", schema: "public", table: "loans" }, () => load())
       .on("postgres_changes", { event: "*", schema: "public", table: "transactions" }, () => load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "user_roles" }, () => load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, () => load())
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [load, hasRole]);
@@ -94,12 +96,21 @@ function AdminPage() {
     if (SUPER_ADMIN_ONLY_ROLES.includes(role) && !isSuperAdmin) {
       return toast.error("Only a Super Admin can assign the Admin role.");
     }
+    // Optimistically flip the badge so the UI can never appear "stuck".
+    setUsers((prev) => prev.map((u) => u.user_id === userId
+      ? { ...u, roles: currentlyHas ? u.roles.filter((r: string) => r !== role) : [...u.roles, role] }
+      : u));
     const { error } = currentlyHas
       ? await supabase.rpc("rpc_remove_user_role", { _user_id: userId, _role: role as any })
       : await supabase.rpc("rpc_assign_user_role", { _user_id: userId, _role: role as any });
-    if (error) return toast.error(friendlyError(error));
-    toast.success("Role updated"); load();
+    if (error) {
+      await load(); // revert to DB truth
+      return toast.error(friendlyError(error));
+    }
+    toast.success("Role updated");
+    await load();
   };
+
 
   const memberLoans = useMemo(() => activeLoans.filter((l) => l.member_id === tx.user_id), [activeLoans, tx.user_id]);
   const needsLoanLink = ["repayment", "fee", "loan_fee"].includes(tx.tx_type);
