@@ -2,6 +2,7 @@ import { Outlet, createFileRoute, useNavigate, useRouterState } from "@tanstack/
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { AssistantWidget } from "@/components/AssistantWidget";
+import { MfaGate } from "@/components/MfaGate";
 import { Skeleton } from "@/components/ui/skeleton";
 import { safeInternalPath } from "@/lib/safeUrl";
 
@@ -14,13 +15,9 @@ function AppLayout() {
   const nav = useNavigate();
   const location = useRouterState({ select: (s) => s.location });
 
-  // Session expired / signed out while the user was on a protected page.
   useEffect(() => {
     if (loading) return;
     if (!user) {
-      // Preserve destination when it's a real protected route. Skip anything
-      // that points back at /auth or /reset-password so we never build the
-      // nested "?redirect=/auth?redirect=/auth?..." loop.
       const raw = `${location.pathname}${location.searchStr ?? ""}${location.hash ?? ""}`;
       const redirect = safeInternalPath(raw);
       nav({
@@ -31,7 +28,6 @@ function AppLayout() {
     }
   }, [user, loading, location, nav]);
 
-  // In-flow password recovery should never be blocked by the app shell.
   useEffect(() => {
     if (isPasswordRecovery) {
       nav({ to: "/reset-password", replace: true });
@@ -43,10 +39,10 @@ function AppLayout() {
   }
 
   return (
-    <>
+    <MfaGate>
       <Outlet />
       <AssistantWidget />
-    </>
+    </MfaGate>
   );
 }
 

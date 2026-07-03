@@ -143,11 +143,23 @@ function AuthPage() {
       } else {
         const parsedPwd = passwordSignInSchema.safeParse(password);
         if (!parsedPwd.success) throw new Error(parsedPwd.error.issues[0]!.message);
+        // Lockout check — 5 failed attempts in 15 min blocks for 15 min.
+        const { data: lockData } = await supabase.rpc("is_email_locked", { _email: cleanEmail });
+        if (lockData && (lockData as any).locked) {
+          const until = (lockData as any).locked_until;
+          throw new Error(`Too many failed attempts. Try again after ${until ? new Date(until).toLocaleTimeString() : "a few minutes"}.`);
+        }
         const { error } = await supabase.auth.signInWithPassword({
           email: cleanEmail,
           password: parsedPwd.data,
         });
-        if (error) throw error;
+        if (error) {
+          // Record failure in the sliding-window counter.
+          await supabase.rpc("record_failed_login", { _email: cleanEmail });
+          throw error;
+        }
+        // Clear the counter on success.
+        await supabase.rpc("clear_login_lockout", { _email: cleanEmail });
         toast.success("Signed in");
         nav({ to: safeRedirect, replace: true });
       }
