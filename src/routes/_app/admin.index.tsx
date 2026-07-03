@@ -95,8 +95,8 @@ function AdminPage() {
       return toast.error("Only a Super Admin can assign the Admin role.");
     }
     const { error } = currentlyHas
-      ? await supabase.rpc("rpc_remove_user_role", { _user_id: userId, _role: role as any, _reason: null })
-      : await supabase.rpc("rpc_assign_user_role", { _user_id: userId, _role: role as any, _reason: null });
+      ? await supabase.rpc("rpc_remove_user_role", { _user_id: userId, _role: role as any })
+      : await supabase.rpc("rpc_assign_user_role", { _user_id: userId, _role: role as any });
     if (error) return toast.error(friendlyError(error));
     toast.success("Role updated"); load();
   };

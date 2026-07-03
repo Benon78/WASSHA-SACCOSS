@@ -56,7 +56,7 @@ function PoliciesPage() {
         processing_fee_rate: Number(form.processing_fee_rate),
         notes: form.notes || null,
       },
-      _reason: form.notes || null,
+      _reason: form.notes || undefined,
     });
     setBusy(false);
     if (error) toast.error(friendlyError(error));
