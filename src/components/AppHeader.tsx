@@ -162,7 +162,7 @@ export function AppHeader() {
 
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open menu">
+              <Button variant="ghost" size="icon" className="xl:hidden" aria-label="Open menu">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
@@ -171,7 +171,7 @@ export function AppHeader() {
                 <SheetTitle>Menu</SheetTitle>
               </SheetHeader>
               <nav className="mt-4 flex flex-col gap-3 text-sm font-medium text-muted-foreground">
-                {navLinks}
+                {mobileNavLinks}
                 {user && (
                   <button
                     onClick={async () => { setMobileOpen(false); await signOut(); nav({ to: "/" }); }}
