@@ -230,7 +230,7 @@ function AuthPage() {
                     if (result.error) throw result.error;
                     if (result.redirected) return;
                     toast.success("Signed in with Google");
-                    nav({ to: (redirectTo as any) || "/dashboard" });
+                    nav({ to: safeRedirect, replace: true });
                   } catch (err: any) {
                     toast.error(friendlyError(err, "Google sign-in failed"));
                   } finally {
