@@ -231,7 +231,10 @@ export const getAuditDetail = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row, error } = await supabaseAdmin
-      .from("audit_log").select("*").eq("id", data.id).maybeSingle();
+      .from("audit_log")
+      .select("id, actor_id, action, entity, entity_id, ip, user_agent, session_id, meta, prev_value, new_value, created_at")
+      .eq("id", data.id)
+      .maybeSingle();
     if (error || !row) throw new Response("Not found", { status: 404 });
     let actor: { full_name: string; member_number: string | null } | null = null;
     if (row.actor_id) {
