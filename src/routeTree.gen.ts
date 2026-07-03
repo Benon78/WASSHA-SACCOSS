@@ -24,6 +24,7 @@ import { Route as AppApprovalsRouteImport } from './routes/_app/approvals'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
 import { Route as AppLoansIndexRouteImport } from './routes/_app/loans/index'
 import { Route as AppAdminIndexRouteImport } from './routes/_app/admin.index'
+import { Route as AppLoansSimulatorRouteImport } from './routes/_app/loans/simulator'
 import { Route as AppLoansApplyRouteImport } from './routes/_app/loans/apply'
 import { Route as AppLoansLoanIdRouteImport } from './routes/_app/loans/$loanId'
 import { Route as AppAdminReportsRouteImport } from './routes/_app/admin.reports'
@@ -106,6 +107,11 @@ const AppAdminIndexRoute = AppAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppAdminRoute,
 } as any)
+const AppLoansSimulatorRoute = AppLoansSimulatorRouteImport.update({
+  id: '/loans/simulator',
+  path: '/loans/simulator',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppLoansApplyRoute = AppLoansApplyRouteImport.update({
   id: '/loans/apply',
   path: '/loans/apply',
@@ -162,6 +168,7 @@ export interface FileRoutesByFullPath {
   '/admin/reports': typeof AppAdminReportsRoute
   '/loans/$loanId': typeof AppLoansLoanIdRoute
   '/loans/apply': typeof AppLoansApplyRoute
+  '/loans/simulator': typeof AppLoansSimulatorRoute
   '/admin/': typeof AppAdminIndexRoute
   '/loans/': typeof AppLoansIndexRoute
 }
@@ -184,6 +191,7 @@ export interface FileRoutesByTo {
   '/admin/reports': typeof AppAdminReportsRoute
   '/loans/$loanId': typeof AppLoansLoanIdRoute
   '/loans/apply': typeof AppLoansApplyRoute
+  '/loans/simulator': typeof AppLoansSimulatorRoute
   '/admin': typeof AppAdminIndexRoute
   '/loans': typeof AppLoansIndexRoute
 }
@@ -209,6 +217,7 @@ export interface FileRoutesById {
   '/_app/admin/reports': typeof AppAdminReportsRoute
   '/_app/loans/$loanId': typeof AppLoansLoanIdRoute
   '/_app/loans/apply': typeof AppLoansApplyRoute
+  '/_app/loans/simulator': typeof AppLoansSimulatorRoute
   '/_app/admin/': typeof AppAdminIndexRoute
   '/_app/loans/': typeof AppLoansIndexRoute
 }
@@ -234,6 +243,7 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/loans/$loanId'
     | '/loans/apply'
+    | '/loans/simulator'
     | '/admin/'
     | '/loans/'
   fileRoutesByTo: FileRoutesByTo
@@ -256,6 +266,7 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/loans/$loanId'
     | '/loans/apply'
+    | '/loans/simulator'
     | '/admin'
     | '/loans'
   id:
@@ -280,6 +291,7 @@ export interface FileRouteTypes {
     | '/_app/admin/reports'
     | '/_app/loans/$loanId'
     | '/_app/loans/apply'
+    | '/_app/loans/simulator'
     | '/_app/admin/'
     | '/_app/loans/'
   fileRoutesById: FileRoutesById
@@ -400,6 +412,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminIndexRouteImport
       parentRoute: typeof AppAdminRoute
     }
+    '/_app/loans/simulator': {
+      id: '/_app/loans/simulator'
+      path: '/loans/simulator'
+      fullPath: '/loans/simulator'
+      preLoaderRoute: typeof AppLoansSimulatorRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/loans/apply': {
       id: '/_app/loans/apply'
       path: '/loans/apply'
@@ -484,6 +503,7 @@ interface AppRouteChildren {
   AppStatementsRoute: typeof AppStatementsRoute
   AppLoansLoanIdRoute: typeof AppLoansLoanIdRoute
   AppLoansApplyRoute: typeof AppLoansApplyRoute
+  AppLoansSimulatorRoute: typeof AppLoansSimulatorRoute
   AppLoansIndexRoute: typeof AppLoansIndexRoute
 }
 
@@ -497,6 +517,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppStatementsRoute: AppStatementsRoute,
   AppLoansLoanIdRoute: AppLoansLoanIdRoute,
   AppLoansApplyRoute: AppLoansApplyRoute,
+  AppLoansSimulatorRoute: AppLoansSimulatorRoute,
   AppLoansIndexRoute: AppLoansIndexRoute,
 }
 

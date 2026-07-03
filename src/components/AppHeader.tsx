@@ -24,6 +24,7 @@ export function AppHeader() {
     <>
       <Link to="/dashboard" className="transition hover:text-foreground whitespace-nowrap" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>{t("nav_dashboard")}</Link>
       <Link to="/loans" className="transition hover:text-foreground whitespace-nowrap" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>{t("nav_loans")}</Link>
+      <Link to="/loans/simulator" className="transition hover:text-foreground whitespace-nowrap" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>Simulator</Link>
       <Link to="/statements" className="transition hover:text-foreground whitespace-nowrap" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>{t("nav_statements")}</Link>
       <Link to="/notifications" className="transition hover:text-foreground whitespace-nowrap" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>{t("nav_notifications")}</Link>
       <Link to="/escalations" className="transition hover:text-foreground whitespace-nowrap" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>{t("nav_escalations")}</Link>
