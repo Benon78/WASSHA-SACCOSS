@@ -58,6 +58,7 @@ export function AppHeader() {
         <DropdownMenuItem asChild><Link to="/admin/escalations">Escalations queue</Link></DropdownMenuItem>
         <DropdownMenuItem asChild><Link to="/admin/sla">SLA tracking</Link></DropdownMenuItem>
         <DropdownMenuItem asChild><Link to="/admin/import">Bulk member import</Link></DropdownMenuItem>
+        {isSuperAdmin && <DropdownMenuItem asChild><Link to="/superadmin">🛡 Super Admin</Link></DropdownMenuItem>}
       </DropdownMenuContent>
     </DropdownMenu>
   ) : null;
