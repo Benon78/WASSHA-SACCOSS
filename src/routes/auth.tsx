@@ -280,11 +280,17 @@ function AuthPage() {
                     toast.success("Signed in with Google");
                     nav({ to: safeRedirect, replace: true });
                   } catch (err: any) {
-                    toast.error(friendlyError(err, "Google sign-in failed"));
+                    const reason = err?.message ?? String(err);
+                    const friendly = translateOAuthError("google_error", reason);
+                    toast.error(friendly, { duration: 8000 });
+                    void logAuthEvent({
+                      data: { eventType: "failed_login", provider: "google", reason: reason.slice(0, 500) },
+                    }).catch(() => undefined);
                   } finally {
                     setLoading(false);
                   }
                 }}
+
                 className="w-full"
               >
                 <svg viewBox="0 0 24 24" className="mr-2 h-4 w-4" aria-hidden>
