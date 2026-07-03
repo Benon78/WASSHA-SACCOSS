@@ -341,16 +341,17 @@ export const listSettings = createServerFn({ method: "GET" })
       .eq("is_current", true);
     if (error) throw new Response(error.message, { status: 500 });
 
-    const map = new Map<string, { value: unknown; version: number; updated_by: string | null; created_at: string }>();
+    type JsonVal = string | number | boolean | null | JsonVal[] | { [k: string]: JsonVal };
+    const map = new Map<string, { value: JsonVal; version: number; updated_by: string | null; created_at: string }>();
     for (const r of data ?? []) map.set(r.key, {
-      value: r.value, version: r.version, updated_by: r.updated_by, created_at: r.created_at,
+      value: r.value as JsonVal, version: r.version, updated_by: r.updated_by, created_at: r.created_at,
     });
 
     return SETTING_KEYS.map((key) => {
       const cur = map.get(key);
       return {
         key,
-        value: (cur?.value ?? DEFAULTS[key]) as unknown,
+        value: (cur?.value ?? (DEFAULTS[key] as JsonVal)),
         version: cur?.version ?? 0,
         updated_by: cur?.updated_by ?? null,
         updated_at: cur?.created_at ?? null,
