@@ -10,7 +10,9 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { recordSession } from "@/lib/session-tracker.functions";
+import { logAuthEvent } from "@/lib/auth-log.functions";
 import type { Session, User } from "@supabase/supabase-js";
+
 import {
   can as canDo,
   hasAnyRole as ctxHasAnyRole,
