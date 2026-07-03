@@ -33,8 +33,12 @@ import { Route as AppSuperadminSettingsRouteImport } from './routes/_app/superad
 import { Route as AppSuperadminSecurityRouteImport } from './routes/_app/superadmin.security'
 import { Route as AppSuperadminRolesRouteImport } from './routes/_app/superadmin.roles'
 import { Route as AppSuperadminPoliciesRouteImport } from './routes/_app/superadmin.policies'
+import { Route as AppSuperadminNotificationsRouteImport } from './routes/_app/superadmin.notifications'
+import { Route as AppSuperadminMonitoringRouteImport } from './routes/_app/superadmin.monitoring'
 import { Route as AppSuperadminBranchesRouteImport } from './routes/_app/superadmin.branches'
+import { Route as AppSuperadminBackupsRouteImport } from './routes/_app/superadmin.backups'
 import { Route as AppSuperadminAuditRouteImport } from './routes/_app/superadmin.audit'
+import { Route as AppSuperadminAiConfigRouteImport } from './routes/_app/superadmin.ai-config'
 import { Route as AppLoansSimulatorRouteImport } from './routes/_app/loans/simulator'
 import { Route as AppLoansApplyRouteImport } from './routes/_app/loans/apply'
 import { Route as AppLoansLoanIdRouteImport } from './routes/_app/loans/$loanId'
@@ -166,14 +170,35 @@ const AppSuperadminPoliciesRoute = AppSuperadminPoliciesRouteImport.update({
   path: '/policies',
   getParentRoute: () => AppSuperadminRoute,
 } as any)
+const AppSuperadminNotificationsRoute =
+  AppSuperadminNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AppSuperadminRoute,
+  } as any)
+const AppSuperadminMonitoringRoute = AppSuperadminMonitoringRouteImport.update({
+  id: '/monitoring',
+  path: '/monitoring',
+  getParentRoute: () => AppSuperadminRoute,
+} as any)
 const AppSuperadminBranchesRoute = AppSuperadminBranchesRouteImport.update({
   id: '/branches',
   path: '/branches',
   getParentRoute: () => AppSuperadminRoute,
 } as any)
+const AppSuperadminBackupsRoute = AppSuperadminBackupsRouteImport.update({
+  id: '/backups',
+  path: '/backups',
+  getParentRoute: () => AppSuperadminRoute,
+} as any)
 const AppSuperadminAuditRoute = AppSuperadminAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
+  getParentRoute: () => AppSuperadminRoute,
+} as any)
+const AppSuperadminAiConfigRoute = AppSuperadminAiConfigRouteImport.update({
+  id: '/ai-config',
+  path: '/ai-config',
   getParentRoute: () => AppSuperadminRoute,
 } as any)
 const AppLoansSimulatorRoute = AppLoansSimulatorRouteImport.update({
@@ -253,8 +278,12 @@ export interface FileRoutesByFullPath {
   '/loans/$loanId': typeof AppLoansLoanIdRoute
   '/loans/apply': typeof AppLoansApplyRoute
   '/loans/simulator': typeof AppLoansSimulatorRoute
+  '/superadmin/ai-config': typeof AppSuperadminAiConfigRoute
   '/superadmin/audit': typeof AppSuperadminAuditRoute
+  '/superadmin/backups': typeof AppSuperadminBackupsRoute
   '/superadmin/branches': typeof AppSuperadminBranchesRoute
+  '/superadmin/monitoring': typeof AppSuperadminMonitoringRoute
+  '/superadmin/notifications': typeof AppSuperadminNotificationsRoute
   '/superadmin/policies': typeof AppSuperadminPoliciesRoute
   '/superadmin/roles': typeof AppSuperadminRolesRoute
   '/superadmin/security': typeof AppSuperadminSecurityRoute
@@ -288,8 +317,12 @@ export interface FileRoutesByTo {
   '/loans/$loanId': typeof AppLoansLoanIdRoute
   '/loans/apply': typeof AppLoansApplyRoute
   '/loans/simulator': typeof AppLoansSimulatorRoute
+  '/superadmin/ai-config': typeof AppSuperadminAiConfigRoute
   '/superadmin/audit': typeof AppSuperadminAuditRoute
+  '/superadmin/backups': typeof AppSuperadminBackupsRoute
   '/superadmin/branches': typeof AppSuperadminBranchesRoute
+  '/superadmin/monitoring': typeof AppSuperadminMonitoringRoute
+  '/superadmin/notifications': typeof AppSuperadminNotificationsRoute
   '/superadmin/policies': typeof AppSuperadminPoliciesRoute
   '/superadmin/roles': typeof AppSuperadminRolesRoute
   '/superadmin/security': typeof AppSuperadminSecurityRoute
@@ -327,8 +360,12 @@ export interface FileRoutesById {
   '/_app/loans/$loanId': typeof AppLoansLoanIdRoute
   '/_app/loans/apply': typeof AppLoansApplyRoute
   '/_app/loans/simulator': typeof AppLoansSimulatorRoute
+  '/_app/superadmin/ai-config': typeof AppSuperadminAiConfigRoute
   '/_app/superadmin/audit': typeof AppSuperadminAuditRoute
+  '/_app/superadmin/backups': typeof AppSuperadminBackupsRoute
   '/_app/superadmin/branches': typeof AppSuperadminBranchesRoute
+  '/_app/superadmin/monitoring': typeof AppSuperadminMonitoringRoute
+  '/_app/superadmin/notifications': typeof AppSuperadminNotificationsRoute
   '/_app/superadmin/policies': typeof AppSuperadminPoliciesRoute
   '/_app/superadmin/roles': typeof AppSuperadminRolesRoute
   '/_app/superadmin/security': typeof AppSuperadminSecurityRoute
@@ -366,8 +403,12 @@ export interface FileRouteTypes {
     | '/loans/$loanId'
     | '/loans/apply'
     | '/loans/simulator'
+    | '/superadmin/ai-config'
     | '/superadmin/audit'
+    | '/superadmin/backups'
     | '/superadmin/branches'
+    | '/superadmin/monitoring'
+    | '/superadmin/notifications'
     | '/superadmin/policies'
     | '/superadmin/roles'
     | '/superadmin/security'
@@ -401,8 +442,12 @@ export interface FileRouteTypes {
     | '/loans/$loanId'
     | '/loans/apply'
     | '/loans/simulator'
+    | '/superadmin/ai-config'
     | '/superadmin/audit'
+    | '/superadmin/backups'
     | '/superadmin/branches'
+    | '/superadmin/monitoring'
+    | '/superadmin/notifications'
     | '/superadmin/policies'
     | '/superadmin/roles'
     | '/superadmin/security'
@@ -439,8 +484,12 @@ export interface FileRouteTypes {
     | '/_app/loans/$loanId'
     | '/_app/loans/apply'
     | '/_app/loans/simulator'
+    | '/_app/superadmin/ai-config'
     | '/_app/superadmin/audit'
+    | '/_app/superadmin/backups'
     | '/_app/superadmin/branches'
+    | '/_app/superadmin/monitoring'
+    | '/_app/superadmin/notifications'
     | '/_app/superadmin/policies'
     | '/_app/superadmin/roles'
     | '/_app/superadmin/security'
@@ -632,6 +681,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSuperadminPoliciesRouteImport
       parentRoute: typeof AppSuperadminRoute
     }
+    '/_app/superadmin/notifications': {
+      id: '/_app/superadmin/notifications'
+      path: '/notifications'
+      fullPath: '/superadmin/notifications'
+      preLoaderRoute: typeof AppSuperadminNotificationsRouteImport
+      parentRoute: typeof AppSuperadminRoute
+    }
+    '/_app/superadmin/monitoring': {
+      id: '/_app/superadmin/monitoring'
+      path: '/monitoring'
+      fullPath: '/superadmin/monitoring'
+      preLoaderRoute: typeof AppSuperadminMonitoringRouteImport
+      parentRoute: typeof AppSuperadminRoute
+    }
     '/_app/superadmin/branches': {
       id: '/_app/superadmin/branches'
       path: '/branches'
@@ -639,11 +702,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSuperadminBranchesRouteImport
       parentRoute: typeof AppSuperadminRoute
     }
+    '/_app/superadmin/backups': {
+      id: '/_app/superadmin/backups'
+      path: '/backups'
+      fullPath: '/superadmin/backups'
+      preLoaderRoute: typeof AppSuperadminBackupsRouteImport
+      parentRoute: typeof AppSuperadminRoute
+    }
     '/_app/superadmin/audit': {
       id: '/_app/superadmin/audit'
       path: '/audit'
       fullPath: '/superadmin/audit'
       preLoaderRoute: typeof AppSuperadminAuditRouteImport
+      parentRoute: typeof AppSuperadminRoute
+    }
+    '/_app/superadmin/ai-config': {
+      id: '/_app/superadmin/ai-config'
+      path: '/ai-config'
+      fullPath: '/superadmin/ai-config'
+      preLoaderRoute: typeof AppSuperadminAiConfigRouteImport
       parentRoute: typeof AppSuperadminRoute
     }
     '/_app/loans/simulator': {
@@ -746,8 +823,12 @@ const AppAdminRouteWithChildren = AppAdminRoute._addFileChildren(
 )
 
 interface AppSuperadminRouteChildren {
+  AppSuperadminAiConfigRoute: typeof AppSuperadminAiConfigRoute
   AppSuperadminAuditRoute: typeof AppSuperadminAuditRoute
+  AppSuperadminBackupsRoute: typeof AppSuperadminBackupsRoute
   AppSuperadminBranchesRoute: typeof AppSuperadminBranchesRoute
+  AppSuperadminMonitoringRoute: typeof AppSuperadminMonitoringRoute
+  AppSuperadminNotificationsRoute: typeof AppSuperadminNotificationsRoute
   AppSuperadminPoliciesRoute: typeof AppSuperadminPoliciesRoute
   AppSuperadminRolesRoute: typeof AppSuperadminRolesRoute
   AppSuperadminSecurityRoute: typeof AppSuperadminSecurityRoute
@@ -757,8 +838,12 @@ interface AppSuperadminRouteChildren {
 }
 
 const AppSuperadminRouteChildren: AppSuperadminRouteChildren = {
+  AppSuperadminAiConfigRoute: AppSuperadminAiConfigRoute,
   AppSuperadminAuditRoute: AppSuperadminAuditRoute,
+  AppSuperadminBackupsRoute: AppSuperadminBackupsRoute,
   AppSuperadminBranchesRoute: AppSuperadminBranchesRoute,
+  AppSuperadminMonitoringRoute: AppSuperadminMonitoringRoute,
+  AppSuperadminNotificationsRoute: AppSuperadminNotificationsRoute,
   AppSuperadminPoliciesRoute: AppSuperadminPoliciesRoute,
   AppSuperadminRolesRoute: AppSuperadminRolesRoute,
   AppSuperadminSecurityRoute: AppSuperadminSecurityRoute,

@@ -20,9 +20,12 @@ export const Route = createFileRoute("/_app/admin/")({
 });
 
 const ROLES: AppRole[] = ["member", "approver", "finance", "manager", "admin"];
+const SUPER_ADMIN_ONLY_ROLES: AppRole[] = ["admin", "super_admin"];
 
 function AdminPage() {
   const { hasRole, loading } = useAuth();
+  const isSuperAdmin = hasRole("super_admin");
+  const visibleRoles = isSuperAdmin ? ROLES : ROLES.filter((r) => !SUPER_ADMIN_ONLY_ROLES.includes(r));
   const { t } = useI18n();
   const [users, setUsers] = useState<any[]>([]);
   const [activeLoans, setActiveLoans] = useState<any[]>([]);
@@ -88,6 +91,9 @@ function AdminPage() {
   if (!hasRole("admin")) return <Navigate to="/dashboard" />;
 
   const toggleRole = async (userId: string, role: AppRole, currentlyHas: boolean) => {
+    if (SUPER_ADMIN_ONLY_ROLES.includes(role) && !isSuperAdmin) {
+      return toast.error("Only a Super Admin can assign the Admin role.");
+    }
     if (currentlyHas) await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", role as any);
     else await supabase.from("user_roles").insert({ user_id: userId, role: role as any });
     toast.success("Role updated"); load();
@@ -334,7 +340,7 @@ function AdminPage() {
                     </td>
                     <td>
                       <div className="flex flex-wrap gap-1">
-                        {ROLES.map((r) => {
+                        {visibleRoles.map((r) => {
                           const has = u.roles.includes(r);
                           return (
                             <button key={r} onClick={() => toggleRole(u.user_id, r, has)}
