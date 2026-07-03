@@ -102,6 +102,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (nextId && s?.access_token) {
             const marker = s.access_token.split(".").pop()?.slice(-16) ?? nextId;
             setTimeout(() => { void recordSession({ data: { sessionId: marker } }).catch(() => undefined); }, 0);
+            // Log successful sign-in once per identity transition.
+            if (event === "SIGNED_IN") {
+              const provider = (s?.user?.app_metadata as { provider?: string } | undefined)?.provider ?? "email";
+              setTimeout(() => {
+                void logAuthEvent({ data: {
+                  eventType: "login",
+                  userId: nextId,
+                  email: s?.user?.email ?? null,
+                  provider,
+                  sessionId: marker,
+                } }).catch(() => undefined);
+              }, 0);
+            }
           }
           break;
         }
@@ -117,10 +130,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setIsPasswordRecovery(true);
           break;
         case "SIGNED_OUT": {
+          const prevId = currentUserId.current;
           currentUserId.current = null;
           setRoles([]);
           setBoardSeats([]);
           setIsPasswordRecovery(false);
+          if (prevId) {
+            setTimeout(() => {
+              void logAuthEvent({ data: { eventType: "logout", userId: prevId } }).catch(() => undefined);
+            }, 0);
+          }
           // Stop in-flight protected queries before they 401.
           void queryClient.cancelQueries();
           queryClient.clear();
@@ -130,6 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           break;
       }
     });
+
 
     // Prime the session on mount (covers hard refresh; onAuthStateChange also
     // fires INITIAL_SESSION but we still need to end the loading flash).
