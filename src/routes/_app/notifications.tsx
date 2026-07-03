@@ -32,6 +32,7 @@ function NotificationsPage() {
   const load = async () => {
     if (!user) return;
     const { data } = await supabase.from("notifications").select("*")
+      .or("deferred_until.is.null,deferred_until.lte.now()")
       .order("created_at", { ascending: false }).limit(500);
     setItems(data ?? []);
   };
