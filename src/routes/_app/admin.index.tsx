@@ -1,4 +1,4 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { createFileRoute, Navigate, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { supabase } from "@/integrations/supabase/client";
@@ -270,8 +270,23 @@ function AdminPage() {
         </section>
 
         <section className="rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
-          <h2 className="text-base font-semibold">Members & roles</h2>
-          <p className="text-xs text-muted-foreground">Assign each member a unique member number. Numbers are not auto-generated.{!isSuperAdmin && " The Admin and Super Admin roles are managed by a Super Admin only."}</p>
+          <h2 className="text-base font-semibold">Members &amp; roles</h2>
+          <p className="text-xs text-muted-foreground">
+            Assign each member a unique member number. Numbers are not auto-generated.
+          </p>
+          {isSuperAdmin ? (
+            <div className="mt-3 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-xs text-primary">
+              You are signed in as <strong>Super Admin</strong>. Use{" "}
+              <Link to="/superadmin/users" className="font-semibold underline">
+                Super Admin → User Configuration
+              </Link>{" "}
+              to assign or change Admin and Super Admin roles (requires password confirmation and is written to the audit log).
+            </div>
+          ) : (
+            <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs text-amber-700 dark:text-amber-400">
+              🔒 Only a <strong>Super Admin</strong> can assign or change the Admin and Super Admin roles. Existing role assignments are shown here as read-only.
+            </div>
+          )}
 
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-sm">
