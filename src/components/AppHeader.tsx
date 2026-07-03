@@ -55,6 +55,8 @@ export function AppHeader() {
         <DropdownMenuItem asChild><Link to="/admin/reports">{t("nav_reports")}</Link></DropdownMenuItem>
         <DropdownMenuItem asChild><Link to="/admin/audit">{t("nav_audit")}</Link></DropdownMenuItem>
         <DropdownMenuItem asChild><Link to="/admin/escalations">Escalations queue</Link></DropdownMenuItem>
+        <DropdownMenuItem asChild><Link to="/admin/sla">SLA tracking</Link></DropdownMenuItem>
+        <DropdownMenuItem asChild><Link to="/admin/import">Bulk member import</Link></DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   ) : null;

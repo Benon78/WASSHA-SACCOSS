@@ -30,6 +30,7 @@ import { Route as AppLoansLoanIdRouteImport } from './routes/_app/loans/$loanId'
 import { Route as AppAdminSlaRouteImport } from './routes/_app/admin.sla'
 import { Route as AppAdminReportsRouteImport } from './routes/_app/admin.reports'
 import { Route as AppAdminPoliciesRouteImport } from './routes/_app/admin.policies'
+import { Route as AppAdminImportRouteImport } from './routes/_app/admin.import'
 import { Route as AppAdminEscalationsRouteImport } from './routes/_app/admin.escalations'
 import { Route as AppAdminBoardRouteImport } from './routes/_app/admin.board'
 import { Route as AppAdminAuditRouteImport } from './routes/_app/admin.audit'
@@ -138,6 +139,11 @@ const AppAdminPoliciesRoute = AppAdminPoliciesRouteImport.update({
   path: '/policies',
   getParentRoute: () => AppAdminRoute,
 } as any)
+const AppAdminImportRoute = AppAdminImportRouteImport.update({
+  id: '/import',
+  path: '/import',
+  getParentRoute: () => AppAdminRoute,
+} as any)
 const AppAdminEscalationsRoute = AppAdminEscalationsRouteImport.update({
   id: '/escalations',
   path: '/escalations',
@@ -170,6 +176,7 @@ export interface FileRoutesByFullPath {
   '/admin/audit': typeof AppAdminAuditRoute
   '/admin/board': typeof AppAdminBoardRoute
   '/admin/escalations': typeof AppAdminEscalationsRoute
+  '/admin/import': typeof AppAdminImportRoute
   '/admin/policies': typeof AppAdminPoliciesRoute
   '/admin/reports': typeof AppAdminReportsRoute
   '/admin/sla': typeof AppAdminSlaRoute
@@ -194,6 +201,7 @@ export interface FileRoutesByTo {
   '/admin/audit': typeof AppAdminAuditRoute
   '/admin/board': typeof AppAdminBoardRoute
   '/admin/escalations': typeof AppAdminEscalationsRoute
+  '/admin/import': typeof AppAdminImportRoute
   '/admin/policies': typeof AppAdminPoliciesRoute
   '/admin/reports': typeof AppAdminReportsRoute
   '/admin/sla': typeof AppAdminSlaRoute
@@ -221,6 +229,7 @@ export interface FileRoutesById {
   '/_app/admin/audit': typeof AppAdminAuditRoute
   '/_app/admin/board': typeof AppAdminBoardRoute
   '/_app/admin/escalations': typeof AppAdminEscalationsRoute
+  '/_app/admin/import': typeof AppAdminImportRoute
   '/_app/admin/policies': typeof AppAdminPoliciesRoute
   '/_app/admin/reports': typeof AppAdminReportsRoute
   '/_app/admin/sla': typeof AppAdminSlaRoute
@@ -248,6 +257,7 @@ export interface FileRouteTypes {
     | '/admin/audit'
     | '/admin/board'
     | '/admin/escalations'
+    | '/admin/import'
     | '/admin/policies'
     | '/admin/reports'
     | '/admin/sla'
@@ -272,6 +282,7 @@ export interface FileRouteTypes {
     | '/admin/audit'
     | '/admin/board'
     | '/admin/escalations'
+    | '/admin/import'
     | '/admin/policies'
     | '/admin/reports'
     | '/admin/sla'
@@ -298,6 +309,7 @@ export interface FileRouteTypes {
     | '/_app/admin/audit'
     | '/_app/admin/board'
     | '/_app/admin/escalations'
+    | '/_app/admin/import'
     | '/_app/admin/policies'
     | '/_app/admin/reports'
     | '/_app/admin/sla'
@@ -466,6 +478,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminPoliciesRouteImport
       parentRoute: typeof AppAdminRoute
     }
+    '/_app/admin/import': {
+      id: '/_app/admin/import'
+      path: '/import'
+      fullPath: '/admin/import'
+      preLoaderRoute: typeof AppAdminImportRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
     '/_app/admin/escalations': {
       id: '/_app/admin/escalations'
       path: '/escalations'
@@ -494,6 +513,7 @@ interface AppAdminRouteChildren {
   AppAdminAuditRoute: typeof AppAdminAuditRoute
   AppAdminBoardRoute: typeof AppAdminBoardRoute
   AppAdminEscalationsRoute: typeof AppAdminEscalationsRoute
+  AppAdminImportRoute: typeof AppAdminImportRoute
   AppAdminPoliciesRoute: typeof AppAdminPoliciesRoute
   AppAdminReportsRoute: typeof AppAdminReportsRoute
   AppAdminSlaRoute: typeof AppAdminSlaRoute
@@ -504,6 +524,7 @@ const AppAdminRouteChildren: AppAdminRouteChildren = {
   AppAdminAuditRoute: AppAdminAuditRoute,
   AppAdminBoardRoute: AppAdminBoardRoute,
   AppAdminEscalationsRoute: AppAdminEscalationsRoute,
+  AppAdminImportRoute: AppAdminImportRoute,
   AppAdminPoliciesRoute: AppAdminPoliciesRoute,
   AppAdminReportsRoute: AppAdminReportsRoute,
   AppAdminSlaRoute: AppAdminSlaRoute,
