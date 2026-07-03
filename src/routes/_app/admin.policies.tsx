@@ -23,6 +23,8 @@ function PoliciesPage() {
   const [form, setForm] = useState({
     interest_rate: "12.0", min_savings: "100000", savings_multiplier: "3",
     min_membership_months: "3", max_term_months: "36", notes: "",
+    emergency_rate: "18.0", emergency_multiplier: "1.5", emergency_max_amount: "1000000", emergency_max_term_months: "6",
+    chapchap_rate: "15.0", late_penalty_rate: "2.0", processing_fee_rate: "1.0",
   });
   const [busy, setBusy] = useState(false);
 
