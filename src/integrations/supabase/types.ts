@@ -115,8 +115,12 @@ export type Database = {
           entity: string
           entity_id: string | null
           id: string
+          ip: unknown
           ip_address: unknown
           meta: Json | null
+          new_value: Json | null
+          prev_value: Json | null
+          session_id: string | null
           user_agent: string | null
         }
         Insert: {
@@ -126,8 +130,12 @@ export type Database = {
           entity: string
           entity_id?: string | null
           id?: string
+          ip?: unknown
           ip_address?: unknown
           meta?: Json | null
+          new_value?: Json | null
+          prev_value?: Json | null
+          session_id?: string | null
           user_agent?: string | null
         }
         Update: {
@@ -137,9 +145,211 @@ export type Database = {
           entity?: string
           entity_id?: string | null
           id?: string
+          ip?: unknown
           ip_address?: unknown
           meta?: Json | null
+          new_value?: Json | null
+          prev_value?: Json | null
+          session_id?: string | null
           user_agent?: string | null
+        }
+        Relationships: []
+      }
+      auth_events: {
+        Row: {
+          created_at: string
+          email: string | null
+          event_type: string
+          id: string
+          ip: unknown
+          meta: Json
+          session_id: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          event_type: string
+          id?: string
+          ip?: unknown
+          meta?: Json
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          event_type?: string
+          id?: string
+          ip?: unknown
+          meta?: Json
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      backups: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          kind: string
+          meta: Json
+          notes: string | null
+          status: string
+          triggered_by: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          meta?: Json
+          notes?: string | null
+          status?: string
+          triggered_by?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          meta?: Json
+          notes?: string | null
+          status?: string
+          triggered_by?: string | null
+        }
+        Relationships: []
+      }
+      branches: {
+        Row: {
+          address: string | null
+          code: string
+          created_at: string
+          id: string
+          manager_id: string | null
+          name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          code: string
+          created_at?: string
+          id?: string
+          manager_id?: string | null
+          name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          code?: string
+          created_at?: string
+          id?: string
+          manager_id?: string | null
+          name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      custom_role_permissions: {
+        Row: {
+          created_at: string
+          custom_role_id: string
+          id: string
+          permission_code: string
+        }
+        Insert: {
+          created_at?: string
+          custom_role_id: string
+          id?: string
+          permission_code: string
+        }
+        Update: {
+          created_at?: string
+          custom_role_id?: string
+          id?: string
+          permission_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_role_permissions_custom_role_id_fkey"
+            columns: ["custom_role_id"]
+            isOneToOne: false
+            referencedRelation: "custom_roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "custom_role_permissions_permission_code_fkey"
+            columns: ["permission_code"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      custom_roles: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      deletion_log: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          entity: string
+          entity_id: string
+          id: string
+          reason: string | null
+          snapshot: Json | null
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          entity: string
+          entity_id: string
+          id?: string
+          reason?: string | null
+          snapshot?: Json | null
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          entity?: string
+          entity_id?: string
+          id?: string
+          reason?: string | null
+          snapshot?: Json | null
         }
         Relationships: []
       }
@@ -560,38 +770,108 @@ export type Database = {
         }
         Relationships: []
       }
+      permissions: {
+        Row: {
+          category: string
+          code: string
+          created_at: string
+          description: string
+        }
+        Insert: {
+          category: string
+          code: string
+          created_at?: string
+          description: string
+        }
+        Update: {
+          category?: string
+          code?: string
+          created_at?: string
+          description?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
+          branch_id: string | null
           created_at: string
+          deleted_at: string | null
           full_name: string
           id: string
           joined_at: string
           member_number: string | null
           opening_balance: number
           phone: string | null
+          suspended_at: string | null
+          suspended_reason: string | null
           user_id: string
         }
         Insert: {
+          branch_id?: string | null
           created_at?: string
+          deleted_at?: string | null
           full_name?: string
           id?: string
           joined_at?: string
           member_number?: string | null
           opening_balance?: number
           phone?: string | null
+          suspended_at?: string | null
+          suspended_reason?: string | null
           user_id: string
         }
         Update: {
+          branch_id?: string | null
           created_at?: string
+          deleted_at?: string | null
           full_name?: string
           id?: string
           joined_at?: string
           member_number?: string | null
           opening_balance?: number
           phone?: string | null
+          suspended_at?: string | null
+          suspended_reason?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      role_permissions: {
+        Row: {
+          created_at: string
+          id: string
+          permission_code: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          permission_code: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          permission_code?: string
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_permission_code_fkey"
+            columns: ["permission_code"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["code"]
+          },
+        ]
       }
       sla_config: {
         Row: {
@@ -611,6 +891,36 @@ export type Database = {
           stage?: Database["public"]["Enums"]["loan_stage"]
           updated_at?: string
           updated_by?: string | null
+        }
+        Relationships: []
+      }
+      system_settings: {
+        Row: {
+          created_at: string
+          id: string
+          is_current: boolean
+          key: string
+          updated_by: string | null
+          value: Json
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_current?: boolean
+          key: string
+          updated_by?: string | null
+          value: Json
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_current?: boolean
+          key?: string
+          updated_by?: string | null
+          value?: Json
+          version?: number
         }
         Relationships: []
       }
@@ -659,6 +969,38 @@ export type Database = {
           },
         ]
       }
+      user_custom_roles: {
+        Row: {
+          assigned_by: string | null
+          created_at: string
+          custom_role_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          assigned_by?: string | null
+          created_at?: string
+          custom_role_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          assigned_by?: string | null
+          created_at?: string
+          custom_role_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_custom_roles_custom_role_id_fkey"
+            columns: ["custom_role_id"]
+            isOneToOne: false
+            referencedRelation: "custom_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -676,6 +1018,54 @@ export type Database = {
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_sessions: {
+        Row: {
+          browser: string | null
+          created_at: string
+          device: string | null
+          id: string
+          ip: unknown
+          last_seen: string
+          location: string | null
+          os: string | null
+          revoked_at: string | null
+          revoked_by: string | null
+          session_id: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          browser?: string | null
+          created_at?: string
+          device?: string | null
+          id?: string
+          ip?: unknown
+          last_seen?: string
+          location?: string | null
+          os?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          browser?: string | null
+          created_at?: string
+          device?: string | null
+          id?: string
+          ip?: unknown
+          last_seen?: string
+          location?: string | null
+          os?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          session_id?: string | null
+          user_agent?: string | null
           user_id?: string
         }
         Relationships: []
@@ -762,6 +1152,10 @@ export type Database = {
         Args: { _seat: string; _user_id: string }
         Returns: boolean
       }
+      has_permission: {
+        Args: { _code: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -776,6 +1170,7 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       log_assistant_action: {
         Args: {
           _action: string
