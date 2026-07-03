@@ -26,6 +26,7 @@ export function NotificationsBell() {
     const { data } = await supabase
       .from("notifications")
       .select("*")
+      .or("deferred_until.is.null,deferred_until.lte.now()")
       .order("created_at", { ascending: false })
       .limit(30);
     setItems((data ?? []) as Notif[]);

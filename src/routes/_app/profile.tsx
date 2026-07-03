@@ -33,7 +33,25 @@ function ProfilePage() {
   const [enrolling, setEnrolling] = useState<{ id: string; qr: string; secret: string } | null>(null);
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
-  const [prefs, setPrefs] = useState({ channel_email: true, channel_sms: false, sms_phone: "" });
+  const [prefs, setPrefs] = useState({
+    channel_email: true,
+    channel_sms: false,
+    sms_phone: "",
+    quiet_hours_start: "21:00",
+    quiet_hours_end: "07:00",
+    digest_mode: "instant" as "instant" | "hourly" | "daily",
+    mute_types: [] as string[],
+  });
+
+  const NOTIF_TYPES: { value: string; label: string }[] = [
+    { value: "deposit", label: "Deposits" },
+    { value: "loan_update", label: "Loan updates" },
+    { value: "loan_approved", label: "Loan approvals" },
+    { value: "loan_rejected", label: "Loan rejections" },
+    { value: "due_reminder", label: "Due reminders" },
+    { value: "docs_requested", label: "Document requests" },
+    { value: "system", label: "System messages" },
+  ];
 
   const loadAll = async () => {
     if (!user) return;
@@ -42,14 +60,29 @@ function ProfilePage() {
     const { data: f } = await supabase.auth.mfa.listFactors();
     setFactors(f?.totp ?? []);
     const { data: pr } = await supabase.from("notification_preferences").select("*").eq("user_id", user.id).maybeSingle();
-    if (pr) setPrefs({ channel_email: pr.channel_email, channel_sms: pr.channel_sms, sms_phone: pr.sms_phone ?? "" });
+    if (pr) setPrefs({
+      channel_email: pr.channel_email,
+      channel_sms: pr.channel_sms,
+      sms_phone: pr.sms_phone ?? "",
+      quiet_hours_start: (pr as any).quiet_hours_start?.slice(0,5) ?? "21:00",
+      quiet_hours_end: (pr as any).quiet_hours_end?.slice(0,5) ?? "07:00",
+      digest_mode: ((pr as any).digest_mode as any) ?? "instant",
+      mute_types: (pr as any).mute_types ?? [],
+    });
   };
 
   const savePrefs = async () => {
     if (!user) return;
     const { error } = await supabase.from("notification_preferences")
-      .upsert({ user_id: user.id, ...prefs, updated_at: new Date().toISOString() });
+      .upsert({ user_id: user.id, ...prefs, updated_at: new Date().toISOString() } as any);
     if (error) toast.error(friendlyError(error)); else toast.success("Notification preferences saved");
+  };
+
+  const toggleMute = (t: string) => {
+    setPrefs((p) => ({
+      ...p,
+      mute_types: p.mute_types.includes(t) ? p.mute_types.filter((x) => x !== t) : [...p.mute_types, t],
+    }));
   };
 
   useEffect(() => { loadAll(); }, [user?.id]);
@@ -137,6 +170,51 @@ function ProfilePage() {
                   onChange={(e) => setPrefs({ ...prefs, sms_phone: e.target.value })} />
               </div>
             )}
+
+            <div className="grid gap-3 rounded-lg border border-border/60 p-3 md:grid-cols-2">
+              <div className="md:col-span-2">
+                <p className="text-sm font-medium">Quiet hours</p>
+                <p className="text-xs text-muted-foreground">Non-urgent notifications are held until quiet hours end. Critical alerts still deliver.</p>
+              </div>
+              <div>
+                <Label>Start</Label>
+                <Input type="time" value={prefs.quiet_hours_start}
+                  onChange={(e) => setPrefs({ ...prefs, quiet_hours_start: e.target.value })} />
+              </div>
+              <div>
+                <Label>End</Label>
+                <Input type="time" value={prefs.quiet_hours_end}
+                  onChange={(e) => setPrefs({ ...prefs, quiet_hours_end: e.target.value })} />
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-border/60 p-3">
+              <p className="text-sm font-medium">Delivery frequency</p>
+              <p className="mb-2 text-xs text-muted-foreground">Batch non-urgent items into a digest.</p>
+              <div className="flex flex-wrap gap-2">
+                {(["instant", "hourly", "daily"] as const).map((m) => (
+                  <button key={m} type="button"
+                    onClick={() => setPrefs({ ...prefs, digest_mode: m })}
+                    className={`rounded-full border px-3 py-1 text-xs font-medium capitalize ${prefs.digest_mode === m ? "border-primary bg-primary/10 text-primary" : "border-border/60 text-muted-foreground"}`}>
+                    {m}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-border/60 p-3">
+              <p className="text-sm font-medium">Mute categories</p>
+              <p className="mb-2 text-xs text-muted-foreground">Muted categories are dropped entirely. Critical alerts still deliver.</p>
+              <div className="flex flex-wrap gap-2">
+                {NOTIF_TYPES.map((t) => (
+                  <button key={t.value} type="button" onClick={() => toggleMute(t.value)}
+                    className={`rounded-full border px-3 py-1 text-xs font-medium ${prefs.mute_types.includes(t.value) ? "border-destructive bg-destructive/10 text-destructive" : "border-border/60 text-muted-foreground"}`}>
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <Button onClick={savePrefs} className="bg-[image:var(--gradient-primary)] text-primary-foreground">Save preferences</Button>
           </div>
         </section>

@@ -480,21 +480,39 @@ export type Database = {
         Row: {
           channel_email: boolean
           channel_sms: boolean
+          digest_mode: Database["public"]["Enums"]["notif_digest_mode"]
+          last_digest_at: string | null
+          mute_types: string[]
+          quiet_hours_end: string
+          quiet_hours_start: string
           sms_phone: string | null
+          timezone: string
           updated_at: string
           user_id: string
         }
         Insert: {
           channel_email?: boolean
           channel_sms?: boolean
+          digest_mode?: Database["public"]["Enums"]["notif_digest_mode"]
+          last_digest_at?: string | null
+          mute_types?: string[]
+          quiet_hours_end?: string
+          quiet_hours_start?: string
           sms_phone?: string | null
+          timezone?: string
           updated_at?: string
           user_id: string
         }
         Update: {
           channel_email?: boolean
           channel_sms?: boolean
+          digest_mode?: Database["public"]["Enums"]["notif_digest_mode"]
+          last_digest_at?: string | null
+          mute_types?: string[]
+          quiet_hours_end?: string
+          quiet_hours_start?: string
           sms_phone?: string | null
+          timezone?: string
           updated_at?: string
           user_id?: string
         }
@@ -504,8 +522,11 @@ export type Database = {
         Row: {
           body: string | null
           created_at: string
+          deferred_until: string | null
+          delivered_at: string | null
           id: string
           link: string | null
+          priority: Database["public"]["Enums"]["notif_priority"]
           read: boolean
           title: string
           type: Database["public"]["Enums"]["notif_type"]
@@ -514,8 +535,11 @@ export type Database = {
         Insert: {
           body?: string | null
           created_at?: string
+          deferred_until?: string | null
+          delivered_at?: string | null
           id?: string
           link?: string | null
+          priority?: Database["public"]["Enums"]["notif_priority"]
           read?: boolean
           title: string
           type: Database["public"]["Enums"]["notif_type"]
@@ -524,8 +548,11 @@ export type Database = {
         Update: {
           body?: string | null
           created_at?: string
+          deferred_until?: string | null
+          delivered_at?: string | null
           id?: string
           link?: string | null
+          priority?: Database["public"]["Enums"]["notif_priority"]
           read?: boolean
           title?: string
           type?: Database["public"]["Enums"]["notif_type"]
@@ -742,6 +769,12 @@ export type Database = {
         }
         Returns: boolean
       }
+      in_quiet_hours: {
+        Args: {
+          _prefs: Database["public"]["Tables"]["notification_preferences"]["Row"]
+        }
+        Returns: boolean
+      }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
       log_assistant_action: {
         Args: {
@@ -785,6 +818,8 @@ export type Database = {
         | "disbursed"
         | "completed"
       loan_type: "development" | "chapchap" | "emergency"
+      notif_digest_mode: "instant" | "hourly" | "daily"
+      notif_priority: "low" | "normal" | "high" | "critical"
       notif_type:
         | "deposit"
         | "loan_update"
@@ -963,6 +998,8 @@ export const Constants = {
         "completed",
       ],
       loan_type: ["development", "chapchap", "emergency"],
+      notif_digest_mode: ["instant", "hourly", "daily"],
+      notif_priority: ["low", "normal", "high", "critical"],
       notif_type: [
         "deposit",
         "loan_update",
