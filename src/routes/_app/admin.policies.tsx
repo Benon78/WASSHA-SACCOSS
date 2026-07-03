@@ -40,27 +40,27 @@ function PoliciesPage() {
   const create = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    const nextVersion = (policies[0]?.version ?? 0) + 1;
-    const { error } = await supabase.from("loan_policies").insert({
-      version: nextVersion,
-      interest_rate: Number(form.interest_rate),
-      min_savings: Number(form.min_savings),
-      savings_multiplier: Number(form.savings_multiplier),
-      min_membership_months: Number(form.min_membership_months),
-      max_term_months: Number(form.max_term_months),
-      emergency_rate: Number(form.emergency_rate),
-      emergency_multiplier: Number(form.emergency_multiplier),
-      emergency_max_amount: Number(form.emergency_max_amount),
-      emergency_max_term_months: Number(form.emergency_max_term_months),
-      chapchap_rate: Number(form.chapchap_rate),
-      late_penalty_rate: Number(form.late_penalty_rate),
-      processing_fee_rate: Number(form.processing_fee_rate),
-      notes: form.notes || null,
-      created_by: user!.id,
+    const { error } = await supabase.rpc("rpc_publish_loan_policy", {
+      _payload: {
+        interest_rate: Number(form.interest_rate),
+        min_savings: Number(form.min_savings),
+        savings_multiplier: Number(form.savings_multiplier),
+        min_membership_months: Number(form.min_membership_months),
+        max_term_months: Number(form.max_term_months),
+        emergency_rate: Number(form.emergency_rate),
+        emergency_multiplier: Number(form.emergency_multiplier),
+        emergency_max_amount: Number(form.emergency_max_amount),
+        emergency_max_term_months: Number(form.emergency_max_term_months),
+        chapchap_rate: Number(form.chapchap_rate),
+        late_penalty_rate: Number(form.late_penalty_rate),
+        processing_fee_rate: Number(form.processing_fee_rate),
+        notes: form.notes || null,
+      },
+      _reason: form.notes || null,
     });
     setBusy(false);
     if (error) toast.error(friendlyError(error));
-    else { toast.success(`Policy v${nextVersion} created`); load(); }
+    else { toast.success("New policy version published"); load(); }
   };
 
   return (
