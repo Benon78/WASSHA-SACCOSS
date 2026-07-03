@@ -148,7 +148,7 @@ export function AppHeader() {
                     </>
                   )}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={async () => { await signOut(); nav({ to: "/" }); }}>
+                  <DropdownMenuItem onClick={async () => { await signOut(); nav({ to: "/auth", replace: true }); }}>
                     <LogOut className="mr-2 h-4 w-4" /> Sign out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -179,7 +179,7 @@ export function AppHeader() {
                 {mobileNavLinks}
                 {user && (
                   <button
-                    onClick={async () => { setMobileOpen(false); await signOut(); nav({ to: "/" }); }}
+                    onClick={async () => { setMobileOpen(false); await signOut(); nav({ to: "/auth", replace: true }); }}
                     className="flex items-center gap-2 text-left text-destructive hover:opacity-80"
                   >
                     <LogOut className="h-4 w-4" /> Sign out
