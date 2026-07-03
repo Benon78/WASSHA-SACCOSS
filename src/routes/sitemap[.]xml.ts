@@ -8,8 +8,9 @@ export const Route = createFileRoute("/sitemap.xml")({
     handlers: {
       GET: async () => {
         // Only public, indexable routes belong in the sitemap.
-        // Authenticated routes (dashboard, loans, statements, profile, notifications,
-        // approvals, admin/*) are blocked in robots.txt and intentionally omitted here.
+        // Intentionally omitted (authenticated / non-page routes, blocked in robots.txt):
+        //   /escalations, /admin/audit, /admin/board, /admin/escalations, /api/chat
+        // and every other /admin/* and API endpoint.
         const entries = [
           { path: "/", changefreq: "weekly", priority: "1.0" },
           { path: "/workflow", changefreq: "monthly", priority: "0.8" },
