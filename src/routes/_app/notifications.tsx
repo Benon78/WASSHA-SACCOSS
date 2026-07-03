@@ -121,11 +121,10 @@ function NotificationsPage() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   // Reset to page 1 when filters change (URL-driven).
-  type NotifSearch = z.infer<typeof searchSchema>;
   const setFilter = (patch: Partial<{ type: NotifType; state: "all" | "unread" }>) => {
-    nav({ search: (prev: NotifSearch) => ({ ...prev, ...patch, page: 1 }), replace: true });
+    nav({ search: { type, state, page: 1, ...patch }, replace: true });
   };
-  const goPage = (p: number) => nav({ search: (prev: NotifSearch) => ({ ...prev, page: p }), replace: true });
+  const goPage = (p: number) => nav({ search: { type, state, page: p }, replace: true });
 
   const filtersRow = useMemo(() => (
     <div className="flex flex-wrap gap-2">
