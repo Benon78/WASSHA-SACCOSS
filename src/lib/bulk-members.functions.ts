@@ -60,7 +60,7 @@ export const bulkImportMembers = createServerFn({ method: "POST" })
 
       if (Object.keys(update).length === 0) continue;
 
-      const { error } = await supabaseAdmin.from("profiles").update(update).eq("user_id", uid);
+      const { error } = await (supabaseAdmin.from("profiles") as any).update(update).eq("user_id", uid);
       if (error) result.errors.push({ email, error: error.message });
       else result.updated++;
     }
