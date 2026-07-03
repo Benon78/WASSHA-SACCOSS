@@ -95,7 +95,7 @@ function UsersPage() {
           className="flex flex-1 items-end gap-2"
           onSubmit={(e) => {
             e.preventDefault();
-            navigate({ search: (s) => ({ ...s, search: searchInput || undefined, page: 1 }) });
+            navigate({ search: (s: z.infer<typeof searchSchema>) => ({ ...s, search: searchInput || undefined, page: 1 }) });
           }}
         >
           <div className="flex-1 space-y-1.5">
@@ -118,7 +118,7 @@ function UsersPage() {
           <Select
             value={search.status}
             onValueChange={(v) =>
-              navigate({ search: (s) => ({ ...s, status: v as never, page: 1 }) })
+              navigate({ search: (s: z.infer<typeof searchSchema>) => ({ ...s, status: v as never, page: 1 }) })
             }
           >
             <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
@@ -135,7 +135,7 @@ function UsersPage() {
           <Select
             value={String(search.pageSize)}
             onValueChange={(v) =>
-              navigate({ search: (s) => ({ ...s, pageSize: Number(v), page: 1 }) })
+              navigate({ search: (s: z.infer<typeof searchSchema>) => ({ ...s, pageSize: Number(v), page: 1 }) })
             }
           >
             <SelectTrigger className="w-24"><SelectValue /></SelectTrigger>
@@ -225,7 +225,7 @@ function UsersPage() {
                 variant="ghost"
                 size="sm"
                 disabled={search.page <= 1}
-                onClick={() => navigate({ search: (s) => ({ ...s, page: s.page - 1 }) })}
+                onClick={() => navigate({ search: (s: z.infer<typeof searchSchema>) => ({ ...s, page: s.page - 1 }) })}
               >
                 <ChevronLeft className="h-4 w-4" /> Prev
               </Button>
@@ -233,7 +233,7 @@ function UsersPage() {
                 variant="ghost"
                 size="sm"
                 disabled={search.page >= totalPages}
-                onClick={() => navigate({ search: (s) => ({ ...s, page: s.page + 1 }) })}
+                onClick={() => navigate({ search: (s: z.infer<typeof searchSchema>) => ({ ...s, page: s.page + 1 }) })}
               >
                 Next <ChevronRight className="h-4 w-4" />
               </Button>
