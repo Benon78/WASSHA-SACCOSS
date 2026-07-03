@@ -74,6 +74,8 @@ export function AppHeader() {
           <Link to="/admin/reports" className="transition hover:text-foreground" onClick={() => setMobileOpen(false)}>{t("nav_reports")}</Link>
           <Link to="/admin/audit" className="transition hover:text-foreground" onClick={() => setMobileOpen(false)}>{t("nav_audit")}</Link>
           <Link to="/admin/escalations" className="transition hover:text-foreground" onClick={() => setMobileOpen(false)}>Escalations queue</Link>
+          <Link to="/admin/sla" className="transition hover:text-foreground" onClick={() => setMobileOpen(false)}>SLA tracking</Link>
+          <Link to="/admin/import" className="transition hover:text-foreground" onClick={() => setMobileOpen(false)}>Bulk member import</Link>
         </>
       )}
       <Link to="/profile" className="mt-2 border-t pt-2 transition hover:text-foreground" onClick={() => setMobileOpen(false)}>{t("nav_profile")}</Link>
