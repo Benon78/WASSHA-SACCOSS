@@ -120,12 +120,16 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <I18nProvider>
         <AuthProvider>
-          <main id="main-content">
-            <Outlet />
-          </main>
-          <Toaster />
+          <AppErrorBoundary>
+            <OfflineBanner />
+            <main id="main-content">
+              <Outlet />
+            </main>
+            <Toaster />
+          </AppErrorBoundary>
         </AuthProvider>
       </I18nProvider>
     </QueryClientProvider>
   );
 }
+
