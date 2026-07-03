@@ -245,7 +245,7 @@ export const updateCustomRole = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!prev) throw new Response("Custom role not found", { status: 404 });
 
-    const patch: Record<string, unknown> = {};
+    const patch: { description?: string | null; is_active?: boolean } = {};
     if (data.description !== undefined) patch.description = data.description;
     if (data.is_active !== undefined) patch.is_active = data.is_active;
 
