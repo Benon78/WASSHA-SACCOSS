@@ -17,7 +17,8 @@ export function AppHeader() {
   const nav = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const isAdmin = roles.includes("admin");
+  const isAdmin = roles.includes("admin") || roles.includes("super_admin");
+  const isSuperAdmin = roles.includes("super_admin");
 
   // Primary nav — kept small so it doesn't overflow. Admin sub-pages go into a dropdown.
   const primaryLinks = user ? (
