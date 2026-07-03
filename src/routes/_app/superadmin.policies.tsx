@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmWithPassword } from "@/components/superadmin/ConfirmWithPassword";
-import { LoadingState } from "@/components/status/LoadingState";
+import { PageLoader } from "@/components/status/LoadingState";
 import { ErrorState } from "@/components/status/ErrorState";
 import { fmtDate, fmtTZS } from "@/lib/format";
 import { toast } from "sonner";
@@ -99,7 +99,7 @@ function PoliciesPage() {
     });
   };
 
-  if (isLoading) return <LoadingState label="Loading policies…" />;
+  if (isLoading) return <PageLoader label="Loading policies…" />;
   if (error || !data) return <ErrorState onRetry={refetch} title="Failed to load loan policies" />;
 
   const current = data[0];
@@ -182,7 +182,7 @@ function PoliciesPage() {
                   Publish new version
                 </Button>
               }
-              onConfirmed={(pw) => mutation.mutateAsync(pw)}
+              onConfirmed={async (pw) => { await mutation.mutateAsync(pw); }}
             />
           </div>
         </div>

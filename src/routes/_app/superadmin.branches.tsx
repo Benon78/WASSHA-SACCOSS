@@ -18,7 +18,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogT
 import { ConfirmWithPassword } from "@/components/superadmin/ConfirmWithPassword";
 import { toast } from "sonner";
 import { Loader2, Plus, Save, Building2, Users, GitMerge, Power } from "lucide-react";
-import { LoadingState } from "@/components/status/LoadingState";
+import { PageLoader } from "@/components/status/LoadingState";
 import { ErrorState } from "@/components/status/ErrorState";
 
 export const Route = createFileRoute("/_app/superadmin/branches")({
@@ -37,7 +37,7 @@ function BranchesPage() {
   const qc = useQueryClient();
   const { data, isLoading, error, refetch } = useQuery(branchesQueryOptions());
 
-  if (isLoading) return <LoadingState label="Loading branches…" />;
+  if (isLoading) return <PageLoader label="Loading branches…" />;
   if (error || !data) return <ErrorState onRetry={refetch} title="Failed to load branches" />;
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["superadmin", "branches"] });
@@ -127,7 +127,7 @@ function CreateBranchDialog({ onCreated }: { onCreated: () => void }) {
                 Create
               </Button>
             }
-            onConfirmed={(pw) => mutation.mutateAsync(pw)}
+            onConfirmed={async (pw) => { await mutation.mutateAsync(pw); }}
           />
         </DialogFooter>
       </DialogContent>
@@ -215,7 +215,7 @@ function BranchCard({
                     Save
                   </Button>
                 }
-                onConfirmed={(pw) => saveMut.mutateAsync(pw)}
+                onConfirmed={async (pw) => { await saveMut.mutateAsync(pw); }}
               />
             </DialogFooter>
           </DialogContent>
@@ -235,7 +235,7 @@ function BranchCard({
               {branch.status === "active" ? "Disable" : "Activate"}
             </Button>
           }
-          onConfirmed={(pw) => toggleMut.mutateAsync(pw)}
+          onConfirmed={async (pw) => { await toggleMut.mutateAsync(pw); }}
         />
 
         <Dialog open={mergeOpen} onOpenChange={setMergeOpen}>
@@ -271,7 +271,7 @@ function BranchCard({
                     Merge
                   </Button>
                 }
-                onConfirmed={(pw) => mergeMut.mutateAsync(pw)}
+                onConfirmed={async (pw) => { await mergeMut.mutateAsync(pw); }}
               />
             </DialogFooter>
           </DialogContent>

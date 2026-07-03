@@ -19,7 +19,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogT
 import { ConfirmWithPassword } from "@/components/superadmin/ConfirmWithPassword";
 import { toast } from "sonner";
 import { Loader2, Plus, Save, Trash2, Users, ShieldCheck, ShieldOff } from "lucide-react";
-import { LoadingState } from "@/components/status/LoadingState";
+import { PageLoader } from "@/components/status/LoadingState";
 import { ErrorState } from "@/components/status/ErrorState";
 
 export const Route = createFileRoute("/_app/superadmin/roles")({
@@ -38,7 +38,7 @@ function RolesPage() {
   const qc = useQueryClient();
   const { data, isLoading, error, refetch } = useQuery(rolesQueryOptions());
 
-  if (isLoading) return <LoadingState label="Loading roles…" />;
+  if (isLoading) return <PageLoader label="Loading roles…" />;
   if (error || !data) return <ErrorState onRetry={refetch} title="Failed to load roles" />;
 
   const permsByCategory = data.permissions.reduce<Record<string, typeof data.permissions>>((acc, p) => {
@@ -240,7 +240,7 @@ function BuiltInRoleCard({
                   Save
                 </Button>
               }
-              onConfirmed={(pw) => mutation.mutateAsync(pw)}
+              onConfirmed={async (pw) => { await mutation.mutateAsync(pw); }}
             />
           </DialogFooter>
         </DialogContent>
@@ -326,7 +326,7 @@ function CreateCustomRoleDialog({
                 Create role
               </Button>
             }
-            onConfirmed={(pw) => mutation.mutateAsync(pw)}
+            onConfirmed={async (pw) => { await mutation.mutateAsync(pw); }}
           />
         </DialogFooter>
       </DialogContent>
@@ -440,7 +440,7 @@ function CustomRoleCard({
                     Save
                   </Button>
                 }
-                onConfirmed={(pw) => saveMut.mutateAsync(pw)}
+                onConfirmed={async (pw) => { await saveMut.mutateAsync(pw); }}
               />
             </DialogFooter>
           </DialogContent>
@@ -456,7 +456,7 @@ function CustomRoleCard({
               {role.is_active ? "Disable" : "Enable"}
             </Button>
           }
-          onConfirmed={(pw) => toggleActiveMut.mutateAsync(pw)}
+          onConfirmed={async (pw) => { await toggleActiveMut.mutateAsync(pw); }}
         />
 
         <ConfirmWithPassword
@@ -469,7 +469,7 @@ function CustomRoleCard({
               <Trash2 className="mr-2 h-4 w-4" /> Delete
             </Button>
           }
-          onConfirmed={(pw) => delMut.mutateAsync(pw)}
+          onConfirmed={async (pw) => { await delMut.mutateAsync(pw); }}
         />
       </div>
     </div>
