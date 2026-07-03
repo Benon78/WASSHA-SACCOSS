@@ -160,15 +160,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (s?.user) {
         currentUserId.current = s.user.id;
         void loadRoles(s.user.id);
+        // Prime the session tracker immediately so a hard refresh still
+        // shows the current user in Security Center even if INITIAL_SESSION
+        // is delayed or racy.
+        if (s.access_token) {
+          const marker = s.access_token.split(".").pop()?.slice(-16) ?? s.user.id;
+          void recordSession({ data: { sessionId: marker } }).catch(() => undefined);
+        }
       }
       setLoading(false);
     });
 
+    // Heartbeat: while signed in, refresh the session-tracker row every 60s
+    // so the Super Admin → Security Center reliably shows the active session
+    // (last_seen stays fresh, and lost rows are re-inserted).
+    const heartbeat = window.setInterval(() => {
+      supabase.auth.getSession().then(({ data: { session: s } }) => {
+        if (!mounted || !s?.user || !s.access_token) return;
+        const marker = s.access_token.split(".").pop()?.slice(-16) ?? s.user.id;
+        void recordSession({ data: { sessionId: marker } }).catch(() => undefined);
+      });
+    }, 60_000);
+
     return () => {
       mounted = false;
+      window.clearInterval(heartbeat);
       subscription.unsubscribe();
     };
   }, [loadRoles, queryClient]);
+
 
   const permCtx = { roles, boardSeats };
 
