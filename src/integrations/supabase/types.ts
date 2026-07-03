@@ -16,24 +16,36 @@ export type Database = {
     Tables: {
       ai_messages: {
         Row: {
+          archived_at: string | null
           content: string
+          conversation_id: string | null
           created_at: string
           id: string
           role: string
+          summary: string | null
+          token_count: number | null
           user_id: string
         }
         Insert: {
+          archived_at?: string | null
           content: string
+          conversation_id?: string | null
           created_at?: string
           id?: string
           role: string
+          summary?: string | null
+          token_count?: number | null
           user_id: string
         }
         Update: {
+          archived_at?: string | null
           content?: string
+          conversation_id?: string | null
           created_at?: string
           id?: string
           role?: string
+          summary?: string | null
+          token_count?: number | null
           user_id?: string
         }
         Relationships: []
@@ -103,7 +115,9 @@ export type Database = {
           entity: string
           entity_id: string | null
           id: string
+          ip_address: unknown
           meta: Json | null
+          user_agent: string | null
         }
         Insert: {
           action: string
@@ -112,7 +126,9 @@ export type Database = {
           entity: string
           entity_id?: string | null
           id?: string
+          ip_address?: unknown
           meta?: Json | null
+          user_agent?: string | null
         }
         Update: {
           action?: string
@@ -121,7 +137,9 @@ export type Database = {
           entity?: string
           entity_id?: string | null
           id?: string
+          ip_address?: unknown
           meta?: Json | null
+          user_agent?: string | null
         }
         Relationships: []
       }
@@ -667,6 +685,8 @@ export type Database = {
         }
         Returns: string
       }
+      ai_context_active: { Args: never; Returns: boolean }
+      archive_audit_log: { Args: { _retain_days?: number }; Returns: number }
       calc_returned_fee: {
         Args: { _amount: number; _rate: number; _term: number }
         Returns: number
