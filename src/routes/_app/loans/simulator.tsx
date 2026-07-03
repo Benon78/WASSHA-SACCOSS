@@ -36,9 +36,15 @@ function SimulatorPage() {
   const [missedMonths, setMissedMonths] = useState("0");
 
   useEffect(() => {
-    supabase.from("loan_policies").select("*").order("version", { ascending: false }).limit(1)
-      .then(({ data }) => setPolicy(data?.[0] ?? null));
+    // current_policy() is SECURITY DEFINER so members can read the active
+    // policy without needing SELECT on loan_policies (which is staff-only).
+    supabase.rpc("current_policy").then(({ data, error }) => {
+      if (error) { console.error("current_policy failed", error); setPolicy(null); return; }
+      // RPC returns a single record (row) or null.
+      setPolicy(Array.isArray(data) ? (data[0] ?? null) : (data ?? null));
+    });
   }, []);
+
 
   const result = useMemo(() => {
     if (!policy) return null;
