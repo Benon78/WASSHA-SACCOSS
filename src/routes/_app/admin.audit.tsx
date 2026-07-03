@@ -10,15 +10,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { downloadCSV, downloadPDF } from "@/lib/exporters";
 import { fmtDate } from "@/lib/format";
 import { toast } from "sonner";
-import { FileSpreadsheet, FileDown, ShieldCheck, Loader2 } from "lucide-react";
+import { FileSpreadsheet, FileDown, ShieldCheck, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/_app/admin/audit")({
   head: () => ({ meta: [{ title: "Audit log — Admin" }] }),
   component: AuditPage,
 });
 
+const PAGE_SIZE = 25;
+
 function AuditPage() {
   const { hasRole, loading } = useAuth();
+  const [page, setPage] = useState(1);
   const [from, setFrom] = useState(() => new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10));
   const [to, setTo] = useState(() => new Date().toISOString().slice(0, 10));
   const [action, setAction] = useState("all");
@@ -57,6 +60,7 @@ function AuditPage() {
       flat = flat.filter((r) => Object.values(r).some((v) => String(v).toLowerCase().includes(s)));
     }
     setRows(flat);
+    setPage(1);
     return flat;
   };
 
@@ -113,27 +117,50 @@ function AuditPage() {
           <h2 className="text-base font-semibold">{rows.length} entries</h2>
           {rows.length === 0 ? (
             <p className="mt-6 text-center text-sm text-muted-foreground">Run the report to see audit entries.</p>
-          ) : (
-            <div className="mt-4 overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b text-left text-xs uppercase text-muted-foreground">
-                    {Object.keys(rows[0]).map((k) => <th key={k} className="py-2 pr-3">{k}</th>)}
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.slice(0, 100).map((r, i) => (
-                    <tr key={i} className="border-b border-border/40">
-                      {Object.values(r).map((v: any, j) => (
-                        <td key={j} className="py-2 pr-3 text-xs">{v == null ? "—" : String(v)}</td>
+          ) : (() => {
+            const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+            const currentPage = Math.min(page, totalPages);
+            const start = (currentPage - 1) * PAGE_SIZE;
+            const pageRows = rows.slice(start, start + PAGE_SIZE);
+            return (
+              <>
+                <div className="mt-4 overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b text-left text-xs uppercase text-muted-foreground">
+                        {Object.keys(rows[0]).map((k) => <th key={k} className="py-2 pr-3">{k}</th>)}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pageRows.map((r, i) => (
+                        <tr key={start + i} className="border-b border-border/40">
+                          {Object.values(r).map((v: any, j) => (
+                            <td key={j} className="py-2 pr-3 text-xs">{v == null ? "—" : String(v)}</td>
+                          ))}
+                        </tr>
                       ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {rows.length > 100 && <p className="mt-3 text-xs text-muted-foreground">Showing 100 of {rows.length}. Export to see everything.</p>}
-            </div>
-          )}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="mt-4 flex items-center justify-between gap-3 text-xs">
+                  <span className="text-muted-foreground">
+                    Showing {start + 1}–{Math.min(start + PAGE_SIZE, rows.length)} of {rows.length}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" variant="outline" disabled={currentPage <= 1}
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}>
+                      <ChevronLeft className="h-4 w-4" /> Prev
+                    </Button>
+                    <span className="tabular-nums text-muted-foreground">Page {currentPage} / {totalPages}</span>
+                    <Button size="sm" variant="outline" disabled={currentPage >= totalPages}
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
+                      Next <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </>
+            );
+          })()}
         </section>
       </div>
     </div>

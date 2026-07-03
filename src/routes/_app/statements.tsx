@@ -126,12 +126,17 @@ function StatementsPage() {
           ) : (
             <ul className="mt-4 divide-y divide-border/60">
               {loans.map((l) => (
-                <li key={l.id} className="flex items-center justify-between py-3">
-                  <div>
+                <li key={l.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                  <div className="min-w-0">
                     <p className="text-sm font-semibold">{l.loan_number}</p>
                     <p className="text-xs text-muted-foreground">
-                      {fmtTZS(l.amount_approved || l.amount_requested)} · outstanding {fmtTZS(l.outstanding_balance)} · {l.status}
+                      {fmtTZS(l.amount_approved || l.amount_requested)} · principal outstanding {fmtTZS(l.outstanding_balance)} · {l.status}
                     </p>
+                    {(Number(l.fee_amount ?? 0) > 0 || Number(l.fee_outstanding ?? 0) > 0) && (
+                      <p className="mt-0.5 text-xs text-primary">
+                        Loan fee: {fmtTZS(l.fee_amount ?? 0)} · fee outstanding {fmtTZS(l.fee_outstanding ?? 0)}
+                      </p>
+                    )}
                   </div>
                   <Button onClick={() => downloadLoanPdf(l)} size="sm" variant="outline">
                     <FileText className="mr-2 h-4 w-4" /> Download PDF
