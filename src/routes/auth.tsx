@@ -30,7 +30,7 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const nav = useNavigate();
   const { redirect: redirectTo } = useSearch({ from: "/auth" });
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -51,18 +51,33 @@ function AuthPage() {
         });
         if (error) throw error;
         toast.success("Account created. Welcome!");
+        nav({ to: (redirectTo as any) || "/dashboard" });
+      } else if (mode === "forgot") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/profile`,
+        });
+        if (error) throw error;
+        toast.success("Password reset link sent. Please check your email.");
+        setMode("signin");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Signed in");
+        nav({ to: (redirectTo as any) || "/dashboard" });
       }
-      nav({ to: (redirectTo as any) || "/dashboard" });
     } catch (err: any) {
       toast.error(err.message || "Authentication failed");
     } finally {
       setLoading(false);
     }
   };
+
+  const title = mode === "signin" ? "Welcome back" : mode === "signup" ? "Create your member account" : "Reset your password";
+  const subtitle = mode === "signin"
+    ? "Sign in to your SACCOS dashboard."
+    : mode === "signup"
+      ? "Join WASSHA SACCOS in under a minute."
+      : "Enter your email and we'll send you a reset link.";
 
   return (
     <div className="flex min-h-screen items-stretch">
@@ -96,12 +111,8 @@ function AuthPage() {
             </Link>
           </div>
 
-          <h1 className="text-2xl font-bold text-foreground">
-            {mode === "signin" ? "Welcome back" : "Create your member account"}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {mode === "signin" ? "Sign in to your SACCOS dashboard." : "Join WASSHA SACCOS in under a minute."}
-          </p>
+          <h1 className="text-2xl font-bold text-foreground">{title}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
 
           <form onSubmit={submit} className="mt-6 space-y-4">
             {mode === "signup" && (
@@ -120,21 +131,52 @@ function AuthPage() {
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="pwd">Password</Label>
-              <Input id="pwd" type="password" minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} required />
-            </div>
+            {mode !== "forgot" && (
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="pwd">Password</Label>
+                  {mode === "signin" && (
+                    <button
+                      type="button"
+                      onClick={() => setMode("forgot")}
+                      className="text-xs font-medium text-primary hover:underline"
+                    >
+                      Forgot password?
+                    </button>
+                  )}
+                </div>
+                <Input id="pwd" type="password" minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} required />
+              </div>
+            )}
             <Button type="submit" disabled={loading} className="w-full bg-[image:var(--gradient-primary)] text-primary-foreground shadow-[var(--shadow-elegant)] hover:opacity-95">
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {mode === "signin" ? "Sign in" : "Create account"}
+              {mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Send reset link"}
             </Button>
           </form>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            {mode === "signin" ? "New to WASSHA?" : "Already a member?"}{" "}
-            <button onClick={() => setMode(mode === "signin" ? "signup" : "signin")} className="font-semibold text-primary hover:underline">
-              {mode === "signin" ? "Create an account" : "Sign in"}
-            </button>
+            {mode === "forgot" ? (
+              <>
+                Remembered it?{" "}
+                <button onClick={() => setMode("signin")} className="font-semibold text-primary hover:underline">
+                  Back to sign in
+                </button>
+              </>
+            ) : mode === "signin" ? (
+              <>
+                New to WASSHA?{" "}
+                <button onClick={() => setMode("signup")} className="font-semibold text-primary hover:underline">
+                  Create an account
+                </button>
+              </>
+            ) : (
+              <>
+                Already a member?{" "}
+                <button onClick={() => setMode("signin")} className="font-semibold text-primary hover:underline">
+                  Sign in
+                </button>
+              </>
+            )}
           </p>
         </div>
       </div>

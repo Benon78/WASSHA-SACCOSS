@@ -17,25 +17,19 @@ export function AppHeader() {
   const nav = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const navLinks = user ? (
+  const isAdmin = roles.includes("admin");
+
+  // Primary nav — kept small so it doesn't overflow. Admin sub-pages go into a dropdown.
+  const primaryLinks = user ? (
     <>
-      <Link to="/dashboard" className="transition hover:text-foreground" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>{t("nav_dashboard")}</Link>
-      <Link to="/loans" className="transition hover:text-foreground" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>{t("nav_loans")}</Link>
-      <Link to="/statements" className="transition hover:text-foreground" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>{t("nav_statements")}</Link>
-      <Link to="/notifications" className="transition hover:text-foreground" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>{t("nav_notifications")}</Link>
+      <Link to="/dashboard" className="transition hover:text-foreground whitespace-nowrap" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>{t("nav_dashboard")}</Link>
+      <Link to="/loans" className="transition hover:text-foreground whitespace-nowrap" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>{t("nav_loans")}</Link>
+      <Link to="/statements" className="transition hover:text-foreground whitespace-nowrap" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>{t("nav_statements")}</Link>
+      <Link to="/notifications" className="transition hover:text-foreground whitespace-nowrap" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>{t("nav_notifications")}</Link>
+      <Link to="/escalations" className="transition hover:text-foreground whitespace-nowrap" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>{t("nav_escalations")}</Link>
       {isStaff && (
-        <Link to="/approvals" className="transition hover:text-foreground" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>{t("nav_approvals")}</Link>
+        <Link to="/approvals" className="transition hover:text-foreground whitespace-nowrap" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>{t("nav_approvals")}</Link>
       )}
-      {roles.includes("admin") && (
-        <>
-          <Link to="/admin" className="transition hover:text-foreground" activeProps={{ className: "text-foreground font-semibold" }} onClick={() => setMobileOpen(false)}>{t("nav_admin")}</Link>
-          <Link to="/admin/board" className="transition hover:text-foreground" onClick={() => setMobileOpen(false)}>{t("nav_board")}</Link>
-          <Link to="/admin/policies" className="transition hover:text-foreground" onClick={() => setMobileOpen(false)}>{t("nav_policies")}</Link>
-          <Link to="/admin/reports" className="transition hover:text-foreground" onClick={() => setMobileOpen(false)}>{t("nav_reports")}</Link>
-          <Link to="/admin/audit" className="transition hover:text-foreground" onClick={() => setMobileOpen(false)}>{t("nav_audit")}</Link>
-        </>
-      )}
-      <Link to="/profile" className="transition hover:text-foreground" onClick={() => setMobileOpen(false)}>{t("nav_profile")}</Link>
     </>
   ) : (
     <>
@@ -44,6 +38,44 @@ export function AppHeader() {
       <Link to="/workflow" className="transition hover:text-foreground" onClick={() => setMobileOpen(false)}>Workflow Guide</Link>
     </>
   );
+
+  // Admin dropdown for admin sub-pages so the top bar never crowds
+  const adminMenu = isAdmin ? (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className="h-auto px-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+          {t("nav_admin")} ▾
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuItem asChild><Link to="/admin">{t("nav_admin")} home</Link></DropdownMenuItem>
+        <DropdownMenuItem asChild><Link to="/admin/board">{t("nav_board")}</Link></DropdownMenuItem>
+        <DropdownMenuItem asChild><Link to="/admin/policies">{t("nav_policies")}</Link></DropdownMenuItem>
+        <DropdownMenuItem asChild><Link to="/admin/reports">{t("nav_reports")}</Link></DropdownMenuItem>
+        <DropdownMenuItem asChild><Link to="/admin/audit">{t("nav_audit")}</Link></DropdownMenuItem>
+        <DropdownMenuItem asChild><Link to="/admin/escalations">Escalations queue</Link></DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  ) : null;
+
+  // Mobile nav — full list including admin sub-pages
+  const mobileNavLinks = user ? (
+    <>
+      {primaryLinks}
+      {isAdmin && (
+        <>
+          <div className="mt-2 border-t pt-2 text-xs uppercase tracking-wider text-muted-foreground/70">{t("nav_admin")}</div>
+          <Link to="/admin" className="transition hover:text-foreground" onClick={() => setMobileOpen(false)}>{t("nav_admin")} home</Link>
+          <Link to="/admin/board" className="transition hover:text-foreground" onClick={() => setMobileOpen(false)}>{t("nav_board")}</Link>
+          <Link to="/admin/policies" className="transition hover:text-foreground" onClick={() => setMobileOpen(false)}>{t("nav_policies")}</Link>
+          <Link to="/admin/reports" className="transition hover:text-foreground" onClick={() => setMobileOpen(false)}>{t("nav_reports")}</Link>
+          <Link to="/admin/audit" className="transition hover:text-foreground" onClick={() => setMobileOpen(false)}>{t("nav_audit")}</Link>
+          <Link to="/admin/escalations" className="transition hover:text-foreground" onClick={() => setMobileOpen(false)}>Escalations queue</Link>
+        </>
+      )}
+      <Link to="/profile" className="mt-2 border-t pt-2 transition hover:text-foreground" onClick={() => setMobileOpen(false)}>{t("nav_profile")}</Link>
+    </>
+  ) : primaryLinks;
 
   const langSwitcher = (
     <DropdownMenu>
@@ -73,8 +105,9 @@ export function AppHeader() {
           </div>
         </Link>
 
-        <nav className="hidden items-center gap-6 text-sm font-medium text-muted-foreground lg:flex">
-          {navLinks}
+        <nav className="hidden items-center gap-5 text-sm font-medium text-muted-foreground xl:flex">
+          {primaryLinks}
+          {adminMenu}
         </nav>
 
         <div className="flex items-center gap-1 sm:gap-2">
