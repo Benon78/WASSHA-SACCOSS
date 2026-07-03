@@ -17,6 +17,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GuidesChoosingSaccoSoftwareRouteImport } from './routes/guides.choosing-sacco-software'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as AppSuperadminRouteImport } from './routes/_app/superadmin'
 import { Route as AppStatementsRouteImport } from './routes/_app/statements'
 import { Route as AppProfileRouteImport } from './routes/_app/profile'
 import { Route as AppNotificationsRouteImport } from './routes/_app/notifications'
@@ -24,8 +25,10 @@ import { Route as AppEscalationsRouteImport } from './routes/_app/escalations'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppApprovalsRouteImport } from './routes/_app/approvals'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
+import { Route as AppSuperadminIndexRouteImport } from './routes/_app/superadmin.index'
 import { Route as AppLoansIndexRouteImport } from './routes/_app/loans/index'
 import { Route as AppAdminIndexRouteImport } from './routes/_app/admin.index'
+import { Route as AppSuperadminUsersRouteImport } from './routes/_app/superadmin.users'
 import { Route as AppLoansSimulatorRouteImport } from './routes/_app/loans/simulator'
 import { Route as AppLoansApplyRouteImport } from './routes/_app/loans/apply'
 import { Route as AppLoansLoanIdRouteImport } from './routes/_app/loans/$loanId'
@@ -77,6 +80,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppSuperadminRoute = AppSuperadminRouteImport.update({
+  id: '/superadmin',
+  path: '/superadmin',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppStatementsRoute = AppStatementsRouteImport.update({
   id: '/statements',
   path: '/statements',
@@ -112,6 +120,11 @@ const AppAdminRoute = AppAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSuperadminIndexRoute = AppSuperadminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppSuperadminRoute,
+} as any)
 const AppLoansIndexRoute = AppLoansIndexRouteImport.update({
   id: '/loans/',
   path: '/loans/',
@@ -121,6 +134,11 @@ const AppAdminIndexRoute = AppAdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppAdminRoute,
+} as any)
+const AppSuperadminUsersRoute = AppSuperadminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AppSuperadminRoute,
 } as any)
 const AppLoansSimulatorRoute = AppLoansSimulatorRouteImport.update({
   id: '/loans/simulator',
@@ -186,6 +204,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AppNotificationsRoute
   '/profile': typeof AppProfileRoute
   '/statements': typeof AppStatementsRoute
+  '/superadmin': typeof AppSuperadminRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/guides/choosing-sacco-software': typeof GuidesChoosingSaccoSoftwareRoute
   '/admin/audit': typeof AppAdminAuditRoute
@@ -198,8 +217,10 @@ export interface FileRoutesByFullPath {
   '/loans/$loanId': typeof AppLoansLoanIdRoute
   '/loans/apply': typeof AppLoansApplyRoute
   '/loans/simulator': typeof AppLoansSimulatorRoute
+  '/superadmin/users': typeof AppSuperadminUsersRoute
   '/admin/': typeof AppAdminIndexRoute
   '/loans/': typeof AppLoansIndexRoute
+  '/superadmin/': typeof AppSuperadminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -225,8 +246,10 @@ export interface FileRoutesByTo {
   '/loans/$loanId': typeof AppLoansLoanIdRoute
   '/loans/apply': typeof AppLoansApplyRoute
   '/loans/simulator': typeof AppLoansSimulatorRoute
+  '/superadmin/users': typeof AppSuperadminUsersRoute
   '/admin': typeof AppAdminIndexRoute
   '/loans': typeof AppLoansIndexRoute
+  '/superadmin': typeof AppSuperadminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -243,6 +266,7 @@ export interface FileRoutesById {
   '/_app/notifications': typeof AppNotificationsRoute
   '/_app/profile': typeof AppProfileRoute
   '/_app/statements': typeof AppStatementsRoute
+  '/_app/superadmin': typeof AppSuperadminRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/guides/choosing-sacco-software': typeof GuidesChoosingSaccoSoftwareRoute
   '/_app/admin/audit': typeof AppAdminAuditRoute
@@ -255,8 +279,10 @@ export interface FileRoutesById {
   '/_app/loans/$loanId': typeof AppLoansLoanIdRoute
   '/_app/loans/apply': typeof AppLoansApplyRoute
   '/_app/loans/simulator': typeof AppLoansSimulatorRoute
+  '/_app/superadmin/users': typeof AppSuperadminUsersRoute
   '/_app/admin/': typeof AppAdminIndexRoute
   '/_app/loans/': typeof AppLoansIndexRoute
+  '/_app/superadmin/': typeof AppSuperadminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -273,6 +299,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/profile'
     | '/statements'
+    | '/superadmin'
     | '/api/chat'
     | '/guides/choosing-sacco-software'
     | '/admin/audit'
@@ -285,8 +312,10 @@ export interface FileRouteTypes {
     | '/loans/$loanId'
     | '/loans/apply'
     | '/loans/simulator'
+    | '/superadmin/users'
     | '/admin/'
     | '/loans/'
+    | '/superadmin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -312,8 +341,10 @@ export interface FileRouteTypes {
     | '/loans/$loanId'
     | '/loans/apply'
     | '/loans/simulator'
+    | '/superadmin/users'
     | '/admin'
     | '/loans'
+    | '/superadmin'
   id:
     | '__root__'
     | '/'
@@ -329,6 +360,7 @@ export interface FileRouteTypes {
     | '/_app/notifications'
     | '/_app/profile'
     | '/_app/statements'
+    | '/_app/superadmin'
     | '/api/chat'
     | '/guides/choosing-sacco-software'
     | '/_app/admin/audit'
@@ -341,8 +373,10 @@ export interface FileRouteTypes {
     | '/_app/loans/$loanId'
     | '/_app/loans/apply'
     | '/_app/loans/simulator'
+    | '/_app/superadmin/users'
     | '/_app/admin/'
     | '/_app/loans/'
+    | '/_app/superadmin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -414,6 +448,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/superadmin': {
+      id: '/_app/superadmin'
+      path: '/superadmin'
+      fullPath: '/superadmin'
+      preLoaderRoute: typeof AppSuperadminRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/statements': {
       id: '/_app/statements'
       path: '/statements'
@@ -463,6 +504,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/superadmin/': {
+      id: '/_app/superadmin/'
+      path: '/'
+      fullPath: '/superadmin/'
+      preLoaderRoute: typeof AppSuperadminIndexRouteImport
+      parentRoute: typeof AppSuperadminRoute
+    }
     '/_app/loans/': {
       id: '/_app/loans/'
       path: '/loans'
@@ -476,6 +524,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AppAdminIndexRouteImport
       parentRoute: typeof AppAdminRoute
+    }
+    '/_app/superadmin/users': {
+      id: '/_app/superadmin/users'
+      path: '/users'
+      fullPath: '/superadmin/users'
+      preLoaderRoute: typeof AppSuperadminUsersRouteImport
+      parentRoute: typeof AppSuperadminRoute
     }
     '/_app/loans/simulator': {
       id: '/_app/loans/simulator'
@@ -576,6 +631,20 @@ const AppAdminRouteWithChildren = AppAdminRoute._addFileChildren(
   AppAdminRouteChildren,
 )
 
+interface AppSuperadminRouteChildren {
+  AppSuperadminUsersRoute: typeof AppSuperadminUsersRoute
+  AppSuperadminIndexRoute: typeof AppSuperadminIndexRoute
+}
+
+const AppSuperadminRouteChildren: AppSuperadminRouteChildren = {
+  AppSuperadminUsersRoute: AppSuperadminUsersRoute,
+  AppSuperadminIndexRoute: AppSuperadminIndexRoute,
+}
+
+const AppSuperadminRouteWithChildren = AppSuperadminRoute._addFileChildren(
+  AppSuperadminRouteChildren,
+)
+
 interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRouteWithChildren
   AppApprovalsRoute: typeof AppApprovalsRoute
@@ -584,6 +653,7 @@ interface AppRouteChildren {
   AppNotificationsRoute: typeof AppNotificationsRoute
   AppProfileRoute: typeof AppProfileRoute
   AppStatementsRoute: typeof AppStatementsRoute
+  AppSuperadminRoute: typeof AppSuperadminRouteWithChildren
   AppLoansLoanIdRoute: typeof AppLoansLoanIdRoute
   AppLoansApplyRoute: typeof AppLoansApplyRoute
   AppLoansSimulatorRoute: typeof AppLoansSimulatorRoute
@@ -598,6 +668,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppNotificationsRoute: AppNotificationsRoute,
   AppProfileRoute: AppProfileRoute,
   AppStatementsRoute: AppStatementsRoute,
+  AppSuperadminRoute: AppSuperadminRouteWithChildren,
   AppLoansLoanIdRoute: AppLoansLoanIdRoute,
   AppLoansApplyRoute: AppLoansApplyRoute,
   AppLoansSimulatorRoute: AppLoansSimulatorRoute,
