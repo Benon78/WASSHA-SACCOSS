@@ -1325,6 +1325,11 @@ export type Database = {
         Args: { _key: string; _reason?: string; _value: Json }
         Returns: string
       }
+      staff_can_access_user: {
+        Args: { _target_user: string }
+        Returns: boolean
+      }
+      user_branch: { Args: { _user_id: string }; Returns: string }
     }
     Enums: {
       app_role:
