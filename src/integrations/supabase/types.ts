@@ -191,6 +191,30 @@ export type Database = {
         }
         Relationships: []
       }
+      auth_lockouts: {
+        Row: {
+          email: string
+          fail_count: number
+          first_failure_at: string
+          locked_until: string | null
+          updated_at: string
+        }
+        Insert: {
+          email: string
+          fail_count?: number
+          first_failure_at?: string
+          locked_until?: string | null
+          updated_at?: string
+        }
+        Update: {
+          email?: string
+          fail_count?: number
+          first_failure_at?: string
+          locked_until?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       backups: {
         Row: {
           completed_at: string | null
@@ -1109,6 +1133,7 @@ export type Database = {
         Returns: number
       }
       calculate_eligibility: { Args: { _user_id: string }; Returns: Json }
+      clear_login_lockout: { Args: { _email: string }; Returns: undefined }
       current_policy: {
         Args: never
         Returns: {
@@ -1169,6 +1194,8 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_account_active: { Args: { _user_id: string }; Returns: boolean }
+      is_email_locked: { Args: { _email: string }; Returns: Json }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       log_assistant_action: {
@@ -1180,6 +1207,8 @@ export type Database = {
         }
         Returns: undefined
       }
+      mfa_gate_for_current_user: { Args: never; Returns: Json }
+      record_failed_login: { Args: { _email: string }; Returns: Json }
       record_privileged_audit: {
         Args: {
           _action: string
