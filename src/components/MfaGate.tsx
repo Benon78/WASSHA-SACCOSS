@@ -18,9 +18,10 @@ export function MfaGate({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!user) { setGate(null); return; }
     let cancelled = false;
-    supabase.rpc("mfa_gate_for_current_user").then(({ data }) => {
-      if (!cancelled && data) setGate(data as unknown as Gate);
-    }).catch(() => undefined);
+    supabase.rpc("mfa_gate_for_current_user").then(({ data, error }) => {
+      if (cancelled) return;
+      if (!error && data) setGate(data as unknown as Gate);
+    });
     return () => { cancelled = true; };
   }, [user?.id]);
 
