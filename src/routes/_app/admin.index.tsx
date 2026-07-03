@@ -20,6 +20,7 @@ export const Route = createFileRoute("/_app/admin/")({
 });
 
 const ROLES: AppRole[] = ["member", "approver", "finance", "manager", "admin"];
+const SUPER_ADMIN_ONLY_ROLES: AppRole[] = ["admin", "super_admin"];
 
 function AdminPage() {
   const { hasRole, loading } = useAuth();
