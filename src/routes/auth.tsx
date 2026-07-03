@@ -8,9 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/friendlyError";
+import { logAuthEvent } from "@/lib/auth-log.functions";
 import { useAuth } from "@/lib/auth";
 import { safeInternalPath } from "@/lib/safeUrl";
 import { Wallet, Loader2 } from "lucide-react";
+
 
 const search = z.object({ redirect: z.string().max(2048).optional() });
 
