@@ -75,7 +75,7 @@ function AdminPage() {
     if (error) {
       const m = /field=([a-z_]+);\s*(.+)/i.exec(error.message);
       if (m) { setRegErrors({ [m[1]]: m[2] }); return toast.error(m[2]); }
-      return toast.error(error.message);
+      return toast.error(friendlyError(error));
     }
     toast.success("Existing loan registered");
     setRegOpen(false);
@@ -105,7 +105,7 @@ function AdminPage() {
       description: tx.description || null,
       loan_id: needsLoanLink ? tx.loan_id : null,
     });
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyError(error));
     else { toast.success("Transaction recorded"); setTx({ ...tx, amount: "", description: "", loan_id: "" }); load(); }
   };
 
@@ -113,7 +113,7 @@ function AdminPage() {
     const value = memberNumberDraft[userId]?.trim();
     if (!value) return toast.error("Member number is required");
     const { error } = await supabase.from("profiles").update({ member_number: value }).eq("user_id", userId);
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyError(error));
     else { toast.success("Member number saved"); load(); }
   };
 
@@ -302,7 +302,7 @@ function AdminPage() {
                           const { error } = await supabase.from("profiles")
                             .update({ joined_at: new Date(v).toISOString() })
                             .eq("user_id", u.user_id);
-                          if (error) toast.error(error.message);
+                          if (error) toast.error(friendlyError(error));
                           else { toast.success("Join date updated"); load(); }
                         }}
                       />
@@ -325,7 +325,7 @@ function AdminPage() {
                             if (!confirm(`Set opening balance to TZS ${v.toLocaleString()}? This can only be set once.`)) return;
                             const { error } = await supabase.from("profiles")
                               .update({ opening_balance: v }).eq("user_id", u.user_id);
-                            if (error) toast.error(error.message);
+                            if (error) toast.error(friendlyError(error));
                             else { toast.success("Opening balance set"); load(); }
                           }}
                         />

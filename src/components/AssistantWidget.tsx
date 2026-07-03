@@ -159,7 +159,7 @@ function AssistantChatBody({
     transport,
     onError: (err) => {
       console.error("[assistant] error", err);
-      toast.error(err?.message ?? "Assistant error");
+      toast.error(friendlyError(err, "Assistant error"));
     },
   });
 

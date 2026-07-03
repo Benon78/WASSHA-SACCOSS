@@ -39,7 +39,7 @@ function ReportsPage() {
     if (type === "loans" && statusFilter !== "all") q = q.eq("status", statusFilter);
     const { data, error } = await q;
     setBusy(false);
-    if (error) { toast.error(error.message); return []; }
+    if (error) { toast.error(friendlyError(error)); return []; }
     const flat = (data ?? []).map((r: any) => {
       if (type === "audit_log") return {
         date: fmtDate(r.created_at), action: r.action, entity: r.entity, entity_id: r.entity_id, actor: r.actor_id,

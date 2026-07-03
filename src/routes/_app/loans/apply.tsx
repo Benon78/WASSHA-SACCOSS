@@ -100,7 +100,7 @@ function ApplyPage() {
       toast.success(`Application ${loan.loan_number} submitted`);
       nav({ to: "/loans/$loanId", params: { loanId: loan.id } });
     } catch (err: any) {
-      toast.error(err.message || "Failed to submit");
+      toast.error(friendlyError(err, "Failed to submit"));
     } finally { setSubmitting(false); }
   };
 

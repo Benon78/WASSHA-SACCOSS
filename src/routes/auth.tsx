@@ -67,7 +67,7 @@ function AuthPage() {
         nav({ to: (redirectTo as any) || "/dashboard" });
       }
     } catch (err: any) {
-      toast.error(err.message || "Authentication failed");
+      toast.error(friendlyError(err, "Authentication failed"));
     } finally {
       setLoading(false);
     }
@@ -175,7 +175,7 @@ function AuthPage() {
                     toast.success("Signed in with Google");
                     nav({ to: (redirectTo as any) || "/dashboard" });
                   } catch (err: any) {
-                    toast.error(err.message || "Google sign-in failed");
+                    toast.error(friendlyError(err, "Google sign-in failed"));
                   } finally {
                     setLoading(false);
                   }

@@ -49,7 +49,7 @@ function PoliciesPage() {
       created_by: user!.id,
     });
     setBusy(false);
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyError(error));
     else { toast.success(`Policy v${nextVersion} created`); load(); }
   };
 

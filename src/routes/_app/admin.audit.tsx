@@ -44,7 +44,7 @@ function AuditPage() {
     if (entity !== "all") q = q.eq("entity", entity);
     const { data, error } = await q;
     setBusy(false);
-    if (error) { toast.error(error.message); return []; }
+    if (error) { toast.error(friendlyError(error)); return []; }
     let flat = (data ?? []).map((r: any) => ({
       date: fmtDate(r.created_at),
       action: r.action,

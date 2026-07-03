@@ -106,7 +106,7 @@ function LoanDetail() {
       setComment("");
       await load();
     } catch (e: any) {
-      toast.error(e.message);
+      toast.error(friendlyError(e));
     } finally { setBusy(false); }
   };
 
@@ -278,7 +278,7 @@ function LoanDetail() {
                       });
                       toast.success("Disbursement confirmed");
                       await load();
-                    } catch (e: any) { toast.error(e.message); }
+                    } catch (e: any) { toast.error(friendlyError(e)); }
                     finally { setBusy(false); }
                   }}
                 >
