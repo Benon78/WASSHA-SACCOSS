@@ -1180,6 +1180,122 @@ export type Database = {
         }
         Returns: undefined
       }
+      record_privileged_audit: {
+        Args: {
+          _action: string
+          _after: Json
+          _before: Json
+          _entity: string
+          _entity_id: string
+          _reason: string
+        }
+        Returns: undefined
+      }
+      require_permission: { Args: { _code: string }; Returns: undefined }
+      rpc_archive_audit_log: {
+        Args: { _reason?: string; _retain_days?: number }
+        Returns: number
+      }
+      rpc_assign_user_branch: {
+        Args: { _branch_id: string; _reason?: string; _user_id: string }
+        Returns: undefined
+      }
+      rpc_assign_user_role: {
+        Args: {
+          _reason?: string
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: string
+      }
+      rpc_create_branch: {
+        Args: {
+          _address?: string
+          _code: string
+          _manager_id?: string
+          _name: string
+          _reason?: string
+        }
+        Returns: string
+      }
+      rpc_create_custom_role: {
+        Args: {
+          _description?: string
+          _name: string
+          _permissions?: string[]
+          _reason?: string
+        }
+        Returns: string
+      }
+      rpc_delete_custom_role: {
+        Args: { _id: string; _reason?: string }
+        Returns: undefined
+      }
+      rpc_disable_branch: {
+        Args: { _id: string; _reason?: string }
+        Returns: undefined
+      }
+      rpc_publish_loan_policy: {
+        Args: { _payload: Json; _reason?: string }
+        Returns: string
+      }
+      rpc_reactivate_user: {
+        Args: { _reason?: string; _user_id: string }
+        Returns: undefined
+      }
+      rpc_record_backup_restore: {
+        Args: {
+          _backup_id: string
+          _notes?: string
+          _reason?: string
+          _status: string
+        }
+        Returns: undefined
+      }
+      rpc_remove_user_role: {
+        Args: {
+          _reason?: string
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: undefined
+      }
+      rpc_set_custom_role_permissions: {
+        Args: {
+          _custom_role_id: string
+          _permissions: string[]
+          _reason?: string
+        }
+        Returns: undefined
+      }
+      rpc_set_role_permissions: {
+        Args: {
+          _permissions: string[]
+          _reason?: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: undefined
+      }
+      rpc_suspend_user: {
+        Args: { _reason?: string; _user_id: string }
+        Returns: undefined
+      }
+      rpc_trigger_backup: {
+        Args: { _kind: string; _notes?: string; _reason?: string }
+        Returns: string
+      }
+      rpc_update_branch: {
+        Args: { _id: string; _patch: Json; _reason?: string }
+        Returns: undefined
+      }
+      rpc_update_custom_role: {
+        Args: { _id: string; _patch: Json; _reason?: string }
+        Returns: undefined
+      }
+      rpc_update_system_setting: {
+        Args: { _key: string; _reason?: string; _value: Json }
+        Returns: string
+      }
     }
     Enums: {
       app_role:
