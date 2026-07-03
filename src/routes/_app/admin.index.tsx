@@ -271,7 +271,8 @@ function AdminPage() {
 
         <section className="rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
           <h2 className="text-base font-semibold">Members & roles</h2>
-          <p className="text-xs text-muted-foreground">Assign each member a unique member number. Numbers are not auto-generated.</p>
+          <p className="text-xs text-muted-foreground">Assign each member a unique member number. Numbers are not auto-generated.{!isSuperAdmin && " The Admin and Super Admin roles are managed by a Super Admin only."}</p>
+
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
