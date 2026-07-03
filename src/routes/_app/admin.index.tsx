@@ -24,6 +24,8 @@ const SUPER_ADMIN_ONLY_ROLES: AppRole[] = ["admin", "super_admin"];
 
 function AdminPage() {
   const { hasRole, loading } = useAuth();
+  const isSuperAdmin = hasRole("super_admin");
+  const visibleRoles = isSuperAdmin ? ROLES : ROLES.filter((r) => !SUPER_ADMIN_ONLY_ROLES.includes(r));
   const { t } = useI18n();
   const [users, setUsers] = useState<any[]>([]);
   const [activeLoans, setActiveLoans] = useState<any[]>([]);
