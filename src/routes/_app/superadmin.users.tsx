@@ -14,6 +14,7 @@ import {
   unlockUser,
   verifyEmail,
   changeUserRole,
+  removeUserRole,
   forceSignOutUser,
   getUserDetail,
 } from "@/lib/superadmin.functions";
