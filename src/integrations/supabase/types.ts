@@ -83,6 +83,13 @@ export type Database = {
             foreignKeyName: "assistant_escalations_loan_id_fkey"
             columns: ["loan_id"]
             isOneToOne: false
+            referencedRelation: "loan_sla_status"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assistant_escalations_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
             referencedRelation: "loans"
             referencedColumns: ["id"]
           },
@@ -151,6 +158,13 @@ export type Database = {
             foreignKeyName: "loan_approvals_loan_id_fkey"
             columns: ["loan_id"]
             isOneToOne: false
+            referencedRelation: "loan_sla_status"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loan_approvals_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
             referencedRelation: "loans"
             referencedColumns: ["id"]
           },
@@ -215,6 +229,13 @@ export type Database = {
           uploaded_by?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "loan_documents_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loan_sla_status"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "loan_documents_loan_id_fkey"
             columns: ["loan_id"]
@@ -335,6 +356,13 @@ export type Database = {
             foreignKeyName: "loan_proxies_loan_id_fkey"
             columns: ["loan_id"]
             isOneToOne: false
+            referencedRelation: "loan_sla_status"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loan_proxies_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
             referencedRelation: "loans"
             referencedColumns: ["id"]
           },
@@ -379,6 +407,7 @@ export type Database = {
           outstanding_balance: number
           purpose: string
           stage: Database["public"]["Enums"]["loan_stage"]
+          stage_entered_at: string
           status: Database["public"]["Enums"]["loan_status"]
           term_months: number
           updated_at: string
@@ -400,6 +429,7 @@ export type Database = {
           outstanding_balance?: number
           purpose: string
           stage?: Database["public"]["Enums"]["loan_stage"]
+          stage_entered_at?: string
           status?: Database["public"]["Enums"]["loan_status"]
           term_months: number
           updated_at?: string
@@ -421,6 +451,7 @@ export type Database = {
           outstanding_balance?: number
           purpose?: string
           stage?: Database["public"]["Enums"]["loan_stage"]
+          stage_entered_at?: string
           status?: Database["public"]["Enums"]["loan_status"]
           term_months?: number
           updated_at?: string
@@ -517,6 +548,27 @@ export type Database = {
         }
         Relationships: []
       }
+      sla_config: {
+        Row: {
+          max_hours: number
+          stage: Database["public"]["Enums"]["loan_stage"]
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          max_hours?: number
+          stage: Database["public"]["Enums"]["loan_stage"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          max_hours?: number
+          stage?: Database["public"]["Enums"]["loan_stage"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           amount: number
@@ -550,6 +602,13 @@ export type Database = {
             foreignKeyName: "transactions_loan_id_fkey"
             columns: ["loan_id"]
             isOneToOne: false
+            referencedRelation: "loan_sla_status"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
             referencedRelation: "loans"
             referencedColumns: ["id"]
           },
@@ -578,7 +637,22 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      loan_sla_status: {
+        Row: {
+          amount_approved: number | null
+          amount_requested: number | null
+          hours_in_stage: number | null
+          id: string | null
+          loan_number: string | null
+          member_id: string | null
+          overdue: boolean | null
+          sla_max_hours: number | null
+          stage: Database["public"]["Enums"]["loan_stage"] | null
+          stage_entered_at: string | null
+          status: Database["public"]["Enums"]["loan_status"] | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       admin_register_existing_loan: {
