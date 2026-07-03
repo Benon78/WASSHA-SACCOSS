@@ -27,6 +27,7 @@ import { Route as AppAdminIndexRouteImport } from './routes/_app/admin.index'
 import { Route as AppLoansSimulatorRouteImport } from './routes/_app/loans/simulator'
 import { Route as AppLoansApplyRouteImport } from './routes/_app/loans/apply'
 import { Route as AppLoansLoanIdRouteImport } from './routes/_app/loans/$loanId'
+import { Route as AppAdminSlaRouteImport } from './routes/_app/admin.sla'
 import { Route as AppAdminReportsRouteImport } from './routes/_app/admin.reports'
 import { Route as AppAdminPoliciesRouteImport } from './routes/_app/admin.policies'
 import { Route as AppAdminEscalationsRouteImport } from './routes/_app/admin.escalations'
@@ -122,6 +123,11 @@ const AppLoansLoanIdRoute = AppLoansLoanIdRouteImport.update({
   path: '/loans/$loanId',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAdminSlaRoute = AppAdminSlaRouteImport.update({
+  id: '/sla',
+  path: '/sla',
+  getParentRoute: () => AppAdminRoute,
+} as any)
 const AppAdminReportsRoute = AppAdminReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
@@ -166,6 +172,7 @@ export interface FileRoutesByFullPath {
   '/admin/escalations': typeof AppAdminEscalationsRoute
   '/admin/policies': typeof AppAdminPoliciesRoute
   '/admin/reports': typeof AppAdminReportsRoute
+  '/admin/sla': typeof AppAdminSlaRoute
   '/loans/$loanId': typeof AppLoansLoanIdRoute
   '/loans/apply': typeof AppLoansApplyRoute
   '/loans/simulator': typeof AppLoansSimulatorRoute
@@ -189,6 +196,7 @@ export interface FileRoutesByTo {
   '/admin/escalations': typeof AppAdminEscalationsRoute
   '/admin/policies': typeof AppAdminPoliciesRoute
   '/admin/reports': typeof AppAdminReportsRoute
+  '/admin/sla': typeof AppAdminSlaRoute
   '/loans/$loanId': typeof AppLoansLoanIdRoute
   '/loans/apply': typeof AppLoansApplyRoute
   '/loans/simulator': typeof AppLoansSimulatorRoute
@@ -215,6 +223,7 @@ export interface FileRoutesById {
   '/_app/admin/escalations': typeof AppAdminEscalationsRoute
   '/_app/admin/policies': typeof AppAdminPoliciesRoute
   '/_app/admin/reports': typeof AppAdminReportsRoute
+  '/_app/admin/sla': typeof AppAdminSlaRoute
   '/_app/loans/$loanId': typeof AppLoansLoanIdRoute
   '/_app/loans/apply': typeof AppLoansApplyRoute
   '/_app/loans/simulator': typeof AppLoansSimulatorRoute
@@ -241,6 +250,7 @@ export interface FileRouteTypes {
     | '/admin/escalations'
     | '/admin/policies'
     | '/admin/reports'
+    | '/admin/sla'
     | '/loans/$loanId'
     | '/loans/apply'
     | '/loans/simulator'
@@ -264,6 +274,7 @@ export interface FileRouteTypes {
     | '/admin/escalations'
     | '/admin/policies'
     | '/admin/reports'
+    | '/admin/sla'
     | '/loans/$loanId'
     | '/loans/apply'
     | '/loans/simulator'
@@ -289,6 +300,7 @@ export interface FileRouteTypes {
     | '/_app/admin/escalations'
     | '/_app/admin/policies'
     | '/_app/admin/reports'
+    | '/_app/admin/sla'
     | '/_app/loans/$loanId'
     | '/_app/loans/apply'
     | '/_app/loans/simulator'
@@ -433,6 +445,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLoansLoanIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/admin/sla': {
+      id: '/_app/admin/sla'
+      path: '/sla'
+      fullPath: '/admin/sla'
+      preLoaderRoute: typeof AppAdminSlaRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
     '/_app/admin/reports': {
       id: '/_app/admin/reports'
       path: '/reports'
@@ -477,6 +496,7 @@ interface AppAdminRouteChildren {
   AppAdminEscalationsRoute: typeof AppAdminEscalationsRoute
   AppAdminPoliciesRoute: typeof AppAdminPoliciesRoute
   AppAdminReportsRoute: typeof AppAdminReportsRoute
+  AppAdminSlaRoute: typeof AppAdminSlaRoute
   AppAdminIndexRoute: typeof AppAdminIndexRoute
 }
 
@@ -486,6 +506,7 @@ const AppAdminRouteChildren: AppAdminRouteChildren = {
   AppAdminEscalationsRoute: AppAdminEscalationsRoute,
   AppAdminPoliciesRoute: AppAdminPoliciesRoute,
   AppAdminReportsRoute: AppAdminReportsRoute,
+  AppAdminSlaRoute: AppAdminSlaRoute,
   AppAdminIndexRoute: AppAdminIndexRoute,
 }
 
