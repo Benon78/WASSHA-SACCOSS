@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { supabase } from "@/integrations/supabase/client";
 import type { Session, User } from "@supabase/supabase-js";
 
-export type AppRole = "member" | "approver" | "finance" | "manager" | "admin";
+export type AppRole = "member" | "approver" | "finance" | "manager" | "admin" | "super_admin";
 export type BoardSeat = "chair" | "member_1" | "member_2";
 
 interface AuthCtx {
@@ -58,8 +58,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value: AuthCtx = {
     user, session, roles, boardSeats, loading,
-    isStaff: roles.some((r) => ["approver", "finance", "manager", "admin"].includes(r)) || boardSeats.length > 0,
-    hasRole: (r) => roles.includes(r),
+    isStaff: roles.some((r) => ["approver", "finance", "manager", "admin", "super_admin"].includes(r)) || boardSeats.length > 0,
+    hasRole: (r) => roles.includes(r) || (r === "admin" && roles.includes("super_admin")),
     hasBoardSeat: (s) => boardSeats.includes(s),
     signOut: async () => { await supabase.auth.signOut(); },
     refreshRoles: async () => { if (user) await loadRoles(user.id); },
