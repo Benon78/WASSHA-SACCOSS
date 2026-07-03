@@ -105,24 +105,26 @@ function PoliciesPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left text-xs uppercase text-muted-foreground">
-                  <th className="py-2">Version</th><th>Rate</th><th>Multiplier</th>
-                  <th>Min savings</th><th>Min months</th><th>Max term</th>
-                  <th>Effective from</th><th>Notes</th>
+                  <th className="py-2 pr-3">Version</th><th className="pr-3">Rate</th><th className="pr-3">Mult</th>
+                  <th className="pr-3">Fee%</th><th className="pr-3">Penalty%/mo</th>
+                  <th className="pr-3">Emerg. rate</th><th className="pr-3">Emerg. max</th>
+                  <th className="pr-3">Effective</th><th>Notes</th>
                 </tr>
               </thead>
               <tbody>
                 {policies.map((p, i) => (
                   <tr key={p.id} className="border-b border-border/40">
-                    <td className="py-3 font-bold">
+                    <td className="py-3 pr-3 font-bold">
                       v{p.version}
                       {i === 0 && <span className="ml-2 rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-semibold text-success">CURRENT</span>}
                     </td>
-                    <td>{p.interest_rate}%</td>
-                    <td>{p.savings_multiplier}×</td>
-                    <td>{fmtTZS(p.min_savings)}</td>
-                    <td>{p.min_membership_months}</td>
-                    <td>{p.max_term_months}</td>
-                    <td className="text-xs text-muted-foreground">{fmtDate(p.effective_from)}</td>
+                    <td className="pr-3">{p.interest_rate}%</td>
+                    <td className="pr-3">{p.savings_multiplier}×</td>
+                    <td className="pr-3">{p.processing_fee_rate ?? 0}%</td>
+                    <td className="pr-3">{p.late_penalty_rate ?? 0}%</td>
+                    <td className="pr-3">{p.emergency_rate ?? 0}%</td>
+                    <td className="pr-3">{fmtTZS(p.emergency_max_amount ?? 0)}</td>
+                    <td className="pr-3 text-xs text-muted-foreground">{fmtDate(p.effective_from)}</td>
                     <td className="text-xs text-muted-foreground">{p.notes || "—"}</td>
                   </tr>
                 ))}
