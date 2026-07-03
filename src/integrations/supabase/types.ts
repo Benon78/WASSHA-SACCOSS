@@ -226,41 +226,62 @@ export type Database = {
       }
       loan_policies: {
         Row: {
+          chapchap_rate: number
           created_at: string
           created_by: string | null
           effective_from: string
+          emergency_max_amount: number
+          emergency_max_term_months: number
+          emergency_multiplier: number
+          emergency_rate: number
           id: string
           interest_rate: number
+          late_penalty_rate: number
           max_term_months: number
           min_membership_months: number
           min_savings: number
           notes: string | null
+          processing_fee_rate: number
           savings_multiplier: number
           version: number
         }
         Insert: {
+          chapchap_rate?: number
           created_at?: string
           created_by?: string | null
           effective_from?: string
+          emergency_max_amount?: number
+          emergency_max_term_months?: number
+          emergency_multiplier?: number
+          emergency_rate?: number
           id?: string
           interest_rate?: number
+          late_penalty_rate?: number
           max_term_months?: number
           min_membership_months?: number
           min_savings?: number
           notes?: string | null
+          processing_fee_rate?: number
           savings_multiplier?: number
           version: number
         }
         Update: {
+          chapchap_rate?: number
           created_at?: string
           created_by?: string | null
           effective_from?: string
+          emergency_max_amount?: number
+          emergency_max_term_months?: number
+          emergency_multiplier?: number
+          emergency_rate?: number
           id?: string
           interest_rate?: number
+          late_penalty_rate?: number
           max_term_months?: number
           min_membership_months?: number
           min_savings?: number
           notes?: string | null
+          processing_fee_rate?: number
           savings_multiplier?: number
           version?: number
         }
@@ -580,15 +601,22 @@ export type Database = {
       current_policy: {
         Args: never
         Returns: {
+          chapchap_rate: number
           created_at: string
           created_by: string | null
           effective_from: string
+          emergency_max_amount: number
+          emergency_max_term_months: number
+          emergency_multiplier: number
+          emergency_rate: number
           id: string
           interest_rate: number
+          late_penalty_rate: number
           max_term_months: number
           min_membership_months: number
           min_savings: number
           notes: string | null
+          processing_fee_rate: number
           savings_multiplier: number
           version: number
         }
