@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { AssistantWidget } from "@/components/AssistantWidget";
 import { Skeleton } from "@/components/ui/skeleton";
+import { safeInternalPath } from "@/lib/safeUrl";
 
 export const Route = createFileRoute("/_app")({
   component: AppLayout,
@@ -17,13 +18,15 @@ function AppLayout() {
   useEffect(() => {
     if (loading) return;
     if (!user) {
-      // Preserve the full destination (pathname + search + hash) so we can
-      // return the user exactly where they were after signing back in.
-      const redirect = `${location.pathname}${location.searchStr ?? ""}${location.hash ?? ""}`;
+      // Preserve destination when it's a real protected route. Skip anything
+      // that points back at /auth or /reset-password so we never build the
+      // nested "?redirect=/auth?redirect=/auth?..." loop.
+      const raw = `${location.pathname}${location.searchStr ?? ""}${location.hash ?? ""}`;
+      const redirect = safeInternalPath(raw);
       nav({
         to: "/auth",
         replace: true,
-        search: { redirect: redirect === "/" ? undefined : redirect },
+        search: redirect && redirect !== "/" ? { redirect } : {},
       });
     }
   }, [user, loading, location, nav]);
