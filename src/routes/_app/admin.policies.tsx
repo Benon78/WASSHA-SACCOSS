@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_app/admin/policies")({
 });
 
 function PoliciesPage() {
-  const { hasRole, loading, user } = useAuth();
+  const { hasRole, loading } = useAuth();
   const [policies, setPolicies] = useState<any[]>([]);
   const [form, setForm] = useState({
     interest_rate: "12.0", min_savings: "100000", savings_multiplier: "3",
