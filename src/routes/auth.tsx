@@ -80,6 +80,32 @@ function AuthPage() {
     nav({ to: safeRedirect, replace: true });
   }, [authLoading, user, isPasswordRecovery, safeRedirect, nav]);
 
+  // Detect OAuth error redirects (e.g. Google returns to
+  // `/#error=server_error&error_description=failed+to+sign+in+with+vendor`).
+  // Show an inline toast, log the failure, and clean up the URL so a refresh
+  // doesn't re-trigger the message.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const hash = window.location.hash?.startsWith("#") ? window.location.hash.slice(1) : "";
+    if (!hash) return;
+    const params = new URLSearchParams(hash);
+    const err = params.get("error");
+    if (!err) return;
+    const desc = params.get("error_description")?.replace(/\+/g, " ") ?? err;
+    const friendly = translateOAuthError(err, desc);
+    toast.error(friendly, { duration: 8000 });
+    void logAuthEvent({
+      data: {
+        eventType: "failed_login",
+        provider: "google",
+        reason: `${err}: ${desc}`.slice(0, 500),
+      },
+    }).catch(() => undefined);
+    // Strip the hash so refresh is clean.
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+  }, []);
+
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
