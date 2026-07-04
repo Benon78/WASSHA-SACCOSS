@@ -91,6 +91,48 @@ function RolesPage() {
       </section>
 
       <section className="space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <Gavel className="h-4 w-4 text-primary" /> Board members
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Board chair and members automatically hold approval authority for their assigned board stage in
+            the loan workflow. Manage seats from{" "}
+            <span className="font-medium">Admin → Board</span>.
+          </p>
+        </div>
+        {data.boardSeats.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-border/60 p-6 text-sm text-muted-foreground">
+            No board seats assigned yet.
+          </p>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-3">
+            {(["chair", "member_1", "member_2"] as const).map((seat) => {
+              const holder = data.boardSeats.find((s) => s.seat === seat);
+              return (
+                <div key={seat} className="rounded-2xl border border-border/70 bg-card p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    {seat === "chair" ? "Board Chair" : seat === "member_1" ? "Board Member 1" : "Board Member 2"}
+                  </p>
+                  <p className="mt-1 text-sm font-medium">
+                    {holder ? holder.full_name : <span className="italic text-muted-foreground">Vacant</span>}
+                  </p>
+                  {holder?.member_number && (
+                    <p className="text-xs text-muted-foreground font-mono">{holder.member_number}</p>
+                  )}
+                  <div className="mt-3 flex flex-wrap gap-1">
+                    <Badge variant="outline" className="text-[10px] font-mono">loan.approve</Badge>
+                    <Badge variant="outline" className="text-[10px] font-mono">board.act</Badge>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+
+      <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Custom roles</h2>
           <CreateCustomRoleDialog
