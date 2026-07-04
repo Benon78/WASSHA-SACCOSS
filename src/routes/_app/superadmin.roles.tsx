@@ -1,13 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient, queryOptions } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   getRolesOverview,
   setBuiltInRolePermissions,
   createCustomRole,
   updateCustomRole,
   deleteCustomRole,
+  listMembersForPicker,
 } from "@/lib/superadmin-config.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { ConfirmWithPassword } from "@/components/superadmin/ConfirmWithPassword";
 import { toast } from "sonner";
-import { Loader2, Plus, Save, Trash2, Users, ShieldCheck, ShieldOff } from "lucide-react";
+import { Loader2, Plus, Save, Trash2, Users, ShieldCheck, ShieldOff, Gavel } from "lucide-react";
 import { PageLoader } from "@/components/status/LoadingState";
 import { ErrorState } from "@/components/status/ErrorState";
 
