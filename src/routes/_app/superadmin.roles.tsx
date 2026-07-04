@@ -1,13 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient, queryOptions } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   getRolesOverview,
   setBuiltInRolePermissions,
   createCustomRole,
   updateCustomRole,
   deleteCustomRole,
+  listMembersForPicker,
 } from "@/lib/superadmin-config.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { ConfirmWithPassword } from "@/components/superadmin/ConfirmWithPassword";
 import { toast } from "sonner";
-import { Loader2, Plus, Save, Trash2, Users, ShieldCheck, ShieldOff } from "lucide-react";
+import { Loader2, Plus, Save, Trash2, Users, ShieldCheck, ShieldOff, Gavel } from "lucide-react";
 import { PageLoader } from "@/components/status/LoadingState";
 import { ErrorState } from "@/components/status/ErrorState";
 
@@ -90,6 +91,48 @@ function RolesPage() {
       </section>
 
       <section className="space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <Gavel className="h-4 w-4 text-primary" /> Board members
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Board chair and members automatically hold approval authority for their assigned board stage in
+            the loan workflow. Manage seats from{" "}
+            <span className="font-medium">Admin → Board</span>.
+          </p>
+        </div>
+        {data.boardSeats.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-border/60 p-6 text-sm text-muted-foreground">
+            No board seats assigned yet.
+          </p>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-3">
+            {(["chair", "member_1", "member_2"] as const).map((seat) => {
+              const holder = data.boardSeats.find((s) => s.seat === seat);
+              return (
+                <div key={seat} className="rounded-2xl border border-border/70 bg-card p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    {seat === "chair" ? "Board Chair" : seat === "member_1" ? "Board Member 1" : "Board Member 2"}
+                  </p>
+                  <p className="mt-1 text-sm font-medium">
+                    {holder ? holder.full_name : <span className="italic text-muted-foreground">Vacant</span>}
+                  </p>
+                  {holder?.member_number && (
+                    <p className="text-xs text-muted-foreground font-mono">{holder.member_number}</p>
+                  )}
+                  <div className="mt-3 flex flex-wrap gap-1">
+                    <Badge variant="outline" className="text-[10px] font-mono">loan.approve</Badge>
+                    <Badge variant="outline" className="text-[10px] font-mono">board.act</Badge>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+
+      <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Custom roles</h2>
           <CreateCustomRoleDialog
@@ -154,6 +197,67 @@ function PermissionMatrix({
     </div>
   );
 }
+
+function MemberPicker({
+  selected,
+  onChange,
+}: {
+  selected: Set<string>;
+  onChange: (next: Set<string>) => void;
+}) {
+  const [search, setSearch] = useState("");
+  const list = useServerFn(listMembersForPicker);
+  const { data, isLoading } = useQuery({
+    queryKey: ["superadmin", "role-member-picker", search],
+    queryFn: () => list({ data: { search: search || undefined } }),
+    staleTime: 30_000,
+  });
+  const rows = data ?? [];
+  return (
+    <div className="rounded-lg border border-border/60 p-3">
+      <div className="flex items-center gap-2">
+        <Input
+          placeholder="Search members by name or member #"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="h-8"
+        />
+        <Badge variant="secondary" className="shrink-0">{selected.size} selected</Badge>
+      </div>
+      <div className="mt-2 max-h-56 overflow-y-auto rounded border border-border/50">
+        {isLoading ? (
+          <p className="p-3 text-xs text-muted-foreground">Loading members…</p>
+        ) : rows.length === 0 ? (
+          <p className="p-3 text-xs text-muted-foreground">No members found.</p>
+        ) : (
+          <ul className="divide-y divide-border/50">
+            {rows.map((m) => (
+              <li key={m.user_id}>
+                <label className="flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent">
+                  <Checkbox
+                    checked={selected.has(m.user_id)}
+                    onCheckedChange={() => {
+                      const n = new Set(selected);
+                      if (n.has(m.user_id)) n.delete(m.user_id);
+                      else n.add(m.user_id);
+                      onChange(n);
+                    }}
+                  />
+                  <span className="flex-1 truncate">{m.full_name || "(no name)"}</span>
+                  <span className="text-xs font-mono text-muted-foreground">{m.member_number ?? "—"}</span>
+                </label>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Selected members receive every permission granted to this role.
+      </p>
+    </div>
+  );
+}
+
 
 function BuiltInRoleCard({
   role,
@@ -260,16 +364,23 @@ function CreateCustomRoleDialog({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [members, setMembers] = useState<Set<string>>(new Set());
   const create = useServerFn(createCustomRole);
   const mutation = useMutation({
     mutationFn: async (password: string) =>
       create({
-        data: { name: name.trim(), description: description.trim() || undefined, permissions: [...selected], password },
+        data: {
+          name: name.trim(),
+          description: description.trim() || undefined,
+          permissions: [...selected],
+          assignToUserIds: [...members],
+          password,
+        },
       }),
     onSuccess: () => {
-      toast.success("Custom role created");
+      toast.success(members.size ? `Custom role created and assigned to ${members.size} member(s)` : "Custom role created");
       setOpen(false);
-      setName(""); setDescription(""); setSelected(new Set());
+      setName(""); setDescription(""); setSelected(new Set()); setMembers(new Set());
       onCreated();
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
@@ -314,11 +425,17 @@ function CreateCustomRoleDialog({
               />
             </div>
           </div>
+          <div>
+            <Label>Assign to members</Label>
+            <div className="mt-2">
+              <MemberPicker selected={members} onChange={setMembers} />
+            </div>
+          </div>
         </div>
         <DialogFooter>
           <ConfirmWithPassword
             title="Confirm role creation"
-            description={`Create custom role “${name || "…"}” with ${selected.size} permission(s).`}
+            description={`Create custom role “${name || "…"}” with ${selected.size} permission(s) and assign to ${members.size} member(s).`}
             actionLabel="Create"
             trigger={
               <Button disabled={mutation.isPending || !name}>
@@ -346,6 +463,7 @@ function CustomRoleCard({
     is_active: boolean;
     userCount: number;
     permissions: string[];
+    members: { user_id: string; full_name: string; member_number: string | null }[];
   };
   permsByCategory: Record<string, { code: string; description: string; category: string }[]>;
   onChanged: () => void;
@@ -353,6 +471,8 @@ function CustomRoleCard({
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(new Set(role.permissions));
   const [description, setDescription] = useState(role.description ?? "");
+  const initialMembers = useMemo(() => new Set(role.members.map((m) => m.user_id)), [role.members]);
+  const [members, setMembers] = useState<Set<string>>(initialMembers);
   const update = useServerFn(updateCustomRole);
   const del = useServerFn(deleteCustomRole);
 
@@ -363,6 +483,7 @@ function CustomRoleCard({
           id: role.id,
           description: description.trim() || null,
           permissions: [...selected],
+          assignToUserIds: [...members],
           password,
         },
       }),
@@ -405,8 +526,18 @@ function CustomRoleCard({
         ))}
         {role.permissions.length > 8 && <Badge variant="outline">+{role.permissions.length - 8}</Badge>}
       </div>
+      {role.members.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-1">
+          {role.members.slice(0, 5).map((m) => (
+            <Badge key={m.user_id} variant="secondary" className="text-[10px]">
+              {m.full_name}
+            </Badge>
+          ))}
+          {role.members.length > 5 && <Badge variant="secondary">+{role.members.length - 5}</Badge>}
+        </div>
+      )}
       <div className="mt-4 flex flex-wrap gap-2">
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) { setSelected(new Set(role.permissions)); setDescription(role.description ?? ""); } }}>
+        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) { setSelected(new Set(role.permissions)); setDescription(role.description ?? ""); setMembers(new Set(role.members.map((m) => m.user_id))); } }}>
           <DialogTrigger asChild>
             <Button variant="outline" size="sm">Edit</Button>
           </DialogTrigger>
@@ -419,20 +550,31 @@ function CustomRoleCard({
                 <Label>Description</Label>
                 <Textarea value={description} onChange={(e) => setDescription(e.target.value)} />
               </div>
-              <PermissionMatrix
-                permsByCategory={permsByCategory}
-                selected={selected}
-                onToggle={(c) => {
-                  const n = new Set(selected);
-                  if (n.has(c)) n.delete(c); else n.add(c);
-                  setSelected(n);
-                }}
-              />
+              <div>
+                <Label>Permissions</Label>
+                <div className="mt-2">
+                  <PermissionMatrix
+                    permsByCategory={permsByCategory}
+                    selected={selected}
+                    onToggle={(c) => {
+                      const n = new Set(selected);
+                      if (n.has(c)) n.delete(c); else n.add(c);
+                      setSelected(n);
+                    }}
+                  />
+                </div>
+              </div>
+              <div>
+                <Label>Assigned members</Label>
+                <div className="mt-2">
+                  <MemberPicker selected={members} onChange={setMembers} />
+                </div>
+              </div>
             </div>
             <DialogFooter>
               <ConfirmWithPassword
                 title="Confirm changes"
-                description={`Update “${role.name}”. Affects ${role.userCount} user(s).`}
+                description={`Update “${role.name}”. Affects ${members.size} member(s).`}
                 actionLabel="Save"
                 trigger={
                   <Button disabled={saveMut.isPending}>

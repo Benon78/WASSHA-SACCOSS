@@ -282,8 +282,13 @@ export const suspendUser = createServerFn({ method: "POST" })
       .maybeSingle();
 
     const patch = { suspended_at: new Date().toISOString(), suspended_reason: data.reason };
-    const { error } = await supabaseAdmin.from("profiles").update(patch).eq("user_id", data.userId);
+    const { data: updated, error } = await supabaseAdmin
+      .from("profiles")
+      .update(patch)
+      .eq("user_id", data.userId)
+      .select("user_id");
     if (error) throw new Response(error.message, { status: 500 });
+    if (!updated || updated.length === 0) throw new Response("No profile row was updated. The user may not exist.", { status: 404 });
     // Also ban in Supabase Auth so tokens can't refresh.
     await supabaseAdmin.auth.admin.updateUserById(data.userId, {
       ban_duration: "876000h",
@@ -318,8 +323,13 @@ export const reactivateUser = createServerFn({ method: "POST" })
       .maybeSingle();
 
     const patch = { suspended_at: null, suspended_reason: null };
-    const { error } = await supabaseAdmin.from("profiles").update(patch).eq("user_id", data.userId);
+    const { data: updated, error } = await supabaseAdmin
+      .from("profiles")
+      .update(patch)
+      .eq("user_id", data.userId)
+      .select("user_id");
     if (error) throw new Response(error.message, { status: 500 });
+    if (!updated || updated.length === 0) throw new Response("No profile row was updated. The user may not exist.", { status: 404 });
     await supabaseAdmin.auth.admin.updateUserById(data.userId, { ban_duration: "none" } as never);
 
     await writeAudit({
@@ -356,11 +366,13 @@ export const softDeleteUser = createServerFn({ method: "POST" })
       .maybeSingle();
 
     const now = new Date().toISOString();
-    const { error } = await supabaseAdmin
+    const { data: updated, error } = await supabaseAdmin
       .from("profiles")
       .update({ deleted_at: now, suspended_at: now, suspended_reason: data.reason })
-      .eq("user_id", data.userId);
+      .eq("user_id", data.userId)
+      .select("user_id");
     if (error) throw new Response(error.message, { status: 500 });
+    if (!updated || updated.length === 0) throw new Response("No profile row was updated. The user may not exist.", { status: 404 });
     await supabaseAdmin.auth.admin.updateUserById(data.userId, { ban_duration: "876000h" } as never);
     await supabaseAdmin
       .from("deletion_log")
@@ -474,12 +486,17 @@ export const changeUserRole = createServerFn({ method: "POST" })
     const { data: prev } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", data.userId);
 
     if (data.replaceAll) {
-      await supabaseAdmin.from("user_roles").delete().eq("user_id", data.userId);
+      const { error: delErr } = await supabaseAdmin.from("user_roles").delete().eq("user_id", data.userId);
+      if (delErr) throw new Response(delErr.message, { status: 500 });
     }
-    const { error } = await supabaseAdmin
+    const { data: inserted, error } = await supabaseAdmin
       .from("user_roles")
-      .upsert({ user_id: data.userId, role: data.role }, { onConflict: "user_id,role" });
+      .upsert({ user_id: data.userId, role: data.role }, { onConflict: "user_id,role" })
+      .select("user_id");
     if (error) throw new Response(error.message, { status: 500 });
+    if (!inserted || inserted.length === 0) {
+      throw new Response("Role change did not persist. Check database permissions.", { status: 500 });
+    }
 
     await writeAudit({
       action: "user.change_role",
@@ -512,12 +529,16 @@ export const removeUserRole = createServerFn({ method: "POST" })
     const { data: prev } = await supabaseAdmin
       .from("user_roles").select("role").eq("user_id", data.userId);
 
-    const { error } = await supabaseAdmin
+    const { data: deleted, error } = await supabaseAdmin
       .from("user_roles")
       .delete()
       .eq("user_id", data.userId)
-      .eq("role", data.role);
+      .eq("role", data.role)
+      .select("id");
     if (error) throw new Response(error.message, { status: 400 });
+    if (!deleted || deleted.length === 0) {
+      throw new Response(`Role "${data.role}" was not found on this user (nothing to remove).`, { status: 404 });
+    }
 
     await writeAudit({
       action: "user.remove_role",
@@ -551,11 +572,13 @@ export const assignBranch = createServerFn({ method: "POST" })
       .eq("user_id", data.userId)
       .maybeSingle();
 
-    const { error } = await supabaseAdmin
+    const { data: updated, error } = await supabaseAdmin
       .from("profiles")
       .update({ branch_id: data.branchId })
-      .eq("user_id", data.userId);
+      .eq("user_id", data.userId)
+      .select("user_id");
     if (error) throw new Response(error.message, { status: 500 });
+    if (!updated || updated.length === 0) throw new Response("No profile row was updated. The user may not exist.", { status: 404 });
 
     await writeAudit({
       action: "user.assign_branch",
