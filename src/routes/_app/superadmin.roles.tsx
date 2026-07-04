@@ -526,8 +526,18 @@ function CustomRoleCard({
         ))}
         {role.permissions.length > 8 && <Badge variant="outline">+{role.permissions.length - 8}</Badge>}
       </div>
+      {role.members.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-1">
+          {role.members.slice(0, 5).map((m) => (
+            <Badge key={m.user_id} variant="secondary" className="text-[10px]">
+              {m.full_name}
+            </Badge>
+          ))}
+          {role.members.length > 5 && <Badge variant="secondary">+{role.members.length - 5}</Badge>}
+        </div>
+      )}
       <div className="mt-4 flex flex-wrap gap-2">
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) { setSelected(new Set(role.permissions)); setDescription(role.description ?? ""); } }}>
+        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) { setSelected(new Set(role.permissions)); setDescription(role.description ?? ""); setMembers(new Set(role.members.map((m) => m.user_id))); } }}>
           <DialogTrigger asChild>
             <Button variant="outline" size="sm">Edit</Button>
           </DialogTrigger>
@@ -540,20 +550,31 @@ function CustomRoleCard({
                 <Label>Description</Label>
                 <Textarea value={description} onChange={(e) => setDescription(e.target.value)} />
               </div>
-              <PermissionMatrix
-                permsByCategory={permsByCategory}
-                selected={selected}
-                onToggle={(c) => {
-                  const n = new Set(selected);
-                  if (n.has(c)) n.delete(c); else n.add(c);
-                  setSelected(n);
-                }}
-              />
+              <div>
+                <Label>Permissions</Label>
+                <div className="mt-2">
+                  <PermissionMatrix
+                    permsByCategory={permsByCategory}
+                    selected={selected}
+                    onToggle={(c) => {
+                      const n = new Set(selected);
+                      if (n.has(c)) n.delete(c); else n.add(c);
+                      setSelected(n);
+                    }}
+                  />
+                </div>
+              </div>
+              <div>
+                <Label>Assigned members</Label>
+                <div className="mt-2">
+                  <MemberPicker selected={members} onChange={setMembers} />
+                </div>
+              </div>
             </div>
             <DialogFooter>
               <ConfirmWithPassword
                 title="Confirm changes"
-                description={`Update “${role.name}”. Affects ${role.userCount} user(s).`}
+                description={`Update “${role.name}”. Affects ${members.size} member(s).`}
                 actionLabel="Save"
                 trigger={
                   <Button disabled={saveMut.isPending}>
