@@ -463,6 +463,7 @@ function CustomRoleCard({
     is_active: boolean;
     userCount: number;
     permissions: string[];
+    members: { user_id: string; full_name: string; member_number: string | null }[];
   };
   permsByCategory: Record<string, { code: string; description: string; category: string }[]>;
   onChanged: () => void;
@@ -470,6 +471,8 @@ function CustomRoleCard({
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(new Set(role.permissions));
   const [description, setDescription] = useState(role.description ?? "");
+  const initialMembers = useMemo(() => new Set(role.members.map((m) => m.user_id)), [role.members]);
+  const [members, setMembers] = useState<Set<string>>(initialMembers);
   const update = useServerFn(updateCustomRole);
   const del = useServerFn(deleteCustomRole);
 
@@ -480,6 +483,7 @@ function CustomRoleCard({
           id: role.id,
           description: description.trim() || null,
           permissions: [...selected],
+          assignToUserIds: [...members],
           password,
         },
       }),
