@@ -95,6 +95,26 @@ function Dashboard() {
           </div>
         </div>
 
+        {/* Account status banner */}
+        {profile?.deleted_at ? (
+          <div className="rounded-2xl border border-destructive/40 bg-destructive/10 p-5">
+            <p className="text-sm font-semibold text-destructive">Your account has been removed</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Contact an administrator to restore access. You cannot perform any transactions.
+            </p>
+          </div>
+        ) : profile?.suspended_at ? (
+          <div className="rounded-2xl border border-warning/50 bg-warning/10 p-5">
+            <p className="text-sm font-semibold text-foreground">Your account is currently suspended</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {profile?.suspended_reason
+                ? <>Reason: <span className="font-medium text-foreground">{profile.suspended_reason}</span>. </>
+                : null}
+              You can view your dashboard, but loan applications and account changes are blocked until an administrator reactivates your account.
+            </p>
+          </div>
+        ) : null}
+
         {/* KPIs */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard label={t("total_savings")} value={fmtTZS(savings)} icon={PiggyBank} tone="primary" />
