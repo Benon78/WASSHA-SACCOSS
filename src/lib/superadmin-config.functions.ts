@@ -225,6 +225,7 @@ export const createCustomRole = createServerFn({ method: "POST" })
         name: nameSchema,
         description: z.string().trim().max(280).optional(),
         permissions: z.array(z.string()).max(500).default([]),
+        assignToUserIds: z.array(z.string().uuid()).max(500).default([]),
         password: z.string().min(1).max(128),
       })
       .parse(i),
@@ -251,13 +252,24 @@ export const createCustomRole = createServerFn({ method: "POST" })
       if (ins.error) throw new Response(ins.error.message, { status: 500 });
     }
 
+    if (data.assignToUserIds.length) {
+      const ins = await supabaseAdmin.from("user_custom_roles").insert(
+        data.assignToUserIds.map((uid) => ({
+          user_id: uid,
+          custom_role_id: created.id,
+          assigned_by: context.userId,
+        })),
+      );
+      if (ins.error) throw new Response(ins.error.message, { status: 500 });
+    }
+
     await writeAudit({
       action: "custom_role.create",
       entity: "custom_roles",
       entityId: created.id,
       prev: null,
-      next: { name: created.name, permissions: data.permissions },
-      summary: `Created custom role "${created.name}"`,
+      next: { name: created.name, permissions: data.permissions, members: data.assignToUserIds },
+      summary: `Created custom role "${created.name}" (${data.assignToUserIds.length} member(s) assigned)`,
       actorId: context.userId,
       meta: context.requestMeta,
     });
@@ -273,6 +285,8 @@ export const updateCustomRole = createServerFn({ method: "POST" })
         description: z.string().trim().max(280).nullable().optional(),
         is_active: z.boolean().optional(),
         permissions: z.array(z.string()).max(500).optional(),
+        /** When provided, replaces the full member list for this role. */
+        assignToUserIds: z.array(z.string().uuid()).max(500).optional(),
         password: z.string().min(1).max(128),
       })
       .parse(i),
@@ -314,12 +328,35 @@ export const updateCustomRole = createServerFn({ method: "POST" })
       }
     }
 
+    let prevMembers: string[] | undefined;
+    if (data.assignToUserIds) {
+      const { data: existing } = await supabaseAdmin
+        .from("user_custom_roles")
+        .select("user_id")
+        .eq("custom_role_id", data.id);
+      prevMembers = (existing ?? []).map((r) => r.user_id);
+      const del = await supabaseAdmin.from("user_custom_roles").delete().eq("custom_role_id", data.id);
+      if (del.error) throw new Response(del.error.message, { status: 500 });
+      if (data.assignToUserIds.length) {
+        const ins = await supabaseAdmin
+          .from("user_custom_roles")
+          .insert(
+            data.assignToUserIds.map((uid) => ({
+              user_id: uid,
+              custom_role_id: data.id,
+              assigned_by: context.userId,
+            })),
+          );
+        if (ins.error) throw new Response(ins.error.message, { status: 500 });
+      }
+    }
+
     await writeAudit({
       action: "custom_role.update",
       entity: "custom_roles",
       entityId: data.id,
-      prev: { ...prev, permissions: prevPerms },
-      next: { ...prev, ...patch, permissions: data.permissions ?? prevPerms },
+      prev: { ...prev, permissions: prevPerms, members: prevMembers },
+      next: { ...prev, ...patch, permissions: data.permissions ?? prevPerms, members: data.assignToUserIds ?? prevMembers },
       summary: `Updated custom role "${prev.name}"`,
       actorId: context.userId,
       meta: context.requestMeta,
