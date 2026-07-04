@@ -84,14 +84,20 @@ export const getRolesOverview = createServerFn({ method: "GET" })
   .middleware([requireSuperAdmin])
   .handler(async () => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const [perms, builtIn, customRoles, customPerms, userRoles, userCustom] = await Promise.all([
+    const [perms, builtIn, customRoles, customPerms, userRoles, userCustom, boardSeats, profiles] = await Promise.all([
       supabaseAdmin.from("permissions").select("code, description, category").order("category").order("code"),
       supabaseAdmin.from("role_permissions").select("role, permission_code"),
       supabaseAdmin.from("custom_roles").select("id, name, description, is_active, created_at").order("name"),
       supabaseAdmin.from("custom_role_permissions").select("custom_role_id, permission_code"),
       supabaseAdmin.from("user_roles").select("role"),
-      supabaseAdmin.from("user_custom_roles").select("custom_role_id"),
+      supabaseAdmin.from("user_custom_roles").select("custom_role_id, user_id"),
+      supabaseAdmin.from("loan_board_members").select("user_id, seat, assigned_at"),
+      supabaseAdmin.from("profiles").select("user_id, full_name, member_number"),
     ]);
+
+    const profileMap = new Map<string, { full_name: string; member_number: string | null }>();
+    for (const p of profiles.data ?? [])
+      profileMap.set(p.user_id, { full_name: p.full_name, member_number: p.member_number });
 
     const builtInMatrix: Record<string, string[]> = {};
     for (const r of builtIn.data ?? []) {
@@ -103,20 +109,57 @@ export const getRolesOverview = createServerFn({ method: "GET" })
     }
     const builtInCounts: Record<string, number> = {};
     for (const r of userRoles.data ?? []) builtInCounts[r.role] = (builtInCounts[r.role] ?? 0) + 1;
-    const customCounts: Record<string, number> = {};
-    for (const r of userCustom.data ?? []) customCounts[r.custom_role_id] = (customCounts[r.custom_role_id] ?? 0) + 1;
+    const customMembers: Record<string, { user_id: string; full_name: string; member_number: string | null }[]> = {};
+    for (const r of userCustom.data ?? []) {
+      const p = profileMap.get(r.user_id);
+      (customMembers[r.custom_role_id] ??= []).push({
+        user_id: r.user_id,
+        full_name: p?.full_name ?? "(unknown)",
+        member_number: p?.member_number ?? null,
+      });
+    }
 
     return {
       permissions: perms.data ?? [],
       builtInRoles: ["member", "approver", "finance", "manager", "admin", "super_admin"] as const,
       builtInMatrix,
       builtInCounts,
+      boardSeats: (boardSeats.data ?? []).map((b) => ({
+        user_id: b.user_id,
+        seat: b.seat,
+        assigned_at: b.assigned_at,
+        full_name: profileMap.get(b.user_id)?.full_name ?? "(unknown)",
+        member_number: profileMap.get(b.user_id)?.member_number ?? null,
+      })),
       customRoles: (customRoles.data ?? []).map((r) => ({
         ...r,
         permissions: customMatrix[r.id] ?? [],
-        userCount: customCounts[r.id] ?? 0,
+        members: customMembers[r.id] ?? [],
+        userCount: (customMembers[r.id] ?? []).length,
       })),
     };
+  });
+
+/** Lightweight member picker for role/permission assignment dialogs. */
+export const listMembersForPicker = createServerFn({ method: "POST" })
+  .middleware([requireSuperAdmin])
+  .inputValidator((i: unknown) =>
+    z.object({ search: z.string().trim().max(120).optional() }).parse(i),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    let q = supabaseAdmin
+      .from("profiles")
+      .select("user_id, full_name, member_number")
+      .is("deleted_at", null)
+      .order("full_name")
+      .limit(50);
+    if (data.search) {
+      q = q.or(`full_name.ilike.%${data.search}%,member_number.ilike.%${data.search}%`);
+    }
+    const { data: rows, error } = await q;
+    if (error) throw new Response(error.message, { status: 500 });
+    return rows ?? [];
   });
 
 /** Update permissions for a built-in role. super_admin is protected (always all-permissions). */
