@@ -364,16 +364,23 @@ function CreateCustomRoleDialog({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [members, setMembers] = useState<Set<string>>(new Set());
   const create = useServerFn(createCustomRole);
   const mutation = useMutation({
     mutationFn: async (password: string) =>
       create({
-        data: { name: name.trim(), description: description.trim() || undefined, permissions: [...selected], password },
+        data: {
+          name: name.trim(),
+          description: description.trim() || undefined,
+          permissions: [...selected],
+          assignToUserIds: [...members],
+          password,
+        },
       }),
     onSuccess: () => {
-      toast.success("Custom role created");
+      toast.success(members.size ? `Custom role created and assigned to ${members.size} member(s)` : "Custom role created");
       setOpen(false);
-      setName(""); setDescription(""); setSelected(new Set());
+      setName(""); setDescription(""); setSelected(new Set()); setMembers(new Set());
       onCreated();
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
