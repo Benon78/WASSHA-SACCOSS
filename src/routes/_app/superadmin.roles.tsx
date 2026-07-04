@@ -425,11 +425,17 @@ function CreateCustomRoleDialog({
               />
             </div>
           </div>
+          <div>
+            <Label>Assign to members</Label>
+            <div className="mt-2">
+              <MemberPicker selected={members} onChange={setMembers} />
+            </div>
+          </div>
         </div>
         <DialogFooter>
           <ConfirmWithPassword
             title="Confirm role creation"
-            description={`Create custom role “${name || "…"}” with ${selected.size} permission(s).`}
+            description={`Create custom role “${name || "…"}” with ${selected.size} permission(s) and assign to ${members.size} member(s).`}
             actionLabel="Create"
             trigger={
               <Button disabled={mutation.isPending || !name}>
