@@ -323,8 +323,13 @@ export const reactivateUser = createServerFn({ method: "POST" })
       .maybeSingle();
 
     const patch = { suspended_at: null, suspended_reason: null };
-    const { error } = await supabaseAdmin.from("profiles").update(patch).eq("user_id", data.userId);
+    const { data: updated, error } = await supabaseAdmin
+      .from("profiles")
+      .update(patch)
+      .eq("user_id", data.userId)
+      .select("user_id");
     if (error) throw new Response(error.message, { status: 500 });
+    if (!updated || updated.length === 0) throw new Response("No profile row was updated. The user may not exist.", { status: 404 });
     await supabaseAdmin.auth.admin.updateUserById(data.userId, { ban_duration: "none" } as never);
 
     await writeAudit({
