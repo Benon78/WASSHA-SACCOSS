@@ -198,6 +198,67 @@ function PermissionMatrix({
   );
 }
 
+function MemberPicker({
+  selected,
+  onChange,
+}: {
+  selected: Set<string>;
+  onChange: (next: Set<string>) => void;
+}) {
+  const [search, setSearch] = useState("");
+  const list = useServerFn(listMembersForPicker);
+  const { data, isLoading } = useQuery({
+    queryKey: ["superadmin", "role-member-picker", search],
+    queryFn: () => list({ data: { search: search || undefined } }),
+    staleTime: 30_000,
+  });
+  const rows = data ?? [];
+  return (
+    <div className="rounded-lg border border-border/60 p-3">
+      <div className="flex items-center gap-2">
+        <Input
+          placeholder="Search members by name or member #"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="h-8"
+        />
+        <Badge variant="secondary" className="shrink-0">{selected.size} selected</Badge>
+      </div>
+      <div className="mt-2 max-h-56 overflow-y-auto rounded border border-border/50">
+        {isLoading ? (
+          <p className="p-3 text-xs text-muted-foreground">Loading members…</p>
+        ) : rows.length === 0 ? (
+          <p className="p-3 text-xs text-muted-foreground">No members found.</p>
+        ) : (
+          <ul className="divide-y divide-border/50">
+            {rows.map((m) => (
+              <li key={m.user_id}>
+                <label className="flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent">
+                  <Checkbox
+                    checked={selected.has(m.user_id)}
+                    onCheckedChange={() => {
+                      const n = new Set(selected);
+                      if (n.has(m.user_id)) n.delete(m.user_id);
+                      else n.add(m.user_id);
+                      onChange(n);
+                    }}
+                  />
+                  <span className="flex-1 truncate">{m.full_name || "(no name)"}</span>
+                  <span className="text-xs font-mono text-muted-foreground">{m.member_number ?? "—"}</span>
+                </label>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Selected members receive every permission granted to this role.
+      </p>
+    </div>
+  );
+}
+
+
 function BuiltInRoleCard({
   role,
   allPermsByCategory,
