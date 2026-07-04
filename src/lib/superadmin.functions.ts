@@ -282,8 +282,13 @@ export const suspendUser = createServerFn({ method: "POST" })
       .maybeSingle();
 
     const patch = { suspended_at: new Date().toISOString(), suspended_reason: data.reason };
-    const { error } = await supabaseAdmin.from("profiles").update(patch).eq("user_id", data.userId);
+    const { data: updated, error } = await supabaseAdmin
+      .from("profiles")
+      .update(patch)
+      .eq("user_id", data.userId)
+      .select("user_id");
     if (error) throw new Response(error.message, { status: 500 });
+    if (!updated || updated.length === 0) throw new Response("No profile row was updated. The user may not exist.", { status: 404 });
     // Also ban in Supabase Auth so tokens can't refresh.
     await supabaseAdmin.auth.admin.updateUserById(data.userId, {
       ban_duration: "876000h",
