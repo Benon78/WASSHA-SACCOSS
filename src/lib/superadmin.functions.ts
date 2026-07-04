@@ -572,11 +572,13 @@ export const assignBranch = createServerFn({ method: "POST" })
       .eq("user_id", data.userId)
       .maybeSingle();
 
-    const { error } = await supabaseAdmin
+    const { data: updated, error } = await supabaseAdmin
       .from("profiles")
       .update({ branch_id: data.branchId })
-      .eq("user_id", data.userId);
+      .eq("user_id", data.userId)
+      .select("user_id");
     if (error) throw new Response(error.message, { status: 500 });
+    if (!updated || updated.length === 0) throw new Response("No profile row was updated. The user may not exist.", { status: 404 });
 
     await writeAudit({
       action: "user.assign_branch",
