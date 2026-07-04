@@ -484,12 +484,17 @@ export const changeUserRole = createServerFn({ method: "POST" })
     const { data: prev } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", data.userId);
 
     if (data.replaceAll) {
-      await supabaseAdmin.from("user_roles").delete().eq("user_id", data.userId);
+      const { error: delErr } = await supabaseAdmin.from("user_roles").delete().eq("user_id", data.userId);
+      if (delErr) throw new Response(delErr.message, { status: 500 });
     }
-    const { error } = await supabaseAdmin
+    const { data: inserted, error } = await supabaseAdmin
       .from("user_roles")
-      .upsert({ user_id: data.userId, role: data.role }, { onConflict: "user_id,role" });
+      .upsert({ user_id: data.userId, role: data.role }, { onConflict: "user_id,role" })
+      .select("user_id");
     if (error) throw new Response(error.message, { status: 500 });
+    if (!inserted || inserted.length === 0) {
+      throw new Response("Role change did not persist. Check database permissions.", { status: 500 });
+    }
 
     await writeAudit({
       action: "user.change_role",
