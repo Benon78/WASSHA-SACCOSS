@@ -366,11 +366,13 @@ export const softDeleteUser = createServerFn({ method: "POST" })
       .maybeSingle();
 
     const now = new Date().toISOString();
-    const { error } = await supabaseAdmin
+    const { data: updated, error } = await supabaseAdmin
       .from("profiles")
       .update({ deleted_at: now, suspended_at: now, suspended_reason: data.reason })
-      .eq("user_id", data.userId);
+      .eq("user_id", data.userId)
+      .select("user_id");
     if (error) throw new Response(error.message, { status: 500 });
+    if (!updated || updated.length === 0) throw new Response("No profile row was updated. The user may not exist.", { status: 404 });
     await supabaseAdmin.auth.admin.updateUserById(data.userId, { ban_duration: "876000h" } as never);
     await supabaseAdmin
       .from("deletion_log")
