@@ -527,12 +527,16 @@ export const removeUserRole = createServerFn({ method: "POST" })
     const { data: prev } = await supabaseAdmin
       .from("user_roles").select("role").eq("user_id", data.userId);
 
-    const { error } = await supabaseAdmin
+    const { data: deleted, error } = await supabaseAdmin
       .from("user_roles")
       .delete()
       .eq("user_id", data.userId)
-      .eq("role", data.role);
+      .eq("role", data.role)
+      .select("id");
     if (error) throw new Response(error.message, { status: 400 });
+    if (!deleted || deleted.length === 0) {
+      throw new Response(`Role "${data.role}" was not found on this user (nothing to remove).`, { status: 404 });
+    }
 
     await writeAudit({
       action: "user.remove_role",
