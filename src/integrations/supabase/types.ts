@@ -155,6 +155,54 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_log_archive: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          entity: string
+          entity_id: string | null
+          id: string
+          ip: unknown
+          ip_address: unknown
+          meta: Json | null
+          new_value: Json | null
+          prev_value: Json | null
+          session_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          entity: string
+          entity_id?: string | null
+          id?: string
+          ip?: unknown
+          ip_address?: unknown
+          meta?: Json | null
+          new_value?: Json | null
+          prev_value?: Json | null
+          session_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          entity?: string
+          entity_id?: string | null
+          id?: string
+          ip?: unknown
+          ip_address?: unknown
+          meta?: Json | null
+          new_value?: Json | null
+          prev_value?: Json | null
+          session_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       auth_events: {
         Row: {
           created_at: string
