@@ -1288,6 +1288,7 @@ export type Database = {
         }
         Returns: string
       }
+      rpc_confirm_disbursement: { Args: { _loan_id: string }; Returns: string }
       rpc_create_branch: {
         Args: {
           _address?: string
