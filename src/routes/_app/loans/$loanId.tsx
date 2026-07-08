@@ -93,8 +93,9 @@ function LoanDetail() {
         if (ns === "disbursement") {
           updates.status = "approved";
           updates.amount_approved = Number(approveAmt) || loan.amount_requested;
-          updates.outstanding_balance = updates.amount_approved;
+          // outstanding_balance and fee are set by rpc_confirm_disbursement when the Manager disburses.
         }
+
         // Note: completion is now driven by repayments, not by stage transition.
       } else if (decision === "rejected") {
         updates.status = "rejected"; updates.stage = "rejected";
