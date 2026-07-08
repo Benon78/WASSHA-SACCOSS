@@ -210,10 +210,18 @@ function LoanDetail() {
                 <div><dt className="text-muted-foreground">Loan type</dt><dd className="font-medium">{LOAN_TYPE_LABEL[loan.loan_type] ?? loan.loan_type ?? "—"}</dd></div>
                 <div><dt className="text-muted-foreground">Term</dt><dd className="font-medium">{loan.term_months} months</dd></div>
                 <div><dt className="text-muted-foreground">Interest rate</dt><dd className="font-medium">{loan.interest_rate}% p.a.</dd></div>
-                <div><dt className="text-muted-foreground">Outstanding</dt><dd className="font-medium">{fmtTZS(loan.outstanding_balance)}</dd></div>
+                <div><dt className="text-muted-foreground">Approved amount</dt><dd className="font-medium">{fmtTZS(loan.amount_approved ?? 0)}</dd></div>
+                <div><dt className="text-muted-foreground">Loan fee</dt><dd className="font-medium">{fmtTZS(loan.fee_amount ?? 0)}</dd></div>
+                <div><dt className="text-muted-foreground">Amount repaid (principal)</dt><dd className="font-medium">{fmtTZS(Math.max(0, Number(loan.amount_approved ?? 0) - Number(loan.outstanding_balance ?? 0)))}</dd></div>
+                <div><dt className="text-muted-foreground">Outstanding principal</dt><dd className="font-medium">{fmtTZS(loan.outstanding_balance)}</dd></div>
+                <div><dt className="text-muted-foreground">Outstanding fee</dt><dd className="font-medium">{fmtTZS(loan.fee_outstanding ?? 0)}</dd></div>
+                <div><dt className="text-muted-foreground">Total outstanding</dt><dd className="font-semibold text-foreground">{fmtTZS(Number(loan.outstanding_balance ?? 0) + Number(loan.fee_outstanding ?? 0))}</dd></div>
+                <div><dt className="text-muted-foreground">Status</dt><dd className="font-medium capitalize">{loan.status}</dd></div>
+                <div><dt className="text-muted-foreground">Stage</dt><dd className="font-medium">{STAGE_LABEL[stage] ?? stage}</dd></div>
                 <div className="col-span-2"><dt className="text-muted-foreground">Purpose</dt><dd className="font-medium">{loan.purpose}</dd></div>
               </dl>
             </section>
+
 
             {/* Staff actions */}
             {isStaff && hasStageAuthority && isOwner && (
