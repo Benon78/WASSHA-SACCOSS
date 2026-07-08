@@ -263,38 +263,31 @@ function LoanDetail() {
             {/* Manager: confirm disbursement */}
             {canConfirmDisbursement && (
               <section className="rounded-2xl border-2 border-success/40 bg-success/5 p-6 shadow-[var(--shadow-card)]">
-                <h3 className="text-base font-semibold">Confirm disbursement</h3>
+                <h3 className="text-base font-semibold">Disburse loan</h3>
                 <p className="text-xs text-muted-foreground">
-                  Confirm that {fmtTZS(loan.amount_approved ?? loan.amount_requested)} has been paid to the member. This advances the loan to completed and posts the disbursement transaction.
+                  Release {fmtTZS(loan.amount_approved ?? loan.amount_requested)} to the member. The system will calculate the loan fee from the current policy, deposit the principal into the member's account, and mark the loan active. Completion happens automatically once principal and fee are fully repaid.
                 </p>
                 <Button
                   className="mt-4 bg-success text-success-foreground hover:bg-success/90"
                   disabled={busy}
                   onClick={async () => {
                     if (!user) return;
-                    if (!confirm("Confirm that funds have been disbursed to the member?")) return;
+                    if (!confirm("Disburse this loan and credit the member's account?")) return;
                     setBusy(true);
                     try {
-                      const { error } = await supabase.from("loans").update({
-                        disbursement_confirmed_at: new Date().toISOString(),
-                        disbursement_confirmed_by: user.id,
-                        stage: "completed",
-                      }).eq("id", loanId);
+                      const { error } = await supabase.rpc("rpc_confirm_disbursement", { _loan_id: loanId });
                       if (error) throw error;
-                      await supabase.from("loan_approvals").insert({
-                        loan_id: loanId, stage: "disbursement", approver_id: user.id,
-                        decision: "approved", comment: "Disbursement confirmed by manager",
-                      });
-                      toast.success("Disbursement confirmed");
+                      toast.success("Loan successfully disbursed. The approved amount has been deposited into the member's account. The loan is now active and repayments have begun.");
                       await load();
                     } catch (e: any) { toast.error(friendlyError(e)); }
                     finally { setBusy(false); }
                   }}
                 >
-                  <Banknote className="mr-2 h-4 w-4" /> Confirm disbursement
+                  <Banknote className="mr-2 h-4 w-4" /> Disburse loan
                 </Button>
               </section>
             )}
+
 
             {/* Documents */}
             <section className="rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
