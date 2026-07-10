@@ -31,7 +31,9 @@ export function drawBrandHeader(doc: jsPDF, h: PdfHeader) {
   doc.setFontSize(9);
   doc.text("Savings & Loans Cooperative", 40, 46);
   doc.setFontSize(8);
-  doc.text(`Generated ${new Date().toLocaleString()}`, doc.internal.pageSize.getWidth() - 40, 30, { align: "right" });
+  doc.text(`Generated ${new Date().toLocaleString()}`, doc.internal.pageSize.getWidth() - 40, 30, {
+    align: "right",
+  });
 
   doc.setTextColor(20, 20, 20);
   doc.setFont("helvetica", "bold");
@@ -46,9 +48,18 @@ export function drawBrandHeader(doc: jsPDF, h: PdfHeader) {
   let y = 145;
   doc.setFontSize(9);
   doc.setTextColor(60, 60, 60);
-  if (h.memberName) { doc.text(`Member: ${h.memberName}`, 40, y); y += 12; }
-  if (h.memberNumber) { doc.text(`Member #: ${h.memberNumber}`, 40, y); y += 12; }
-  if (h.periodLabel) { doc.text(`Period: ${h.periodLabel}`, 40, y); y += 12; }
+  if (h.memberName) {
+    doc.text(`Member: ${h.memberName}`, 40, y);
+    y += 12;
+  }
+  if (h.memberNumber) {
+    doc.text(`Member #: ${h.memberNumber}`, 40, y);
+    y += 12;
+  }
+  if (h.periodLabel) {
+    doc.text(`Period: ${h.periodLabel}`, 40, y);
+    y += 12;
+  }
   return y + 6;
 }
 
@@ -133,7 +144,11 @@ export function loanRepaymentPdf(opts: {
   autoTable(doc, {
     startY: tableY,
     head: [["Date", "Description", "Amount paid"]],
-    body: opts.repayments.map((r) => [fmtDate(r.created_at), r.description || "Repayment", fmtTZS(r.amount)]),
+    body: opts.repayments.map((r) => [
+      fmtDate(r.created_at),
+      r.description || "Repayment",
+      fmtTZS(r.amount),
+    ]),
     headStyles: { fillColor: NAVY, textColor: 255, fontStyle: "bold" },
     styles: { fontSize: 9, cellPadding: 5 },
     columnStyles: { 2: { halign: "right", fontStyle: "bold" } },
@@ -193,7 +208,11 @@ export function disbursementReceiptPdf(opts: {
   doc.setFont("helvetica", "normal");
   doc.setTextColor(80, 80, 80);
   doc.setFontSize(9);
-  doc.text("Repayments will be applied to this loan only and do not affect your savings balance.", 40, finalY + 14);
+  doc.text(
+    "Repayments will be applied to this loan only and do not affect your savings balance.",
+    40,
+    finalY + 14,
+  );
   drawFooter(doc);
   return doc;
 }

@@ -30,9 +30,7 @@ function parseUA(ua: string | null) {
 
 export const recordSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) =>
-    z.object({ sessionId: z.string().min(1).max(200) }).parse(i),
-  )
+  .validator((i: unknown) => z.object({ sessionId: z.string().min(1).max(200) }).parse(i))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     let ip: string | null = null;
@@ -40,7 +38,9 @@ export const recordSession = createServerFn({ method: "POST" })
     try {
       ip = getRequestIP({ xForwardedFor: true }) ?? null;
       ua = getRequestHeader("user-agent") ?? null;
-    } catch { /* off-request */ }
+    } catch {
+      /* off-request */
+    }
     const { browser, os, device } = parseUA(ua);
     const now = new Date().toISOString();
 
@@ -67,7 +67,9 @@ export const recordSession = createServerFn({ method: "POST" })
         session_id: data.sessionId,
         ip: ip as never,
         user_agent: ua,
-        browser, os, device,
+        browser,
+        os,
+        device,
         last_seen: now,
       })
       .select("id")

@@ -22,7 +22,11 @@ export function safeInternalPath(input: unknown): string | null {
   if (/[\u0000-\u001F\u007F]/.test(trimmed)) return null;
   // Reject loops back to public auth pages.
   const lower = trimmed.toLowerCase();
-  if (BLOCKED_INTERNAL_PREFIXES.some((p) => lower === p || lower.startsWith(`${p}?`) || lower.startsWith(`${p}/`))) {
+  if (
+    BLOCKED_INTERNAL_PREFIXES.some(
+      (p) => lower === p || lower.startsWith(`${p}?`) || lower.startsWith(`${p}/`),
+    )
+  ) {
     return null;
   }
   return trimmed;

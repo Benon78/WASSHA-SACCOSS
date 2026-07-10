@@ -60,10 +60,18 @@ export default function AssistantWidgetPanel({ onClose }: { onClose: () => void 
   useEffect(() => {
     let cancelled = false;
     loadHistory({})
-      .then((rows) => { if (!cancelled) setInitial(rowsToUiMessages(rows ?? [])); })
-      .catch(() => { if (!cancelled) setInitial([]); })
-      .finally(() => { if (!cancelled) setLoadingHistory(false); });
-    return () => { cancelled = true; };
+      .then((rows) => {
+        if (!cancelled) setInitial(rowsToUiMessages(rows ?? []));
+      })
+      .catch(() => {
+        if (!cancelled) setInitial([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingHistory(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [loadHistory]);
 
   return (
@@ -76,7 +84,9 @@ export default function AssistantWidgetPanel({ onClose }: { onClose: () => void 
             </div>
             <div className="leading-tight">
               <div className="text-sm font-semibold">{t("ai_assistant_title")}</div>
-              <div className="text-[10px] uppercase tracking-wider text-white/80">{t("ai_assistant_subtitle")}</div>
+              <div className="text-[10px] uppercase tracking-wider text-white/80">
+                {t("ai_assistant_subtitle")}
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-1">
@@ -146,8 +156,12 @@ function AssistantChatBody({
     },
   });
 
-  useEffect(() => { inputRef.current?.focus(); }, []);
-  useEffect(() => { if (status === "ready") inputRef.current?.focus(); }, [status]);
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+  useEffect(() => {
+    if (status === "ready") inputRef.current?.focus();
+  }, [status]);
 
   const onSubmit = () => {
     const text = input.trim();

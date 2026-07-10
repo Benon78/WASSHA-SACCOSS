@@ -2,7 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Bot, Sparkles, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/_app/superadmin/ai-config")({
-  head: () => ({ meta: [{ title: "AI Configuration — Super Admin" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({
+    meta: [{ title: "AI Configuration — Super Admin" }, { name: "robots", content: "noindex" }],
+  }),
   component: AiConfigPage,
 });
 
@@ -12,14 +14,31 @@ function AiConfigPage() {
       <header>
         <h1 className="text-2xl font-bold">AI configuration</h1>
         <p className="text-sm text-muted-foreground">
-          The in-app assistant runs on the platform AI Gateway. Model routing is managed automatically and never sees a member's password, session token or bank data. All assistant actions are gated by role and audit-logged.
+          The in-app assistant runs on the platform AI Gateway. Model routing is managed
+          automatically and never sees a member's password, session token or bank data. All
+          assistant actions are gated by role and audit-logged.
         </p>
       </header>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card icon={Bot} title="Assistant" value="Enabled" hint="Available to signed-in members and staff" />
-        <Card icon={Sparkles} title="Model routing" value="Automatic" hint="Fast → Standard escalation" />
-        <Card icon={ShieldCheck} title="Guardrails" value="Enforced" hint="Human required for money movement" />
+        <Card
+          icon={Bot}
+          title="Assistant"
+          value="Enabled"
+          hint="Available to signed-in members and staff"
+        />
+        <Card
+          icon={Sparkles}
+          title="Model routing"
+          value="Automatic"
+          hint="Fast → Standard escalation"
+        />
+        <Card
+          icon={ShieldCheck}
+          title="Guardrails"
+          value="Enforced"
+          hint="Human required for money movement"
+        />
       </div>
 
       <section className="rounded-2xl border border-border/70 bg-card p-5">
@@ -34,7 +53,17 @@ function AiConfigPage() {
   );
 }
 
-function Card({ icon: Icon, title, value, hint }: { icon: typeof Bot; title: string; value: string; hint: string }) {
+function Card({
+  icon: Icon,
+  title,
+  value,
+  hint,
+}: {
+  icon: typeof Bot;
+  title: string;
+  value: string;
+  hint: string;
+}) {
   return (
     <div className="rounded-2xl border border-border/70 bg-card p-4">
       <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">

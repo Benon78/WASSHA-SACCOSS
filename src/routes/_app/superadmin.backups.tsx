@@ -2,7 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Database, ShieldCheck, Clock, HardDrive } from "lucide-react";
 
 export const Route = createFileRoute("/_app/superadmin/backups")({
-  head: () => ({ meta: [{ title: "Backups & Restore — Super Admin" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({
+    meta: [{ title: "Backups & Restore — Super Admin" }, { name: "robots", content: "noindex" }],
+  }),
   component: BackupsPage,
 });
 
@@ -12,7 +14,8 @@ function BackupsPage() {
       <header>
         <h1 className="text-2xl font-bold">Backups &amp; restore</h1>
         <p className="text-sm text-muted-foreground">
-          Backups are managed by the platform. Point-in-time recovery, daily snapshots and encryption at rest are enabled by default for this deployment.
+          Backups are managed by the platform. Point-in-time recovery, daily snapshots and
+          encryption at rest are enabled by default for this deployment.
         </p>
       </header>
 
@@ -26,15 +29,26 @@ function BackupsPage() {
       <section className="rounded-2xl border border-border/70 bg-card p-5">
         <h2 className="font-semibold">Restore requests</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          To restore data to an earlier point in time, open a support request from the Cloud dashboard.
-          Restores are audit-logged and require Super Admin re-authentication before they are applied.
+          To restore data to an earlier point in time, open a support request from the Cloud
+          dashboard. Restores are audit-logged and require Super Admin re-authentication before they
+          are applied.
         </p>
       </section>
     </div>
   );
 }
 
-function Card({ icon: Icon, title, value, tone }: { icon: typeof Database; title: string; value: string; tone: "ok" | "warn" }) {
+function Card({
+  icon: Icon,
+  title,
+  value,
+  tone,
+}: {
+  icon: typeof Database;
+  title: string;
+  value: string;
+  tone: "ok" | "warn";
+}) {
   const color = tone === "ok" ? "text-success" : "text-warning";
   return (
     <div className="rounded-2xl border border-border/70 bg-card p-4">

@@ -6,7 +6,13 @@ import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { downloadCSV, downloadXLSX, downloadPDF } from "@/lib/exporters";
 import { fmtDate } from "@/lib/format";
 import { toast } from "sonner";
@@ -17,9 +23,16 @@ export const Route = createFileRoute("/_app/admin/reports")({
   head: () => ({
     meta: [
       { title: "Reports — Admin — WASSHA SACCOS" },
-      { name: "description", content: "Access and export SACCOS performance reports, savings and loan analytics for administrators." },
+      {
+        name: "description",
+        content:
+          "Access and export SACCOS performance reports, savings and loan analytics for administrators.",
+      },
       { property: "og:title", content: "Admin Reports — WASSHA SACCOS" },
-      { property: "og:description", content: "Access and export SACCOS performance reports for administrators." },
+      {
+        property: "og:description",
+        content: "Access and export SACCOS performance reports for administrators.",
+      },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -31,7 +44,9 @@ type ReportType = "loans" | "transactions" | "audit_log";
 function ReportsPage() {
   const { hasRole, loading } = useAuth();
   const [type, setType] = useState<ReportType>("loans");
-  const [from, setFrom] = useState(() => new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10));
+  const [from, setFrom] = useState(() =>
+    new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10),
+  );
   const [to, setTo] = useState(() => new Date().toISOString().slice(0, 10));
   const [statusFilter, setStatusFilter] = useState("all");
   const [rows, setRows] = useState<any[]>([]);
@@ -44,23 +59,45 @@ function ReportsPage() {
     setBusy(true);
     const fromIso = new Date(from).toISOString();
     const toIso = new Date(new Date(to).getTime() + 86400000).toISOString();
-    let q: any = supabase.from(type).select("*").gte("created_at", fromIso).lt("created_at", toIso).order("created_at", { ascending: false });
+    let q: any = supabase
+      .from(type)
+      .select("*")
+      .gte("created_at", fromIso)
+      .lt("created_at", toIso)
+      .order("created_at", { ascending: false });
     if (type === "loans" && statusFilter !== "all") q = q.eq("status", statusFilter);
     const { data, error } = await q;
     setBusy(false);
-    if (error) { toast.error(friendlyError(error)); return []; }
+    if (error) {
+      toast.error(friendlyError(error));
+      return [];
+    }
     const flat = (data ?? []).map((r: any) => {
-      if (type === "audit_log") return {
-        date: fmtDate(r.created_at), action: r.action, entity: r.entity, entity_id: r.entity_id, actor: r.actor_id,
-      };
-      if (type === "loans") return {
-        date: fmtDate(r.created_at), loan_number: r.loan_number, member_id: r.member_id,
-        amount_requested: r.amount_requested, amount_approved: r.amount_approved,
-        stage: r.stage, status: r.status, outstanding: r.outstanding_balance,
-      };
+      if (type === "audit_log")
+        return {
+          date: fmtDate(r.created_at),
+          action: r.action,
+          entity: r.entity,
+          entity_id: r.entity_id,
+          actor: r.actor_id,
+        };
+      if (type === "loans")
+        return {
+          date: fmtDate(r.created_at),
+          loan_number: r.loan_number,
+          member_id: r.member_id,
+          amount_requested: r.amount_requested,
+          amount_approved: r.amount_approved,
+          stage: r.stage,
+          status: r.status,
+          outstanding: r.outstanding_balance,
+        };
       return {
-        date: fmtDate(r.created_at), member_id: r.user_id, type: r.tx_type,
-        amount: r.amount, description: r.description ?? "",
+        date: fmtDate(r.created_at),
+        member_id: r.user_id,
+        type: r.tx_type,
+        amount: r.amount,
+        description: r.description ?? "",
       };
     });
     setRows(flat);
@@ -69,7 +106,10 @@ function ReportsPage() {
 
   const exportAs = async (fmt: "csv" | "xlsx" | "pdf") => {
     const data = rows.length ? rows : await fetchRows();
-    if (!data.length) { toast.error("No data to export"); return; }
+    if (!data.length) {
+      toast.error("No data to export");
+      return;
+    }
     const name = `${type}-${from}-${to}`;
     if (fmt === "csv") downloadCSV(`${name}.csv`, data);
     else if (fmt === "xlsx") downloadXLSX(`${name}.xlsx`, data, type);
@@ -86,8 +126,16 @@ function ReportsPage() {
           <div className="grid gap-3 md:grid-cols-5">
             <div>
               <Label>Report</Label>
-              <Select value={type} onValueChange={(v) => { setType(v as ReportType); setRows([]); }}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={type}
+                onValueChange={(v) => {
+                  setType(v as ReportType);
+                  setRows([]);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="loans">Loans</SelectItem>
                   <SelectItem value="transactions">Contributions / Transactions</SelectItem>
@@ -95,17 +143,28 @@ function ReportsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div><Label>From</Label><Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></div>
-            <div><Label>To</Label><Input type="date" value={to} onChange={(e) => setTo(e.target.value)} /></div>
+            <div>
+              <Label>From</Label>
+              <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+            </div>
+            <div>
+              <Label>To</Label>
+              <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+            </div>
             {type === "loans" && (
               <div>
                 <Label>Status</Label>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All</SelectItem>
-                    {["pending", "approved", "rejected", "disbursed", "completed"].map((s) =>
-                      <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                    {["pending", "approved", "rejected", "disbursed", "completed"].map((s) => (
+                      <SelectItem key={s} value={s}>
+                        {s}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -124,7 +183,11 @@ function ReportsPage() {
             <Button onClick={() => exportAs("xlsx")} variant="outline" size="sm">
               <FileSpreadsheet className="mr-2 h-4 w-4" /> Excel
             </Button>
-            <Button onClick={() => exportAs("pdf")} className="bg-[image:var(--gradient-primary)] text-primary-foreground" size="sm">
+            <Button
+              onClick={() => exportAs("pdf")}
+              className="bg-[image:var(--gradient-primary)] text-primary-foreground"
+              size="sm"
+            >
               <FileDown className="mr-2 h-4 w-4" /> PDF
             </Button>
           </div>
@@ -137,26 +200,38 @@ function ReportsPage() {
             </h2>
           </div>
           {rows.length === 0 ? (
-            <p className="mt-6 text-center text-sm text-muted-foreground">Run the report to preview rows.</p>
+            <p className="mt-6 text-center text-sm text-muted-foreground">
+              Run the report to preview rows.
+            </p>
           ) : (
             <div className="mt-4 overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b text-left text-xs uppercase text-muted-foreground">
-                    {Object.keys(rows[0]).map((k) => <th key={k} className="py-2 pr-4">{k}</th>)}
+                    {Object.keys(rows[0]).map((k) => (
+                      <th key={k} className="py-2 pr-4">
+                        {k}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
                   {rows.slice(0, 50).map((r, i) => (
                     <tr key={i} className="border-b border-border/40">
                       {Object.values(r).map((v: any, j) => (
-                        <td key={j} className="py-2 pr-4 text-xs">{v == null ? "—" : String(v)}</td>
+                        <td key={j} className="py-2 pr-4 text-xs">
+                          {v == null ? "—" : String(v)}
+                        </td>
                       ))}
                     </tr>
                   ))}
                 </tbody>
               </table>
-              {rows.length > 50 && <p className="mt-3 text-xs text-muted-foreground">Showing 50 of {rows.length}. Export to see everything.</p>}
+              {rows.length > 50 && (
+                <p className="mt-3 text-xs text-muted-foreground">
+                  Showing 50 of {rows.length}. Export to see everything.
+                </p>
+              )}
             </div>
           )}
         </section>

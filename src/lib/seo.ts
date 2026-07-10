@@ -1,6 +1,11 @@
 export const SITE_URL = "https://wassha-saccos.lovable.app";
 
-export function pageHead(opts: { path: string; title: string; description: string; noIndex?: boolean }) {
+export function pageHead(opts: {
+  path: string;
+  title: string;
+  description: string;
+  noIndex?: boolean;
+}) {
   const url = `${SITE_URL}${opts.path}`;
   const meta = [
     { title: opts.title },

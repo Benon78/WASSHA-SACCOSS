@@ -9,7 +9,14 @@ import { useI18n } from "@/lib/i18n";
 import { fmtTZS, fmtDate } from "@/lib/format";
 import { LOAN_TYPE_LABEL } from "@/lib/loanStages";
 import {
-  Wallet, PiggyBank, TrendingUp, Banknote, ArrowUpRight, ArrowDownRight, ChevronRight, Plus,
+  Wallet,
+  PiggyBank,
+  TrendingUp,
+  Banknote,
+  ArrowUpRight,
+  ArrowDownRight,
+  ChevronRight,
+  Plus,
 } from "lucide-react";
 import { ContributionsBarChart } from "@/components/ContributionsBarChart";
 import { RepaymentTrendChart } from "@/components/RepaymentTrendChart";
@@ -17,12 +24,14 @@ import { RepaymentTrendChart } from "@/components/RepaymentTrendChart";
 import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/_app/dashboard")({
-  head: () => pageHead({
-    path: "/dashboard",
-    title: "Dashboard — WASSHA SACCOS",
-    description: "Your SACCOS dashboard: savings balance, active loans, eligibility, and recent activity at a glance.",
-    noIndex: true,
-  }),
+  head: () =>
+    pageHead({
+      path: "/dashboard",
+      title: "Dashboard — WASSHA SACCOS",
+      description:
+        "Your SACCOS dashboard: savings balance, active loans, eligibility, and recent activity at a glance.",
+      noIndex: true,
+    }),
   component: Dashboard,
 });
 
@@ -43,8 +52,19 @@ function Dashboard() {
       supabase.rpc("get_savings_balance", { _user_id: user.id }),
       supabase.rpc("get_active_loan_balance", { _user_id: user.id }),
       supabase.rpc("calculate_eligibility", { _user_id: user.id }),
-      supabase.from("loans").select("id,loan_number,loan_type,stage,status,amount_approved,amount_requested,outstanding_balance,fee_amount,fee_outstanding,created_at").eq("member_id", user.id).order("created_at", { ascending: false }),
-      supabase.from("transactions").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(6),
+      supabase
+        .from("loans")
+        .select(
+          "id,loan_number,loan_type,stage,status,amount_approved,amount_requested,outstanding_balance,fee_amount,fee_outstanding,created_at",
+        )
+        .eq("member_id", user.id)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("transactions")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(6),
     ]);
     setProfile(p.data);
     setSavings(Number(s.data ?? 0));
@@ -59,11 +79,25 @@ function Dashboard() {
     refresh();
     const ch = supabase
       .channel(`dash-${user.id}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "transactions", filter: `user_id=eq.${user.id}` }, () => refresh())
-      .on("postgres_changes", { event: "*", schema: "public", table: "loans", filter: `member_id=eq.${user.id}` }, () => refresh())
-      .on("postgres_changes", { event: "*", schema: "public", table: "profiles", filter: `user_id=eq.${user.id}` }, () => refresh())
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "transactions", filter: `user_id=eq.${user.id}` },
+        () => refresh(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "loans", filter: `member_id=eq.${user.id}` },
+        () => refresh(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "profiles", filter: `user_id=eq.${user.id}` },
+        () => refresh(),
+      )
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+      supabase.removeChannel(ch);
+    };
   }, [user?.id, refresh]);
 
   return (
@@ -88,7 +122,11 @@ function Dashboard() {
               </Link>
             </Button>
             {isStaff && (
-              <Button asChild variant="outline" className="border-white/30 bg-white/10 text-white hover:bg-white/20 hover:text-white">
+              <Button
+                asChild
+                variant="outline"
+                className="border-white/30 bg-white/10 text-white hover:bg-white/20 hover:text-white"
+              >
                 <Link to="/approvals">{t("open_approvals")}</Link>
               </Button>
             )}
@@ -105,45 +143,86 @@ function Dashboard() {
           </div>
         ) : profile?.suspended_at ? (
           <div className="rounded-2xl border border-warning/50 bg-warning/10 p-5">
-            <p className="text-sm font-semibold text-foreground">Your account is currently suspended</p>
+            <p className="text-sm font-semibold text-foreground">
+              Your account is currently suspended
+            </p>
             <p className="mt-1 text-sm text-muted-foreground">
-              {profile?.suspended_reason
-                ? <>Reason: <span className="font-medium text-foreground">{profile.suspended_reason}</span>. </>
-                : null}
-              You can view your dashboard, but loan applications and account changes are blocked until an administrator reactivates your account.
+              {profile?.suspended_reason ? (
+                <>
+                  Reason:{" "}
+                  <span className="font-medium text-foreground">{profile.suspended_reason}</span>
+                  .{" "}
+                </>
+              ) : null}
+              You can view your dashboard, but loan applications and account changes are blocked
+              until an administrator reactivates your account.
             </p>
           </div>
         ) : null}
 
         {/* KPIs */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard label={t("total_savings")} value={fmtTZS(savings)} icon={PiggyBank} tone="primary" />
-          <StatCard label={t("active_loan_balance")} value={fmtTZS(activeLoan)} icon={Banknote} tone="navy" />
+          <StatCard
+            label={t("total_savings")}
+            value={fmtTZS(savings)}
+            icon={PiggyBank}
+            tone="primary"
+          />
+          <StatCard
+            label={t("active_loan_balance")}
+            value={fmtTZS(activeLoan)}
+            icon={Banknote}
+            tone="navy"
+          />
           <StatCard
             label={t("eligible_to_borrow")}
             value={fmtTZS(eligibility?.max_amount ?? 0)}
             icon={TrendingUp}
             tone={eligibility?.eligible ? "success" : "warning"}
           />
-          <StatCard label={t("active_loans")} value={String(loans.filter((l) => ["pending","approved","disbursed"].includes(l.status)).length)} icon={Wallet} tone="warning" />
+          <StatCard
+            label={t("active_loans")}
+            value={String(
+              loans.filter((l) => ["pending", "approved", "disbursed"].includes(l.status)).length,
+            )}
+            icon={Wallet}
+            tone="warning"
+          />
         </div>
 
         {/* Outstanding by loan type */}
         <div className="rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
           <h2 className="text-base font-semibold">Loan balances by type</h2>
-          <p className="text-xs text-muted-foreground">Principal and returned-fee balances shown separately for each loan product.</p>
+          <p className="text-xs text-muted-foreground">
+            Principal and returned-fee balances shown separately for each loan product.
+          </p>
           <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
             {(["development", "chapchap", "emergency"] as const).map((type) => {
-              const typeLoans = loans.filter((l) => l.loan_type === type && ["approved", "disbursed"].includes(l.status));
-              const principal = typeLoans.reduce((s, l) => s + Number(l.outstanding_balance ?? 0), 0);
+              const typeLoans = loans.filter(
+                (l) => l.loan_type === type && ["approved", "disbursed"].includes(l.status),
+              );
+              const principal = typeLoans.reduce(
+                (s, l) => s + Number(l.outstanding_balance ?? 0),
+                0,
+              );
               const fee = typeLoans.reduce((s, l) => s + Number(l.fee_outstanding ?? 0), 0);
               const count = typeLoans.length;
               return (
-                <div key={type} className={`rounded-xl border ${count ? "border-primary/30 bg-primary/5" : "border-border/60 bg-muted/30"} p-4`}>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{LOAN_TYPE_LABEL[type]}</p>
+                <div
+                  key={type}
+                  className={`rounded-xl border ${count ? "border-primary/30 bg-primary/5" : "border-border/60 bg-muted/30"} p-4`}
+                >
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    {LOAN_TYPE_LABEL[type]}
+                  </p>
                   <p className="mt-2 text-lg font-bold text-foreground">{fmtTZS(principal)}</p>
-                  <p className="text-xs text-muted-foreground">Principal outstanding · {count} active</p>
-                  <p className="mt-2 text-sm font-medium text-warning">{fmtTZS(fee)} <span className="text-xs font-normal text-muted-foreground">fee due</span></p>
+                  <p className="text-xs text-muted-foreground">
+                    Principal outstanding · {count} active
+                  </p>
+                  <p className="mt-2 text-sm font-medium text-warning">
+                    {fmtTZS(fee)}{" "}
+                    <span className="text-xs font-normal text-muted-foreground">fee due</span>
+                  </p>
                 </div>
               );
             })}
@@ -153,10 +232,14 @@ function Dashboard() {
         {/* Eligibility reasons */}
         {eligibility && !eligibility.eligible && eligibility.reasons?.length > 0 && (
           <div className="rounded-2xl border border-warning/40 bg-warning/5 p-5">
-            <p className="text-sm font-semibold text-foreground">Why you're not eligible right now</p>
+            <p className="text-sm font-semibold text-foreground">
+              Why you're not eligible right now
+            </p>
             <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
               {eligibility.reasons.map((r: any, i: number) => (
-                <li key={i} className="flex gap-2"><span className="text-warning">•</span> {r.message}</li>
+                <li key={i} className="flex gap-2">
+                  <span className="text-warning">•</span> {r.message}
+                </li>
               ))}
             </ul>
           </div>
@@ -177,24 +260,37 @@ function Dashboard() {
               <h2 className="text-base font-semibold">{t("recent_transactions")}</h2>
             </div>
             {txs.length === 0 ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">{t("no_transactions")}</p>
+              <p className="py-6 text-center text-sm text-muted-foreground">
+                {t("no_transactions")}
+              </p>
             ) : (
               <ul className="divide-y divide-border/70">
                 {txs.map((tx) => {
-                  const isIn = ["deposit","contribution"].includes(tx.tx_type);
+                  const isIn = ["deposit", "contribution"].includes(tx.tx_type);
                   return (
                     <li key={tx.id} className="flex items-center justify-between py-3">
                       <div className="flex items-center gap-3">
-                        <div className={`flex h-9 w-9 items-center justify-center rounded-full ${isIn ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
-                          {isIn ? <ArrowDownRight className="h-4 w-4" /> : <ArrowUpRight className="h-4 w-4" />}
+                        <div
+                          className={`flex h-9 w-9 items-center justify-center rounded-full ${isIn ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}
+                        >
+                          {isIn ? (
+                            <ArrowDownRight className="h-4 w-4" />
+                          ) : (
+                            <ArrowUpRight className="h-4 w-4" />
+                          )}
                         </div>
                         <div>
-                          <p className="text-sm font-medium capitalize">{tx.description || tx.tx_type.replace("_", " ")}</p>
+                          <p className="text-sm font-medium capitalize">
+                            {tx.description || tx.tx_type.replace("_", " ")}
+                          </p>
                           <p className="text-xs text-muted-foreground">{fmtDate(tx.created_at)}</p>
                         </div>
                       </div>
-                      <span className={`text-sm font-semibold ${isIn ? "text-success" : "text-foreground"}`}>
-                        {isIn ? "+" : "-"}{fmtTZS(tx.amount)}
+                      <span
+                        className={`text-sm font-semibold ${isIn ? "text-success" : "text-foreground"}`}
+                      >
+                        {isIn ? "+" : "-"}
+                        {fmtTZS(tx.amount)}
                       </span>
                     </li>
                   );
@@ -206,7 +302,10 @@ function Dashboard() {
           <div className="rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-base font-semibold">{t("recent_loans")}</h2>
-              <Link to="/loans" className="inline-flex items-center text-xs font-semibold text-primary hover:underline">
+              <Link
+                to="/loans"
+                className="inline-flex items-center text-xs font-semibold text-primary hover:underline"
+              >
                 {t("view_all")} <ChevronRight className="h-3.5 w-3.5" />
               </Link>
             </div>
@@ -217,8 +316,15 @@ function Dashboard() {
                 {loans.slice(0, 3).map((l) => (
                   <li key={l.id} className="flex items-center justify-between py-3">
                     <div>
-                      <p className="text-sm font-semibold">{l.loan_number} <span className="ml-1 text-xs font-normal text-muted-foreground">· {LOAN_TYPE_LABEL[l.loan_type] ?? l.loan_type}</span></p>
-                      <p className="text-xs text-muted-foreground capitalize">{l.stage.replace(/_/g, " ")}</p>
+                      <p className="text-sm font-semibold">
+                        {l.loan_number}{" "}
+                        <span className="ml-1 text-xs font-normal text-muted-foreground">
+                          · {LOAN_TYPE_LABEL[l.loan_type] ?? l.loan_type}
+                        </span>
+                      </p>
+                      <p className="text-xs text-muted-foreground capitalize">
+                        {l.stage.replace(/_/g, " ")}
+                      </p>
                     </div>
                     <span className="text-sm font-semibold">{fmtTZS(l.amount_requested)}</span>
                   </li>

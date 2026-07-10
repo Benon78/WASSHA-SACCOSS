@@ -1,7 +1,15 @@
 export type LoanStage =
-  | "submitted" | "under_review" | "branch_approval"
-  | "finance_approval" | "board_chair" | "board_member_1" | "board_member_2"
-  | "manager_approval" | "disbursement" | "completed" | "rejected";
+  | "submitted"
+  | "under_review"
+  | "branch_approval"
+  | "finance_approval"
+  | "board_chair"
+  | "board_member_1"
+  | "board_member_2"
+  | "manager_approval"
+  | "disbursement"
+  | "completed"
+  | "rejected";
 
 // New canonical flow:
 // Submitted → Under Review → Finance → Board Chair → Board Member 1 → Board Member 2 → Manager → Disbursement → Completed
@@ -62,8 +70,8 @@ export const LOAN_TYPE_DESC: Record<string, string> = {
 
 // Per-type caps (mirrors loan_type_rules in the database)
 export const LOAN_TYPE_RULES: Record<string, { maxAmount: number; maxTerm: number }> = {
-  chapchap:    { maxAmount: 200_000,    maxTerm: 1 },
-  emergency:   { maxAmount: 1_000_000,  maxTerm: 6 },
+  chapchap: { maxAmount: 200_000, maxTerm: 1 },
+  emergency: { maxAmount: 1_000_000, maxTerm: 6 },
   development: { maxAmount: 50_000_000, maxTerm: 36 },
 };
 

@@ -16,7 +16,9 @@ import { toast } from "sonner";
 import { Loader2, Plus, History, FileCheck2 } from "lucide-react";
 
 export const Route = createFileRoute("/_app/superadmin/policies")({
-  head: () => ({ meta: [{ title: "Loan Policies — Super Admin" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({
+    meta: [{ title: "Loan Policies — Super Admin" }, { name: "robots", content: "noindex" }],
+  }),
   component: PoliciesPage,
 });
 
@@ -28,20 +30,34 @@ const policiesQueryOptions = () =>
   });
 
 type FormShape = {
-  interest_rate: string; min_savings: string; savings_multiplier: string;
-  min_membership_months: string; max_term_months: string;
-  emergency_rate: string; emergency_multiplier: string;
-  emergency_max_amount: string; emergency_max_term_months: string;
-  chapchap_rate: string; late_penalty_rate: string; processing_fee_rate: string;
+  interest_rate: string;
+  min_savings: string;
+  savings_multiplier: string;
+  min_membership_months: string;
+  max_term_months: string;
+  emergency_rate: string;
+  emergency_multiplier: string;
+  emergency_max_amount: string;
+  emergency_max_term_months: string;
+  chapchap_rate: string;
+  late_penalty_rate: string;
+  processing_fee_rate: string;
   notes: string;
 };
 
 const defaults: FormShape = {
-  interest_rate: "12.0", min_savings: "100000", savings_multiplier: "3",
-  min_membership_months: "3", max_term_months: "36",
-  emergency_rate: "18.0", emergency_multiplier: "1.5",
-  emergency_max_amount: "1000000", emergency_max_term_months: "6",
-  chapchap_rate: "15.0", late_penalty_rate: "2.0", processing_fee_rate: "1.0",
+  interest_rate: "12.0",
+  min_savings: "100000",
+  savings_multiplier: "3",
+  min_membership_months: "3",
+  max_term_months: "36",
+  emergency_rate: "18.0",
+  emergency_multiplier: "1.5",
+  emergency_max_amount: "1000000",
+  emergency_max_term_months: "6",
+  chapchap_rate: "15.0",
+  late_penalty_rate: "2.0",
+  processing_fee_rate: "1.0",
   notes: "",
 };
 
@@ -109,8 +125,8 @@ function PoliciesPage() {
       <header>
         <h1 className="text-2xl font-bold">Loan policies</h1>
         <p className="text-sm text-muted-foreground">
-          Versioned and immutable. Publishing a new version supersedes previous ones for all future eligibility
-          checks. Historic versions stay for audit.
+          Versioned and immutable. Publishing a new version supersedes previous ones for all future
+          eligibility checks. Historic versions stay for audit.
         </p>
       </header>
 
@@ -119,7 +135,9 @@ function PoliciesPage() {
           <div className="flex items-center gap-2">
             <FileCheck2 className="h-4 w-4 text-primary" />
             <h2 className="font-semibold">Current policy — v{current.version}</h2>
-            <Badge className="ml-auto bg-success/15 text-success">Effective {fmtDate(current.effective_from)}</Badge>
+            <Badge className="ml-auto bg-success/15 text-success">
+              Effective {fmtDate(current.effective_from)}
+            </Badge>
           </div>
           <div className="mt-3 grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
             <Metric label="Interest" value={`${current.interest_rate}%`} />
@@ -145,22 +163,77 @@ function PoliciesPage() {
           )}
         </div>
         <div className="mt-4 grid gap-4 md:grid-cols-3">
-          <Field label="Interest rate (% p.a.)" v={form.interest_rate} step="0.1" onChange={(v) => setForm({ ...form, interest_rate: v })} />
-          <Field label="Savings multiplier" v={form.savings_multiplier} step="0.1" onChange={(v) => setForm({ ...form, savings_multiplier: v })} />
-          <Field label="Min savings (TZS)" v={form.min_savings} onChange={(v) => setForm({ ...form, min_savings: v })} />
-          <Field label="Min membership (months)" v={form.min_membership_months} onChange={(v) => setForm({ ...form, min_membership_months: v })} />
-          <Field label="Max term (months)" v={form.max_term_months} onChange={(v) => setForm({ ...form, max_term_months: v })} />
-          <Field label="Processing fee (% principal)" v={form.processing_fee_rate} step="0.1" onChange={(v) => setForm({ ...form, processing_fee_rate: v })} />
-          <Field label="Late penalty (% / month)" v={form.late_penalty_rate} step="0.1" onChange={(v) => setForm({ ...form, late_penalty_rate: v })} />
-          <Field label="Chap-Chap rate (% p.a.)" v={form.chapchap_rate} step="0.1" onChange={(v) => setForm({ ...form, chapchap_rate: v })} />
+          <Field
+            label="Interest rate (% p.a.)"
+            v={form.interest_rate}
+            step="0.1"
+            onChange={(v) => setForm({ ...form, interest_rate: v })}
+          />
+          <Field
+            label="Savings multiplier"
+            v={form.savings_multiplier}
+            step="0.1"
+            onChange={(v) => setForm({ ...form, savings_multiplier: v })}
+          />
+          <Field
+            label="Min savings (TZS)"
+            v={form.min_savings}
+            onChange={(v) => setForm({ ...form, min_savings: v })}
+          />
+          <Field
+            label="Min membership (months)"
+            v={form.min_membership_months}
+            onChange={(v) => setForm({ ...form, min_membership_months: v })}
+          />
+          <Field
+            label="Max term (months)"
+            v={form.max_term_months}
+            onChange={(v) => setForm({ ...form, max_term_months: v })}
+          />
+          <Field
+            label="Processing fee (% principal)"
+            v={form.processing_fee_rate}
+            step="0.1"
+            onChange={(v) => setForm({ ...form, processing_fee_rate: v })}
+          />
+          <Field
+            label="Late penalty (% / month)"
+            v={form.late_penalty_rate}
+            step="0.1"
+            onChange={(v) => setForm({ ...form, late_penalty_rate: v })}
+          />
+          <Field
+            label="Chap-Chap rate (% p.a.)"
+            v={form.chapchap_rate}
+            step="0.1"
+            onChange={(v) => setForm({ ...form, chapchap_rate: v })}
+          />
 
           <div className="md:col-span-3 border-t pt-3">
             <h3 className="text-sm font-semibold text-primary">Emergency tier</h3>
           </div>
-          <Field label="Emergency rate (% p.a.)" v={form.emergency_rate} step="0.1" onChange={(v) => setForm({ ...form, emergency_rate: v })} />
-          <Field label="Emergency multiplier" v={form.emergency_multiplier} step="0.1" onChange={(v) => setForm({ ...form, emergency_multiplier: v })} />
-          <Field label="Emergency max amount (TZS)" v={form.emergency_max_amount} onChange={(v) => setForm({ ...form, emergency_max_amount: v })} />
-          <Field label="Emergency max term (months)" v={form.emergency_max_term_months} onChange={(v) => setForm({ ...form, emergency_max_term_months: v })} />
+          <Field
+            label="Emergency rate (% p.a.)"
+            v={form.emergency_rate}
+            step="0.1"
+            onChange={(v) => setForm({ ...form, emergency_rate: v })}
+          />
+          <Field
+            label="Emergency multiplier"
+            v={form.emergency_multiplier}
+            step="0.1"
+            onChange={(v) => setForm({ ...form, emergency_multiplier: v })}
+          />
+          <Field
+            label="Emergency max amount (TZS)"
+            v={form.emergency_max_amount}
+            onChange={(v) => setForm({ ...form, emergency_max_amount: v })}
+          />
+          <Field
+            label="Emergency max term (months)"
+            v={form.emergency_max_term_months}
+            onChange={(v) => setForm({ ...form, emergency_max_term_months: v })}
+          />
 
           <div className="md:col-span-3">
             <Label>Rationale / notes</Label>
@@ -177,12 +250,21 @@ function PoliciesPage() {
               description="Publishing creates a new immutable version that governs all future loan eligibility. Existing loans keep their original terms."
               actionLabel="Publish"
               trigger={
-                <Button disabled={mutation.isPending} className="bg-[image:var(--gradient-primary)] text-primary-foreground">
-                  {mutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
+                <Button
+                  disabled={mutation.isPending}
+                  className="bg-[image:var(--gradient-primary)] text-primary-foreground"
+                >
+                  {mutation.isPending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Plus className="mr-2 h-4 w-4" />
+                  )}
                   Publish new version
                 </Button>
               }
-              onConfirmed={async (pw) => { await mutation.mutateAsync(pw); }}
+              onConfirmed={async (pw) => {
+                await mutation.mutateAsync(pw);
+              }}
             />
           </div>
         </div>
@@ -219,7 +301,9 @@ function PoliciesPage() {
                   <td className="pr-3">{p.processing_fee_rate}%</td>
                   <td className="pr-3">{p.late_penalty_rate}%</td>
                   <td className="pr-3">{p.emergency_rate}%</td>
-                  <td className="pr-3 text-xs text-muted-foreground">{fmtDate(p.effective_from)}</td>
+                  <td className="pr-3 text-xs text-muted-foreground">
+                    {fmtDate(p.effective_from)}
+                  </td>
                   <td className="text-xs text-muted-foreground">{p.notes || "—"}</td>
                 </tr>
               ))}
@@ -241,8 +325,16 @@ function Metric({ label, value }: { label: string; value: string }) {
 }
 
 function Field({
-  label, v, step, onChange,
-}: { label: string; v: string; step?: string; onChange: (v: string) => void }) {
+  label,
+  v,
+  step,
+  onChange,
+}: {
+  label: string;
+  v: string;
+  step?: string;
+  onChange: (v: string) => void;
+}) {
   return (
     <div>
       <Label>{label}</Label>

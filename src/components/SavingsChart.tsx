@@ -19,7 +19,9 @@ export function SavingsChart() {
           <h3 className="text-base font-semibold text-foreground">Savings growth</h3>
           <p className="text-xs text-muted-foreground">Last 8 months</p>
         </div>
-        <span className="rounded-full bg-success/10 px-3 py-1 text-xs font-semibold text-success">+18.4%</span>
+        <span className="rounded-full bg-success/10 px-3 py-1 text-xs font-semibold text-success">
+          +18.4%
+        </span>
       </div>
       <div className="h-56 w-full">
         <ResponsiveContainer width="100%" height="100%">
@@ -30,14 +32,35 @@ export function SavingsChart() {
                 <stop offset="100%" stopColor="oklch(0.71 0.18 50)" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <XAxis dataKey="m" stroke="oklch(0.5 0.03 260)" fontSize={11} tickLine={false} axisLine={false} />
-            <YAxis stroke="oklch(0.5 0.03 260)" fontSize={11} tickLine={false} axisLine={false}
-              tickFormatter={(v) => `${(v / 1_000_000).toFixed(1)}M`} />
+            <XAxis
+              dataKey="m"
+              stroke="oklch(0.5 0.03 260)"
+              fontSize={11}
+              tickLine={false}
+              axisLine={false}
+            />
+            <YAxis
+              stroke="oklch(0.5 0.03 260)"
+              fontSize={11}
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={(v) => `${(v / 1_000_000).toFixed(1)}M`}
+            />
             <Tooltip
-              contentStyle={{ borderRadius: 12, border: "1px solid oklch(0.92 0.01 80)", fontSize: 12 }}
+              contentStyle={{
+                borderRadius: 12,
+                border: "1px solid oklch(0.92 0.01 80)",
+                fontSize: 12,
+              }}
               formatter={(v: number) => [`TZS ${v.toLocaleString()}`, "Savings"]}
             />
-            <Area type="monotone" dataKey="v" stroke="oklch(0.71 0.18 50)" strokeWidth={2.5} fill="url(#g1)" />
+            <Area
+              type="monotone"
+              dataKey="v"
+              stroke="oklch(0.71 0.18 50)"
+              strokeWidth={2.5}
+              fill="url(#g1)"
+            />
           </AreaChart>
         </ResponsiveContainer>
       </div>

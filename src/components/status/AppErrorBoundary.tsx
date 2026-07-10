@@ -36,12 +36,6 @@ export class AppErrorBoundary extends Component<Props, State> {
   render() {
     if (!this.state.error) return this.props.children;
     if (this.props.fallback) return this.props.fallback(this.state.error, this.reset);
-    return (
-      <ErrorState
-        fullscreen
-        kind={classifyError(this.state.error)}
-        onRetry={this.reset}
-      />
-    );
+    return <ErrorState fullscreen kind={classifyError(this.state.error)} onRetry={this.reset} />;
   }
 }

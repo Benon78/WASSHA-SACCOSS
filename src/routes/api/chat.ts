@@ -10,7 +10,8 @@ export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const authHeader = request.headers.get("authorization") ?? request.headers.get("Authorization");
+        const authHeader =
+          request.headers.get("authorization") ?? request.headers.get("Authorization");
         const token = authHeader?.toLowerCase().startsWith("bearer ")
           ? authHeader.slice(7).trim()
           : null;
@@ -38,24 +39,45 @@ export const Route = createFileRoute("/api/chat")({
 
         // Gather user context (RLS-safe)
         const [profileRes, rolesRes, savingsRes, loanRes, eligRes, loansRes] = await Promise.all([
-          supabase.from("profiles").select("full_name,member_number,opening_balance,phone").eq("user_id", userId).maybeSingle(),
+          supabase
+            .from("profiles")
+            .select("full_name,member_number,opening_balance,phone")
+            .eq("user_id", userId)
+            .maybeSingle(),
           supabase.from("user_roles").select("role").eq("user_id", userId),
           supabase.rpc("get_savings_balance", { _user_id: userId }),
           supabase.rpc("get_active_loan_balance", { _user_id: userId }),
           supabase.rpc("calculate_eligibility", { _user_id: userId }),
-          supabase.from("loans").select("loan_number,amount_requested,stage,status,outstanding_balance").eq("member_id", userId).order("created_at", { ascending: false }).limit(5),
+          supabase
+            .from("loans")
+            .select("loan_number,amount_requested,stage,status,outstanding_balance")
+            .eq("member_id", userId)
+            .order("created_at", { ascending: false })
+            .limit(5),
         ]);
 
         const roles = (rolesRes.data ?? []).map((r: { role: string }) => r.role);
         const isAdmin = roles.includes("admin");
-        const isStaff = isAdmin || roles.some((r) => ["board_member", "loan_officer", "supervisor", "credit_committee"].includes(r));
+        const isStaff =
+          isAdmin ||
+          roles.some((r) =>
+            ["board_member", "loan_officer", "supervisor", "credit_committee"].includes(r),
+          );
 
         let adminContext = "";
         if (isStaff) {
           const [pendingLoans, pendingProxies] = await Promise.all([
-            supabase.from("loans").select("loan_number,stage,amount_requested").not("stage", "in", '("completed","rejected","disbursement")').limit(10),
+            supabase
+              .from("loans")
+              .select("loan_number,stage,amount_requested")
+              .not("stage", "in", '("completed","rejected","disbursement")')
+              .limit(10),
             isAdmin
-              ? supabase.from("loan_proxies").select("loan_id,stage,reason").is("revoked_at", null).limit(10)
+              ? supabase
+                  .from("loan_proxies")
+                  .select("loan_id,stage,reason")
+                  .is("revoked_at", null)
+                  .limit(10)
               : Promise.resolve({ data: [] as unknown[] }),
           ]);
           adminContext = `\n\nSTAFF CONTEXT:\nPending loans (up to 10): ${JSON.stringify(pendingLoans.data ?? [])}\nActive proxy delegations: ${JSON.stringify(pendingProxies.data ?? [])}`;
@@ -108,7 +130,9 @@ ${JSON.stringify(ctx, null, 2)}${adminContext}`;
           .join("")
           .trim();
         if (last?.role === "user" && lastText) {
-          await supabase.from("ai_messages").insert({ user_id: userId, role: "user", content: lastText });
+          await supabase
+            .from("ai_messages")
+            .insert({ user_id: userId, role: "user", content: lastText });
         }
 
         const gateway = createLovableAiGatewayProvider(apiKey);
@@ -121,7 +145,10 @@ ${JSON.stringify(ctx, null, 2)}${adminContext}`;
             inputSchema: z.object({
               category: z.enum(["approval", "delegation", "question", "other"]),
               notes: z.string().min(10).max(1000).describe("Clear factual summary for staff."),
-              loan_number: z.string().optional().describe("Loan number like LN-123 if the case relates to a specific loan."),
+              loan_number: z
+                .string()
+                .optional()
+                .describe("Loan number like LN-123 if the case relates to a specific loan."),
               target_stage: z
                 .enum([
                   "submitted",
@@ -143,7 +170,8 @@ ${JSON.stringify(ctx, null, 2)}${adminContext}`;
                   .select("id")
                   .eq("loan_number", loan_number)
                   .maybeSingle();
-                if (!ln) return { ok: false, error: `Loan ${loan_number} not found or not visible.` };
+                if (!ln)
+                  return { ok: false, error: `Loan ${loan_number} not found or not visible.` };
                 loanId = ln.id;
               }
               const { data: esc, error: escErr } = await supabase
@@ -162,9 +190,17 @@ ${JSON.stringify(ctx, null, 2)}${adminContext}`;
                 _action: "create_escalation",
                 _entity: "assistant_escalations",
                 _entity_id: esc.id,
-                _meta: { category, target_stage: target_stage ?? null, loan_number: loan_number ?? null },
+                _meta: {
+                  category,
+                  target_stage: target_stage ?? null,
+                  loan_number: loan_number ?? null,
+                },
               });
-              return { ok: true, escalation_id: esc.id, message: "Escalation created and staff have been notified." };
+              return {
+                ok: true,
+                escalation_id: esc.id,
+                message: "Escalation created and staff have been notified.",
+              };
             },
           }),
         };

@@ -20,7 +20,9 @@ export function StatCard({ label, value, delta, icon: Icon, tone = "primary" }: 
     <div className="group rounded-2xl border border-border/70 bg-card p-5 shadow-[var(--shadow-card)] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-elegant)]">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
+          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            {label}
+          </p>
           <p className="mt-2 text-2xl font-bold tracking-tight text-foreground">{value}</p>
           {delta && <p className="mt-1 text-xs font-medium text-success">{delta}</p>}
         </div>

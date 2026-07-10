@@ -13,12 +13,13 @@ import { STAGE_LABEL, STAGE_ORDER, type LoanStage } from "@/lib/loanStages";
 import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/_app/admin/sla")({
-  head: () => pageHead({
-    path: "/admin/sla",
-    title: "SLA tracking — Admin",
-    description: "Configure stage SLAs and monitor overdue loans in the workflow.",
-    noIndex: true,
-  }),
+  head: () =>
+    pageHead({
+      path: "/admin/sla",
+      title: "SLA tracking — Admin",
+      description: "Configure stage SLAs and monitor overdue loans in the workflow.",
+      noIndex: true,
+    }),
   component: SlaPage,
 });
 
@@ -34,12 +35,16 @@ function SlaPage() {
       supabase.from("loan_sla_status").select("*").order("hours_in_stage", { ascending: false }),
     ]);
     const map: Record<string, number> = {};
-    (cfg ?? []).forEach((r: any) => { map[r.stage] = r.max_hours; });
+    (cfg ?? []).forEach((r: any) => {
+      map[r.stage] = r.max_hours;
+    });
     setConfig(map);
     setRows(sla ?? []);
   };
 
-  useEffect(() => { if (hasRole("admin") || hasRole("manager")) load(); }, [hasRole]);
+  useEffect(() => {
+    if (hasRole("admin") || hasRole("manager")) load();
+  }, [hasRole]);
 
   if (loading) return null;
   if (!hasRole("admin") && !hasRole("manager")) return <Navigate to="/dashboard" />;
@@ -61,8 +66,12 @@ function SlaPage() {
       <AppHeader />
       <div className="container mx-auto max-w-6xl space-y-6 px-4 py-6">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold"><Clock className="h-6 w-6 text-primary" /> SLA tracking</h1>
-          <p className="text-sm text-muted-foreground">Set the maximum hours a loan may stay at each stage; overdue loans are surfaced below.</p>
+          <h1 className="flex items-center gap-2 text-2xl font-bold">
+            <Clock className="h-6 w-6 text-primary" /> SLA tracking
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Set the maximum hours a loan may stay at each stage; overdue loans are surfaced below.
+          </p>
         </div>
 
         <section className="rounded-2xl border border-warning/40 bg-warning/5 p-6 shadow-[var(--shadow-card)]">
@@ -70,14 +79,19 @@ function SlaPage() {
             <AlertTriangle className="h-4 w-4 text-warning" /> Overdue loans ({overdue.length})
           </h2>
           {overdue.length === 0 ? (
-            <p className="mt-3 text-sm text-muted-foreground">All open loans are within their SLA windows.</p>
+            <p className="mt-3 text-sm text-muted-foreground">
+              All open loans are within their SLA windows.
+            </p>
           ) : (
             <div className="mt-4 overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b text-left text-xs uppercase text-muted-foreground">
-                    <th className="py-2 pr-3">Loan</th><th className="pr-3">Stage</th>
-                    <th className="pr-3">Hours in stage</th><th className="pr-3">SLA</th><th></th>
+                    <th className="py-2 pr-3">Loan</th>
+                    <th className="pr-3">Stage</th>
+                    <th className="pr-3">Hours in stage</th>
+                    <th className="pr-3">SLA</th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -85,9 +99,19 @@ function SlaPage() {
                     <tr key={r.id} className="border-b border-border/40">
                       <td className="py-2 pr-3 font-mono">{r.loan_number}</td>
                       <td className="pr-3">{STAGE_LABEL[r.stage as LoanStage] ?? r.stage}</td>
-                      <td className="pr-3 font-semibold text-destructive">{Number(r.hours_in_stage).toFixed(1)}h</td>
+                      <td className="pr-3 font-semibold text-destructive">
+                        {Number(r.hours_in_stage).toFixed(1)}h
+                      </td>
                       <td className="pr-3 text-muted-foreground">{r.sla_max_hours}h</td>
-                      <td><Link to="/loans/$loanId" params={{ loanId: r.id }} className="text-primary hover:underline">Open</Link></td>
+                      <td>
+                        <Link
+                          to="/loans/$loanId"
+                          params={{ loanId: r.id }}
+                          className="text-primary hover:underline"
+                        >
+                          Open
+                        </Link>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -112,7 +136,11 @@ function SlaPage() {
                       placeholder="hours"
                     />
                   </div>
-                  <Button size="sm" onClick={() => saveStage(stage)} disabled={savingStage === stage}>
+                  <Button
+                    size="sm"
+                    onClick={() => saveStage(stage)}
+                    disabled={savingStage === stage}
+                  >
                     <Save className="mr-1 h-3.5 w-3.5" /> Save
                   </Button>
                 </div>

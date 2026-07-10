@@ -20,7 +20,9 @@ import { toast } from "sonner";
 import { Activity, ChevronLeft, ChevronRight, Download, Eye, Search, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/_app/superadmin/audit")({
-  head: () => ({ meta: [{ title: "Audit Center — Super Admin" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({
+    meta: [{ title: "Audit Center — Super Admin" }, { name: "robots", content: "noindex" }],
+  }),
   component: AuditPage,
 });
 
@@ -78,8 +80,8 @@ function AuditPage() {
       <header>
         <h1 className="text-2xl font-bold">Audit center</h1>
         <p className="text-sm text-muted-foreground">
-          Immutable ledger of every privileged action. Records are append-only — even super admins cannot alter or
-          delete rows. Export is itself audited.
+          Immutable ledger of every privileged action. Records are append-only — even super admins
+          cannot alter or delete rows. Export is itself audited.
         </p>
       </header>
 
@@ -93,7 +95,9 @@ function AuditPage() {
                 className="pl-9"
                 placeholder="e.g. suspended user"
                 value={filters.search ?? ""}
-                onChange={(e) => setFilters({ ...filters, search: e.target.value || undefined, page: 1 })}
+                onChange={(e) =>
+                  setFilters({ ...filters, search: e.target.value || undefined, page: 1 })
+                }
               />
             </div>
           </div>
@@ -102,7 +106,9 @@ function AuditPage() {
             <Input
               placeholder="e.g. loans"
               value={filters.entity ?? ""}
-              onChange={(e) => setFilters({ ...filters, entity: e.target.value || undefined, page: 1 })}
+              onChange={(e) =>
+                setFilters({ ...filters, entity: e.target.value || undefined, page: 1 })
+              }
             />
           </div>
           <div>
@@ -139,11 +145,17 @@ function AuditPage() {
             actionLabel="Export"
             trigger={
               <Button variant="outline" disabled={exportMut.isPending}>
-                {exportMut.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                {exportMut.isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Download className="mr-2 h-4 w-4" />
+                )}
                 Export CSV
               </Button>
             }
-            onConfirmed={async (pw) => { await exportMut.mutateAsync(pw); }}
+            onConfirmed={async (pw) => {
+              await exportMut.mutateAsync(pw);
+            }}
           />
         </div>
       </section>
@@ -151,7 +163,11 @@ function AuditPage() {
       <section className="rounded-2xl border border-border/70 bg-card p-5">
         <h2 className="flex items-center gap-2 font-semibold">
           <Activity className="h-4 w-4 text-primary" /> Audit events
-          {q.data && <Badge variant="outline" className="ml-2 text-xs">{q.data.total.toLocaleString()} rows</Badge>}
+          {q.data && (
+            <Badge variant="outline" className="ml-2 text-xs">
+              {q.data.total.toLocaleString()} rows
+            </Badge>
+          )}
         </h2>
 
         {q.isLoading ? (
@@ -177,11 +193,23 @@ function AuditPage() {
                     const summary = (r.meta as { summary?: string } | null)?.summary ?? "";
                     return (
                       <tr key={r.id} className="border-b border-border/40">
-                        <td className="py-2 pr-3 text-xs text-muted-foreground">{fmtDate(r.created_at)}</td>
-                        <td className="pr-3 text-xs">{r.actor?.full_name ?? <span className="text-muted-foreground">system</span>}</td>
-                        <td className="pr-3"><Badge variant="secondary" className="font-mono text-[10px]">{r.action}</Badge></td>
+                        <td className="py-2 pr-3 text-xs text-muted-foreground">
+                          {fmtDate(r.created_at)}
+                        </td>
+                        <td className="pr-3 text-xs">
+                          {r.actor?.full_name ?? (
+                            <span className="text-muted-foreground">system</span>
+                          )}
+                        </td>
+                        <td className="pr-3">
+                          <Badge variant="secondary" className="font-mono text-[10px]">
+                            {r.action}
+                          </Badge>
+                        </td>
                         <td className="pr-3 text-xs">{r.entity}</td>
-                        <td className="pr-3 text-xs max-w-[420px] truncate" title={summary}>{summary || "—"}</td>
+                        <td className="pr-3 text-xs max-w-[420px] truncate" title={summary}>
+                          {summary || "—"}
+                        </td>
                         <td>
                           <Button size="sm" variant="ghost" onClick={() => setDetailId(r.id)}>
                             <Eye className="h-3.5 w-3.5" />
@@ -191,18 +219,34 @@ function AuditPage() {
                     );
                   })}
                   {q.data.rows.length === 0 && (
-                    <tr><td colSpan={6} className="py-6 text-center text-sm text-muted-foreground">No matching events.</td></tr>
+                    <tr>
+                      <td colSpan={6} className="py-6 text-center text-sm text-muted-foreground">
+                        No matching events.
+                      </td>
+                    </tr>
                   )}
                 </tbody>
               </table>
             </div>
             <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
-              <span>Page {q.data.page} of {totalPages}</span>
+              <span>
+                Page {q.data.page} of {totalPages}
+              </span>
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" disabled={q.data.page <= 1} onClick={() => setFilters({ ...filters, page: q.data!.page - 1 })}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={q.data.page <= 1}
+                  onClick={() => setFilters({ ...filters, page: q.data!.page - 1 })}
+                >
                   <ChevronLeft className="h-4 w-4" /> Prev
                 </Button>
-                <Button size="sm" variant="outline" disabled={q.data.page >= totalPages} onClick={() => setFilters({ ...filters, page: q.data!.page + 1 })}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={q.data.page >= totalPages}
+                  onClick={() => setFilters({ ...filters, page: q.data!.page + 1 })}
+                >
                   Next <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -236,20 +280,32 @@ function AuditDetailDialog({ id, onClose }: { id: string | null; onClose: () => 
           <div className="space-y-3 text-sm">
             <Row label="Time" value={fmtDate(q.data.created_at)} />
             <Row label="Actor" value={q.data.actor?.full_name ?? "system"} />
-            <Row label="Action" value={<code className="font-mono text-xs">{q.data.action}</code>} />
-            <Row label="Entity" value={`${q.data.entity}${q.data.entity_id ? " · " + q.data.entity_id : ""}`} />
+            <Row
+              label="Action"
+              value={<code className="font-mono text-xs">{q.data.action}</code>}
+            />
+            <Row
+              label="Entity"
+              value={`${q.data.entity}${q.data.entity_id ? " · " + q.data.entity_id : ""}`}
+            />
             <Row label="IP" value={q.data.ip ?? "—"} />
             <Row label="User agent" value={q.data.user_agent ?? "—"} />
             {q.data.prev_value !== null && (
               <div>
-                <p className="text-xs font-semibold uppercase text-muted-foreground">Previous value</p>
-                <pre className="mt-1 max-h-40 overflow-auto rounded-md bg-muted p-2 text-[11px]">{JSON.stringify(q.data.prev_value, null, 2)}</pre>
+                <p className="text-xs font-semibold uppercase text-muted-foreground">
+                  Previous value
+                </p>
+                <pre className="mt-1 max-h-40 overflow-auto rounded-md bg-muted p-2 text-[11px]">
+                  {JSON.stringify(q.data.prev_value, null, 2)}
+                </pre>
               </div>
             )}
             {q.data.new_value !== null && (
               <div>
                 <p className="text-xs font-semibold uppercase text-muted-foreground">New value</p>
-                <pre className="mt-1 max-h-40 overflow-auto rounded-md bg-muted p-2 text-[11px]">{JSON.stringify(q.data.new_value, null, 2)}</pre>
+                <pre className="mt-1 max-h-40 overflow-auto rounded-md bg-muted p-2 text-[11px]">
+                  {JSON.stringify(q.data.new_value, null, 2)}
+                </pre>
               </div>
             )}
           </div>

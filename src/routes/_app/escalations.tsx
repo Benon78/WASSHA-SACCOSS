@@ -8,19 +8,26 @@ import { pageHead } from "@/lib/seo";
 import { fmtRelative } from "@/lib/format";
 
 export const Route = createFileRoute("/_app/escalations")({
-  head: () => pageHead({
-    path: "/escalations",
-    title: "My escalated issues — WASSHA SACCOS",
-    description: "Track the assistant escalations you have raised and see when an admin resolves or dismisses them.",
-    noIndex: true,
-  }),
+  head: () =>
+    pageHead({
+      path: "/escalations",
+      title: "My escalated issues — WASSHA SACCOS",
+      description:
+        "Track the assistant escalations you have raised and see when an admin resolves or dismisses them.",
+      noIndex: true,
+    }),
   component: MyEscalationsPage,
 });
 
 type Row = {
-  id: string; category: string; notes: string; status: string;
-  loan_id: string | null; resolution: string | null;
-  created_at: string; updated_at: string;
+  id: string;
+  category: string;
+  notes: string;
+  status: string;
+  loan_id: string | null;
+  resolution: string | null;
+  created_at: string;
+  updated_at: string;
 };
 
 function MyEscalationsPage() {
@@ -42,11 +49,20 @@ function MyEscalationsPage() {
     if (!user) return;
     const ch = supabase
       .channel(`my-esc-${user.id}`)
-      .on("postgres_changes",
-        { event: "*", schema: "public", table: "assistant_escalations", filter: `raised_by=eq.${user.id}` },
-        () => load())
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "assistant_escalations",
+          filter: `raised_by=eq.${user.id}`,
+        },
+        () => load(),
+      )
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+      supabase.removeChannel(ch);
+    };
   }, [user?.id, load]);
 
   return (
@@ -55,7 +71,10 @@ function MyEscalationsPage() {
       <main className="mx-auto max-w-3xl space-y-4 p-4">
         <header>
           <h1 className="text-2xl font-semibold">My escalated issues</h1>
-          <p className="text-sm text-muted-foreground">Issues you raised through the assistant. Admins are notified and you'll get a notification the moment they respond.</p>
+          <p className="text-sm text-muted-foreground">
+            Issues you raised through the assistant. Admins are notified and you'll get a
+            notification the moment they respond.
+          </p>
         </header>
 
         {rows.length === 0 && (
@@ -70,11 +89,17 @@ function MyEscalationsPage() {
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="secondary">{e.category}</Badge>
                 <Badge>{e.status.replace("_", " ")}</Badge>
-                <span className="ml-auto text-xs text-muted-foreground">Raised {fmtRelative(e.created_at)}</span>
+                <span className="ml-auto text-xs text-muted-foreground">
+                  Raised {fmtRelative(e.created_at)}
+                </span>
               </div>
               <p className="mt-2 whitespace-pre-wrap text-sm">{e.notes}</p>
               {e.loan_id && (
-                <Link to="/loans/$loanId" params={{ loanId: e.loan_id }} className="mt-2 inline-block text-xs text-primary underline">
+                <Link
+                  to="/loans/$loanId"
+                  params={{ loanId: e.loan_id }}
+                  className="mt-2 inline-block text-xs text-primary underline"
+                >
                   View related loan →
                 </Link>
               )}

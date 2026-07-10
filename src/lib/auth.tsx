@@ -78,7 +78,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, s) => {
       if (!mounted) return;
 
       // Always keep session/user fresh so bearer attacher sees the newest token.
@@ -92,7 +94,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (nextId && nextId !== currentUserId.current) {
             currentUserId.current = nextId;
             // Defer to avoid running inside the auth callback stack.
-            setTimeout(() => { void loadRoles(nextId); }, 0);
+            setTimeout(() => {
+              void loadRoles(nextId);
+            }, 0);
           } else if (!nextId) {
             currentUserId.current = null;
             setRoles([]);
@@ -101,18 +105,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Record this session so Super Admin Security Center sees it.
           if (nextId && s?.access_token) {
             const marker = s.access_token.split(".").pop()?.slice(-16) ?? nextId;
-            setTimeout(() => { void recordSession({ data: { sessionId: marker } }).catch(() => undefined); }, 0);
+            setTimeout(() => {
+              void recordSession({ data: { sessionId: marker } }).catch(() => undefined);
+            }, 0);
             // Log successful sign-in once per identity transition.
             if (event === "SIGNED_IN") {
-              const provider = (s?.user?.app_metadata as { provider?: string } | undefined)?.provider ?? "email";
+              const provider =
+                (s?.user?.app_metadata as { provider?: string } | undefined)?.provider ?? "email";
               setTimeout(() => {
-                void logAuthEvent({ data: {
-                  eventType: "login",
-                  userId: nextId,
-                  email: s?.user?.email ?? null,
-                  provider,
-                  sessionId: marker,
-                } }).catch(() => undefined);
+                void logAuthEvent({
+                  data: {
+                    eventType: "login",
+                    userId: nextId,
+                    email: s?.user?.email ?? null,
+                    provider,
+                    sessionId: marker,
+                  },
+                }).catch(() => undefined);
               }, 0);
             }
           }
@@ -123,7 +132,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           break;
         case "USER_UPDATED":
           if (s?.user?.id) {
-            setTimeout(() => { void loadRoles(s.user!.id); }, 0);
+            setTimeout(() => {
+              void loadRoles(s.user!.id);
+            }, 0);
           }
           break;
         case "PASSWORD_RECOVERY":
@@ -137,7 +148,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setIsPasswordRecovery(false);
           if (prevId) {
             setTimeout(() => {
-              void logAuthEvent({ data: { eventType: "logout", userId: prevId } }).catch(() => undefined);
+              void logAuthEvent({ data: { eventType: "logout", userId: prevId } }).catch(
+                () => undefined,
+              );
             }, 0);
           }
           // Stop in-flight protected queries before they 401.
@@ -149,7 +162,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           break;
       }
     });
-
 
     // Prime the session on mount (covers hard refresh; onAuthStateChange also
     // fires INITIAL_SESSION but we still need to end the loading flash).
@@ -188,7 +200,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       subscription.unsubscribe();
     };
   }, [loadRoles, queryClient]);
-
 
   const permCtx = { roles, boardSeats };
 

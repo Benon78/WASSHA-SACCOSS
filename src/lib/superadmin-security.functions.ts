@@ -30,15 +30,26 @@ async function assertCallerPassword(callerId: string, password: string) {
 
 type Meta = { ip: string | null; ua: string | null; sid: string | null };
 async function writeAudit(a: {
-  action: string; entity: string; entityId: string | null;
-  prev?: unknown; next?: unknown; summary: string;
-  actorId: string; meta: Meta;
+  action: string;
+  entity: string;
+  entityId: string | null;
+  prev?: unknown;
+  next?: unknown;
+  summary: string;
+  actorId: string;
+  meta: Meta;
 }) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   await supabaseAdmin.from("audit_log").insert({
-    actor_id: a.actorId, action: a.action, entity: a.entity, entity_id: a.entityId,
-    ip: a.meta.ip, user_agent: a.meta.ua, session_id: a.meta.sid,
-    prev_value: (a.prev ?? null) as never, new_value: (a.next ?? null) as never,
+    actor_id: a.actorId,
+    action: a.action,
+    entity: a.entity,
+    entity_id: a.entityId,
+    ip: a.meta.ip,
+    user_agent: a.meta.ua,
+    session_id: a.meta.sid,
+    prev_value: (a.prev ?? null) as never,
+    new_value: (a.next ?? null) as never,
     meta: { summary: a.summary, source: "superadmin" } as never,
   });
 }
@@ -55,21 +66,35 @@ export const getSecurityOverview = createServerFn({ method: "GET" })
     const since7d = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
 
     const [failed24, failed7d, locked, active, recentFailed, recentLogins] = await Promise.all([
-      supabaseAdmin.from("auth_events").select("*", { count: "exact", head: true })
-        .eq("event_type", "failed_login").gte("created_at", since24),
-      supabaseAdmin.from("auth_events").select("*", { count: "exact", head: true })
-        .eq("event_type", "failed_login").gte("created_at", since7d),
-      supabaseAdmin.from("auth_events").select("*", { count: "exact", head: true })
-        .eq("event_type", "account_locked").gte("created_at", since7d),
-      supabaseAdmin.from("user_sessions").select("*", { count: "exact", head: true })
-        .is("revoked_at", null).gte("last_seen", since24),
-      supabaseAdmin.from("auth_events")
+      supabaseAdmin
+        .from("auth_events")
+        .select("*", { count: "exact", head: true })
+        .eq("event_type", "failed_login")
+        .gte("created_at", since24),
+      supabaseAdmin
+        .from("auth_events")
+        .select("*", { count: "exact", head: true })
+        .eq("event_type", "failed_login")
+        .gte("created_at", since7d),
+      supabaseAdmin
+        .from("auth_events")
+        .select("*", { count: "exact", head: true })
+        .eq("event_type", "account_locked")
+        .gte("created_at", since7d),
+      supabaseAdmin
+        .from("user_sessions")
+        .select("*", { count: "exact", head: true })
+        .is("revoked_at", null)
+        .gte("last_seen", since24),
+      supabaseAdmin
+        .from("auth_events")
         .select("id, user_id, email, ip, user_agent, created_at, event_type")
         .eq("event_type", "failed_login")
         .gte("created_at", since7d)
         .order("created_at", { ascending: false })
         .limit(50),
-      supabaseAdmin.from("auth_events")
+      supabaseAdmin
+        .from("auth_events")
         .select("id, user_id, email, ip, user_agent, created_at, event_type")
         .in("event_type", ["login", "password_reset", "account_unlocked"])
         .gte("created_at", since7d)
@@ -78,42 +103,71 @@ export const getSecurityOverview = createServerFn({ method: "GET" })
     ]);
 
     // group failed logins by IP for a simple "suspicious" list
-    const ipCount = new Map<string, { ip: string; attempts: number; last: string; lastEmail: string | null }>();
+    const ipCount = new Map<
+      string,
+      { ip: string; attempts: number; last: string; lastEmail: string | null }
+    >();
     for (const e of recentFailed.data ?? []) {
       const key = e.ip == null ? "unknown" : String(e.ip);
-      const cur = ipCount.get(key) ?? { ip: key, attempts: 0, last: e.created_at, lastEmail: e.email };
+      const cur = ipCount.get(key) ?? {
+        ip: key,
+        attempts: 0,
+        last: e.created_at,
+        lastEmail: e.email,
+      };
       cur.attempts += 1;
-      if (e.created_at > cur.last) { cur.last = e.created_at; cur.lastEmail = e.email; }
+      if (e.created_at > cur.last) {
+        cur.last = e.created_at;
+        cur.lastEmail = e.email;
+      }
       ipCount.set(key, cur);
     }
-    const suspiciousIps = [...ipCount.values()].filter((r) => r.attempts >= 5).sort((a, b) => b.attempts - a.attempts).slice(0, 10);
+    const suspiciousIps = [...ipCount.values()]
+      .filter((r) => r.attempts >= 5)
+      .sort((a, b) => b.attempts - a.attempts)
+      .slice(0, 10);
 
     return {
       failedLogins24h: failed24.count ?? 0,
       failedLogins7d: failed7d.count ?? 0,
       lockedAccounts7d: locked.count ?? 0,
       activeSessions24h: active.count ?? 0,
-      recentFailed: (recentFailed.data ?? []).map((e) => ({ ...e, ip: e.ip == null ? null : String(e.ip) })),
-      recentLogins: (recentLogins.data ?? []).map((e) => ({ ...e, ip: e.ip == null ? null : String(e.ip) })),
+      recentFailed: (recentFailed.data ?? []).map((e) => ({
+        ...e,
+        ip: e.ip == null ? null : String(e.ip),
+      })),
+      recentLogins: (recentLogins.data ?? []).map((e) => ({
+        ...e,
+        ip: e.ip == null ? null : String(e.ip),
+      })),
       suspiciousIps,
     };
   });
 
 export const listActiveSessions = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((i: unknown) =>
-    z.object({
-      page: z.number().int().min(1).max(10_000).default(1),
-      pageSize: z.number().int().min(10).max(100).default(50),
-    }).parse(i),
+  .validator((i: unknown) =>
+    z
+      .object({
+        page: z.number().int().min(1).max(10_000).default(1),
+        pageSize: z.number().int().min(10).max(100).default(50),
+      })
+      .parse(i),
   )
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const from = (data.page - 1) * data.pageSize;
     const to = from + data.pageSize - 1;
-    const { data: rows, count, error } = await supabaseAdmin
+    const {
+      data: rows,
+      count,
+      error,
+    } = await supabaseAdmin
       .from("user_sessions")
-      .select("id, user_id, session_id, ip, user_agent, device, browser, os, location, last_seen, created_at", { count: "exact" })
+      .select(
+        "id, user_id, session_id, ip, user_agent, device, browser, os, location, last_seen, created_at",
+        { count: "exact" },
+      )
       .is("revoked_at", null)
       .order("last_seen", { ascending: false })
       .range(from, to);
@@ -121,10 +175,14 @@ export const listActiveSessions = createServerFn({ method: "POST" })
 
     const ids = [...new Set((rows ?? []).map((r) => r.user_id))];
     const { data: profiles } = ids.length
-      ? await supabaseAdmin.from("profiles").select("user_id, full_name, member_number").in("user_id", ids)
+      ? await supabaseAdmin
+          .from("profiles")
+          .select("user_id, full_name, member_number")
+          .in("user_id", ids)
       : { data: [] as { user_id: string; full_name: string; member_number: string | null }[] };
     const pmap = new Map<string, { full_name: string; member_number: string | null }>();
-    for (const p of profiles ?? []) pmap.set(p.user_id, { full_name: p.full_name, member_number: p.member_number });
+    for (const p of profiles ?? [])
+      pmap.set(p.user_id, { full_name: p.full_name, member_number: p.member_number });
 
     return {
       total: count ?? 0,
@@ -140,14 +198,17 @@ export const listActiveSessions = createServerFn({ method: "POST" })
 
 export const terminateSession = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((i: unknown) =>
+  .validator((i: unknown) =>
     z.object({ sessionId: z.string().uuid(), password: z.string().min(1).max(128) }).parse(i),
   )
   .handler(async ({ data, context }) => {
     await assertCallerPassword(context.userId, data.password);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: prev } = await supabaseAdmin
-      .from("user_sessions").select("*").eq("id", data.sessionId).maybeSingle();
+      .from("user_sessions")
+      .select("*")
+      .eq("id", data.sessionId)
+      .maybeSingle();
     if (!prev) throw new Response("Session not found", { status: 404 });
 
     const { error } = await supabaseAdmin
@@ -160,10 +221,14 @@ export const terminateSession = createServerFn({ method: "POST" })
     await supabaseAdmin.auth.admin.signOut(prev.user_id, "global").catch(() => undefined);
 
     await writeAudit({
-      action: "session.terminate", entity: "user_sessions", entityId: data.sessionId,
-      prev, next: { ...prev, revoked_at: "now()", revoked_by: context.userId },
+      action: "session.terminate",
+      entity: "user_sessions",
+      entityId: data.sessionId,
+      prev,
+      next: { ...prev, revoked_at: "now()", revoked_by: context.userId },
       summary: `Terminated session for user ${prev.user_id}`,
-      actorId: context.userId, meta: context.requestMeta,
+      actorId: context.userId,
+      meta: context.requestMeta,
     });
     return { ok: true };
   });
@@ -185,7 +250,7 @@ const listAuditInput = z.object({
 
 export const listAuditEvents = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((i: unknown) => listAuditInput.parse(i))
+  .validator((i: unknown) => listAuditInput.parse(i))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const from = (data.page - 1) * data.pageSize;
@@ -193,7 +258,10 @@ export const listAuditEvents = createServerFn({ method: "POST" })
 
     let q = supabaseAdmin
       .from("audit_log")
-      .select("id, actor_id, action, entity, entity_id, ip, user_agent, session_id, meta, created_at", { count: "exact" })
+      .select(
+        "id, actor_id, action, entity, entity_id, ip, user_agent, session_id, meta, created_at",
+        { count: "exact" },
+      )
       .order("created_at", { ascending: false })
       .range(from, to);
     if (data.entity) q = q.eq("entity", data.entity);
@@ -208,10 +276,14 @@ export const listAuditEvents = createServerFn({ method: "POST" })
 
     const ids = [...new Set((rows ?? []).map((r) => r.actor_id).filter((v): v is string => !!v))];
     const { data: profiles } = ids.length
-      ? await supabaseAdmin.from("profiles").select("user_id, full_name, member_number").in("user_id", ids)
+      ? await supabaseAdmin
+          .from("profiles")
+          .select("user_id, full_name, member_number")
+          .in("user_id", ids)
       : { data: [] as { user_id: string; full_name: string; member_number: string | null }[] };
     const pmap = new Map<string, { full_name: string; member_number: string | null }>();
-    for (const p of profiles ?? []) pmap.set(p.user_id, { full_name: p.full_name, member_number: p.member_number });
+    for (const p of profiles ?? [])
+      pmap.set(p.user_id, { full_name: p.full_name, member_number: p.member_number });
 
     return {
       total: count ?? 0,
@@ -220,26 +292,31 @@ export const listAuditEvents = createServerFn({ method: "POST" })
       rows: (rows ?? []).map((r) => ({
         ...r,
         ip: r.ip == null ? null : String(r.ip),
-        actor: r.actor_id ? pmap.get(r.actor_id) ?? null : null,
+        actor: r.actor_id ? (pmap.get(r.actor_id) ?? null) : null,
       })),
     };
   });
 
 export const getAuditDetail = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((i: unknown) => z.object({ id: z.string().uuid() }).parse(i))
+  .validator((i: unknown) => z.object({ id: z.string().uuid() }).parse(i))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row, error } = await supabaseAdmin
       .from("audit_log")
-      .select("id, actor_id, action, entity, entity_id, ip, user_agent, session_id, meta, prev_value, new_value, created_at")
+      .select(
+        "id, actor_id, action, entity, entity_id, ip, user_agent, session_id, meta, prev_value, new_value, created_at",
+      )
       .eq("id", data.id)
       .maybeSingle();
     if (error || !row) throw new Response("Not found", { status: 404 });
     let actor: { full_name: string; member_number: string | null } | null = null;
     if (row.actor_id) {
       const { data: p } = await supabaseAdmin
-        .from("profiles").select("full_name, member_number").eq("user_id", row.actor_id).maybeSingle();
+        .from("profiles")
+        .select("full_name, member_number")
+        .eq("user_id", row.actor_id)
+        .maybeSingle();
       actor = p ?? null;
     }
     return { ...row, ip: row.ip == null ? null : String(row.ip), actor };
@@ -248,21 +325,25 @@ export const getAuditDetail = createServerFn({ method: "POST" })
 /** Export audit rows (paginated) as CSV. Export itself is audited. */
 export const exportAuditCsv = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((i: unknown) =>
-    z.object({
-      password: z.string().min(1).max(128),
-      fromDate: z.string().datetime().optional(),
-      toDate: z.string().datetime().optional(),
-      entity: z.string().trim().max(64).optional(),
-      limit: z.number().int().min(1).max(10_000).default(1000),
-    }).parse(i),
+  .validator((i: unknown) =>
+    z
+      .object({
+        password: z.string().min(1).max(128),
+        fromDate: z.string().datetime().optional(),
+        toDate: z.string().datetime().optional(),
+        entity: z.string().trim().max(64).optional(),
+        limit: z.number().int().min(1).max(10_000).default(1000),
+      })
+      .parse(i),
   )
   .handler(async ({ data, context }) => {
     await assertCallerPassword(context.userId, data.password);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     let q = supabaseAdmin
       .from("audit_log")
-      .select("id, actor_id, action, entity, entity_id, ip, user_agent, session_id, meta, created_at")
+      .select(
+        "id, actor_id, action, entity, entity_id, ip, user_agent, session_id, meta, created_at",
+      )
       .order("created_at", { ascending: false })
       .limit(data.limit);
     if (data.fromDate) q = q.gte("created_at", data.fromDate);
@@ -275,22 +356,50 @@ export const exportAuditCsv = createServerFn({ method: "POST" })
       const s = v == null ? "" : typeof v === "string" ? v : JSON.stringify(v);
       return `"${s.replace(/"/g, '""')}"`;
     };
-    const headers = ["id", "created_at", "actor_id", "action", "entity", "entity_id", "ip", "user_agent", "summary"];
+    const headers = [
+      "id",
+      "created_at",
+      "actor_id",
+      "action",
+      "entity",
+      "entity_id",
+      "ip",
+      "user_agent",
+      "summary",
+    ];
     const lines = [headers.join(",")];
     for (const r of rows ?? []) {
       const summary = (r.meta as { summary?: string } | null)?.summary ?? "";
-      lines.push([
-        r.id, r.created_at, r.actor_id ?? "", r.action, r.entity, r.entity_id ?? "",
-        r.ip == null ? "" : String(r.ip), r.user_agent ?? "", summary,
-      ].map(escape).join(","));
+      lines.push(
+        [
+          r.id,
+          r.created_at,
+          r.actor_id ?? "",
+          r.action,
+          r.entity,
+          r.entity_id ?? "",
+          r.ip == null ? "" : String(r.ip),
+          r.user_agent ?? "",
+          summary,
+        ]
+          .map(escape)
+          .join(","),
+      );
     }
     const csv = lines.join("\n");
 
     await writeAudit({
-      action: "audit.export", entity: "audit_log", entityId: null,
-      prev: null, next: { rows: rows?.length ?? 0, filters: { entity: data.entity, fromDate: data.fromDate, toDate: data.toDate } },
+      action: "audit.export",
+      entity: "audit_log",
+      entityId: null,
+      prev: null,
+      next: {
+        rows: rows?.length ?? 0,
+        filters: { entity: data.entity, fromDate: data.fromDate, toDate: data.toDate },
+      },
       summary: `Exported ${rows?.length ?? 0} audit rows as CSV`,
-      actorId: context.userId, meta: context.requestMeta,
+      actorId: context.userId,
+      meta: context.requestMeta,
     });
     return { csv, rows: rows?.length ?? 0 };
   });
@@ -312,12 +421,19 @@ const SETTING_KEYS = [
 
 const DEFAULTS: Record<(typeof SETTING_KEYS)[number], unknown> = {
   "security.password_policy": {
-    min_length: 12, require_upper: true, require_lower: true, require_digit: true, require_symbol: true,
-    reuse_prevention: 5, max_age_days: 180,
+    min_length: 12,
+    require_upper: true,
+    require_lower: true,
+    require_digit: true,
+    require_symbol: true,
+    reuse_prevention: 5,
+    max_age_days: 180,
   },
   "security.session": {
-    inactivity_timeout_minutes: 30, absolute_timeout_hours: 12,
-    mfa_required_for_admins: true, ip_change_reauth: true,
+    inactivity_timeout_minutes: 30,
+    absolute_timeout_hours: 12,
+    mfa_required_for_admins: true,
+    ip_change_reauth: true,
   },
   "notifications.templates": {
     loan_approved: "Loan {{loan_number}} for {{amount}} has been approved.",
@@ -342,16 +458,23 @@ export const listSettings = createServerFn({ method: "GET" })
     if (error) throw new Response(error.message, { status: 500 });
 
     type JsonVal = string | number | boolean | null | JsonVal[] | { [k: string]: JsonVal };
-    const map = new Map<string, { value: JsonVal; version: number; updated_by: string | null; created_at: string }>();
-    for (const r of data ?? []) map.set(r.key, {
-      value: r.value as JsonVal, version: r.version, updated_by: r.updated_by, created_at: r.created_at,
-    });
+    const map = new Map<
+      string,
+      { value: JsonVal; version: number; updated_by: string | null; created_at: string }
+    >();
+    for (const r of data ?? [])
+      map.set(r.key, {
+        value: r.value as JsonVal,
+        version: r.version,
+        updated_by: r.updated_by,
+        created_at: r.created_at,
+      });
 
     return SETTING_KEYS.map((key) => {
       const cur = map.get(key);
       return {
         key,
-        value: (cur?.value ?? (DEFAULTS[key] as JsonVal)),
+        value: cur?.value ?? (DEFAULTS[key] as JsonVal),
         version: cur?.version ?? 0,
         updated_by: cur?.updated_by ?? null,
         updated_at: cur?.created_at ?? null,
@@ -362,7 +485,7 @@ export const listSettings = createServerFn({ method: "GET" })
 
 export const getSettingHistory = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((i: unknown) => z.object({ key: z.string().min(1).max(120) }).parse(i))
+  .validator((i: unknown) => z.object({ key: z.string().min(1).max(120) }).parse(i))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: rows, error } = await supabaseAdmin
@@ -401,12 +524,14 @@ const settingSchemas: Record<(typeof SETTING_KEYS)[number], z.ZodType> = {
 
 export const updateSetting = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((i: unknown) =>
-    z.object({
-      key: z.enum(SETTING_KEYS),
-      value: z.unknown(),
-      password: z.string().min(1).max(128),
-    }).parse(i),
+  .validator((i: unknown) =>
+    z
+      .object({
+        key: z.enum(SETTING_KEYS),
+        value: z.unknown(),
+        password: z.string().min(1).max(128),
+      })
+      .parse(i),
   )
   .handler(async ({ data, context }) => {
     await assertCallerPassword(context.userId, data.password);
@@ -425,7 +550,9 @@ export const updateSetting = createServerFn({ method: "POST" })
     // Demote previous current row (if any)
     if (prev) {
       const demote = await supabaseAdmin
-        .from("system_settings").update({ is_current: false }).eq("id", prev.id);
+        .from("system_settings")
+        .update({ is_current: false })
+        .eq("id", prev.id);
       if (demote.error) throw new Response(demote.error.message, { status: 500 });
     }
     const { data: created, error } = await supabaseAdmin
@@ -441,15 +568,20 @@ export const updateSetting = createServerFn({ method: "POST" })
       .single();
     if (error) {
       // rollback demotion best-effort
-      if (prev) await supabaseAdmin.from("system_settings").update({ is_current: true }).eq("id", prev.id);
+      if (prev)
+        await supabaseAdmin.from("system_settings").update({ is_current: true }).eq("id", prev.id);
       throw new Response(error.message, { status: 400 });
     }
 
     await writeAudit({
-      action: "settings.update", entity: "system_settings", entityId: created.id,
-      prev: prev?.value ?? null, next: parsed,
+      action: "settings.update",
+      entity: "system_settings",
+      entityId: created.id,
+      prev: prev?.value ?? null,
+      next: parsed,
       summary: `Updated setting "${data.key}" → v${created.version}`,
-      actorId: context.userId, meta: context.requestMeta,
+      actorId: context.userId,
+      meta: context.requestMeta,
     });
     return { ok: true, version: created.version };
   });

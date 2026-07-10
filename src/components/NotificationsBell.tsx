@@ -9,8 +9,13 @@ import { useAuth } from "@/lib/auth";
 import { fmtRelative } from "@/lib/format";
 
 interface Notif {
-  id: string; type: string; title: string; body: string | null;
-  link: string | null; read: boolean; created_at: string;
+  id: string;
+  type: string;
+  title: string;
+  body: string | null;
+  link: string | null;
+  read: boolean;
+  created_at: string;
 }
 
 export function NotificationsBell() {
@@ -39,27 +44,46 @@ export function NotificationsBell() {
       .channel(`user-notif-${user.id}`, { config: { private: true } } as any)
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
-        (p) => setItems((prev) => [p.new as Notif, ...prev])
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${user.id}`,
+        },
+        (p) => setItems((prev) => [p.new as Notif, ...prev]),
       )
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
-        (p) => setItems((prev) => prev.map((i) => i.id === (p.new as Notif).id ? (p.new as Notif) : i))
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${user.id}`,
+        },
+        (p) =>
+          setItems((prev) =>
+            prev.map((i) => (i.id === (p.new as Notif).id ? (p.new as Notif) : i)),
+          ),
       )
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+      supabase.removeChannel(ch);
+    };
   }, [user?.id]);
 
   const markAll = async () => {
     if (!user) return;
-    await supabase.from("notifications").update({ read: true }).eq("user_id", user.id).eq("read", false);
+    await supabase
+      .from("notifications")
+      .update({ read: true })
+      .eq("user_id", user.id)
+      .eq("read", false);
     setItems((prev) => prev.map((i) => ({ ...i, read: true })));
   };
 
   const markOne = async (id: string) => {
     await supabase.from("notifications").update({ read: true }).eq("id", id);
-    setItems((prev) => prev.map((i) => i.id === id ? { ...i, read: true } : i));
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, read: true } : i)));
   };
 
   return (
@@ -86,10 +110,17 @@ export function NotificationsBell() {
         {types.length > 0 && (
           <div className="flex flex-wrap gap-1 border-b border-border/60 p-2">
             {["all", ...types].map((t) => (
-              <button key={t} onClick={() => setFilter(t)}
+              <button
+                key={t}
+                onClick={() => setFilter(t)}
                 className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase transition ${
-                  filter === t ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/70"
-                }`}>{t.replace("_", " ")}</button>
+                  filter === t
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-muted/70"
+                }`}
+              >
+                {t.replace("_", " ")}
+              </button>
             ))}
           </div>
         )}
@@ -101,18 +132,32 @@ export function NotificationsBell() {
               {visible.map((n) => {
                 const Inner = (
                   <div className="flex w-full items-start gap-2 p-3 text-left">
-                    <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${n.read ? "bg-muted" : "bg-primary"}`} />
+                    <span
+                      className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${n.read ? "bg-muted" : "bg-primary"}`}
+                    />
                     <div className="flex-1">
                       <p className="text-sm font-medium leading-snug">{n.title}</p>
                       {n.body && <p className="mt-0.5 text-xs text-muted-foreground">{n.body}</p>}
-                      <p className="mt-1 text-[10px] text-muted-foreground">{fmtRelative(n.created_at)}</p>
+                      <p className="mt-1 text-[10px] text-muted-foreground">
+                        {fmtRelative(n.created_at)}
+                      </p>
                     </div>
                     {n.read && <Check className="h-3 w-3 text-muted-foreground" />}
                   </div>
                 );
                 return (
-                  <li key={n.id} className={n.read ? "" : "bg-primary/5"} onClick={() => markOne(n.id)}>
-                    {n.link ? <Link to={n.link} className="block hover:bg-muted/50">{Inner}</Link> : Inner}
+                  <li
+                    key={n.id}
+                    className={n.read ? "" : "bg-primary/5"}
+                    onClick={() => markOne(n.id)}
+                  >
+                    {n.link ? (
+                      <Link to={n.link} className="block hover:bg-muted/50">
+                        {Inner}
+                      </Link>
+                    ) : (
+                      Inner
+                    )}
                   </li>
                 );
               })}
@@ -120,7 +165,9 @@ export function NotificationsBell() {
           )}
         </ScrollArea>
         <div className="border-t border-border/60 p-2 text-center">
-          <Link to="/notifications" className="text-xs font-medium text-primary hover:underline">View all notifications →</Link>
+          <Link to="/notifications" className="text-xs font-medium text-primary hover:underline">
+            View all notifications →
+          </Link>
         </div>
       </PopoverContent>
     </Popover>

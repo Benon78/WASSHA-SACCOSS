@@ -6,13 +6,7 @@
  * source of truth — these helpers only decide what to render.
  */
 
-export type AppRole =
-  | "member"
-  | "approver"
-  | "finance"
-  | "manager"
-  | "admin"
-  | "super_admin";
+export type AppRole = "member" | "approver" | "finance" | "manager" | "admin" | "super_admin";
 
 export type BoardSeat = "chair" | "member_1" | "member_2";
 
@@ -50,13 +44,7 @@ const ROLE_RANK: Record<AppRole, number> = {
   super_admin: 100,
 };
 
-export const STAFF_ROLES: AppRole[] = [
-  "approver",
-  "finance",
-  "manager",
-  "admin",
-  "super_admin",
-];
+export const STAFF_ROLES: AppRole[] = ["approver", "finance", "manager", "admin", "super_admin"];
 
 export interface PermissionContext {
   roles: AppRole[];
@@ -121,7 +109,9 @@ export type Permission =
   | "board.act";
 
 const PERMISSION_MATRIX: Record<Permission, (ctx: PermissionContext) => boolean> = {
-  "loans.approve": (ctx) => hasAnyRole(ctx, ["approver", "finance", "manager", "admin", "super_admin"]) || isBoardMember(ctx),
+  "loans.approve": (ctx) =>
+    hasAnyRole(ctx, ["approver", "finance", "manager", "admin", "super_admin"]) ||
+    isBoardMember(ctx),
   "loans.disburse": (ctx) => hasAnyRole(ctx, ["manager", "admin", "super_admin"]),
   "loans.register_existing": (ctx) => hasAnyRole(ctx, ["admin", "super_admin"]),
   "members.manage": (ctx) => hasAnyRole(ctx, ["admin", "super_admin"]),

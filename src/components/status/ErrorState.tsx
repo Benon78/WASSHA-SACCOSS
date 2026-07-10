@@ -1,4 +1,12 @@
-import { AlertCircle, RefreshCcw, Home, WifiOff, ShieldAlert, Clock, ServerCrash } from "lucide-react";
+import {
+  AlertCircle,
+  RefreshCcw,
+  Home,
+  WifiOff,
+  ShieldAlert,
+  Clock,
+  ServerCrash,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
@@ -33,7 +41,8 @@ const PRESET: Record<ErrorKind, { icon: LucideIcon; title: string; description: 
   forbidden: {
     icon: ShieldAlert,
     title: "You don't have access",
-    description: "Your account doesn't have permission to view this page. Contact an admin if you think this is a mistake.",
+    description:
+      "Your account doesn't have permission to view this page. Contact an admin if you think this is a mistake.",
   },
   session: {
     icon: Clock,
@@ -59,14 +68,14 @@ export function classifyError(err: unknown): ErrorKind {
   const msg = (anyErr.message ?? "").toLowerCase();
   const status = anyErr.status;
 
-  if (status === 401 || /jwt|unauthorized|invalid.*token|session.*expired/.test(msg)) return "session";
-  if (status === 403 || /forbidden|permission denied|row-level security|not authorized/.test(msg)) return "forbidden";
+  if (status === 401 || /jwt|unauthorized|invalid.*token|session.*expired/.test(msg))
+    return "session";
+  if (status === 403 || /forbidden|permission denied|row-level security|not authorized/.test(msg))
+    return "forbidden";
   if (status === 404 || /not.?found/.test(msg)) return "notfound";
   if (typeof status === "number" && status >= 500) return "server";
-  if (
-    anyErr.name === "TypeError" &&
-    /fetch|network|failed to fetch|load failed/.test(msg)
-  ) return "network";
+  if (anyErr.name === "TypeError" && /fetch|network|failed to fetch|load failed/.test(msg))
+    return "network";
   if (/network|offline|failed to fetch|net::/.test(msg)) return "network";
   return "generic";
 }

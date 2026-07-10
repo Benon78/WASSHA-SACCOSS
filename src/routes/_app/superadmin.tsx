@@ -1,11 +1,27 @@
 import { createFileRoute, Outlet, Link, Navigate, useLocation } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import { AppHeader } from "@/components/AppHeader";
-import { Shield, LayoutDashboard, Users, KeyRound, Building2, ScrollText, Activity, ShieldAlert, Settings2, Bot, Database, Bell, Cog } from "lucide-react";
+import {
+  Shield,
+  LayoutDashboard,
+  Users,
+  KeyRound,
+  Building2,
+  ScrollText,
+  Activity,
+  ShieldAlert,
+  Settings2,
+  Bot,
+  Database,
+  Bell,
+  Cog,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_app/superadmin")({
-  head: () => ({ meta: [{ title: "Super Admin — WASSHA SACCOS" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({
+    meta: [{ title: "Super Admin — WASSHA SACCOS" }, { name: "robots", content: "noindex" }],
+  }),
   component: SuperAdminLayout,
 });
 

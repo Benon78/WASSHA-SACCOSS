@@ -5,7 +5,11 @@ import { cn } from "@/lib/utils";
 /** Inline spinner for buttons and small regions. */
 export function Spinner({ className, label }: { className?: string; label?: string }) {
   return (
-    <span role="status" aria-live="polite" className={cn("inline-flex items-center gap-2 text-sm text-muted-foreground", className)}>
+    <span
+      role="status"
+      aria-live="polite"
+      className={cn("inline-flex items-center gap-2 text-sm text-muted-foreground", className)}
+    >
       <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
       {label && <span>{label}</span>}
       {!label && <span className="sr-only">Loading</span>}
@@ -26,13 +30,20 @@ export function PageLoader({ label = "Loading…" }: { label?: string }) {
 export function TableSkeleton({ rows = 6, cols = 4 }: { rows?: number; cols?: number }) {
   return (
     <div role="status" aria-label="Loading data" className="space-y-2">
-      <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
+      <div
+        className="grid gap-3"
+        style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+      >
         {Array.from({ length: cols }).map((_, i) => (
           <Skeleton key={`h-${i}`} className="h-4 w-24" />
         ))}
       </div>
       {Array.from({ length: rows }).map((_, r) => (
-        <div key={r} className="grid gap-3" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
+        <div
+          key={r}
+          className="grid gap-3"
+          style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+        >
           {Array.from({ length: cols }).map((_, c) => (
             <Skeleton key={c} className="h-6 w-full" />
           ))}

@@ -53,7 +53,6 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
-
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
@@ -64,12 +63,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:site_name", content: "WASSHA SACCOS" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/smfIg4vFevcom7fmKb37R3n7jP53/social-images/social-1778231011056-logo.webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/smfIg4vFevcom7fmKb37R3n7jP53/social-images/social-1778231011056-logo.webp" },
+      {
+        property: "og:image",
+        content:
+          "https://storage.googleapis.com/gpt-engineer-file-uploads/smfIg4vFevcom7fmKb37R3n7jP53/social-images/social-1778231011056-logo.webp",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://storage.googleapis.com/gpt-engineer-file-uploads/smfIg4vFevcom7fmKb37R3n7jP53/social-images/social-1778231011056-logo.webp",
+      },
     ],
-    links: [
-      { rel: "stylesheet", href: appCss },
-    ],
+    links: [{ rel: "stylesheet", href: appCss }],
     scripts: [
       {
         type: "application/ld+json",
@@ -132,4 +137,3 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
-

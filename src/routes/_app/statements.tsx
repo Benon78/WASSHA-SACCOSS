@@ -14,19 +14,23 @@ import { FileDown, FileSpreadsheet, FileText } from "lucide-react";
 import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/_app/statements")({
-  head: () => pageHead({
-    path: "/statements",
-    title: "Statements — WASSHA SACCOS",
-    description: "Download monthly savings, contributions, and loan repayment statements as PDF or CSV.",
-    noIndex: true,
-  }),
+  head: () =>
+    pageHead({
+      path: "/statements",
+      title: "Statements — WASSHA SACCOS",
+      description:
+        "Download monthly savings, contributions, and loan repayment statements as PDF or CSV.",
+      noIndex: true,
+    }),
   component: StatementsPage,
 });
 
 function StatementsPage() {
   const { user } = useAuth();
   const [profile, setProfile] = useState<any>(null);
-  const [from, setFrom] = useState(() => new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0, 10));
+  const [from, setFrom] = useState(() =>
+    new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0, 10),
+  );
   const [to, setTo] = useState(() => new Date().toISOString().slice(0, 10));
   const [txs, setTxs] = useState<any[]>([]);
   const [loans, setLoans] = useState<any[]>([]);
@@ -34,7 +38,11 @@ function StatementsPage() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data: p } = await supabase.from("profiles").select("*").eq("user_id", user.id).maybeSingle();
+      const { data: p } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
       setProfile(p);
     })();
   }, [user?.id]);
@@ -44,11 +52,21 @@ function StatementsPage() {
     const fromIso = new Date(from).toISOString();
     const toIso = new Date(new Date(to).getTime() + 86400000).toISOString();
     const [{ data: t }, { data: l }] = await Promise.all([
-      supabase.from("transactions").select("*").eq("user_id", user.id)
-        .gte("created_at", fromIso).lt("created_at", toIso).order("created_at", { ascending: true }),
-      supabase.from("loans").select("*").eq("member_id", user.id).order("created_at", { ascending: false }),
+      supabase
+        .from("transactions")
+        .select("*")
+        .eq("user_id", user.id)
+        .gte("created_at", fromIso)
+        .lt("created_at", toIso)
+        .order("created_at", { ascending: true }),
+      supabase
+        .from("loans")
+        .select("*")
+        .eq("member_id", user.id)
+        .order("created_at", { ascending: false }),
     ]);
-    setTxs(t ?? []); setLoans(l ?? []);
+    setTxs(t ?? []);
+    setLoans(l ?? []);
     return { txs: t ?? [], loans: l ?? [] };
   };
 
@@ -65,29 +83,47 @@ function StatementsPage() {
     const opening = Number(profile?.opening_balance ?? 0);
     const isCredit = (t: string) => ["deposit", "contribution"].includes(t);
     const closing = rows.reduce(
-      (s, t) => s + (isCredit(t.tx_type) ? Number(t.amount) : (["withdrawal", "fee"].includes(t.tx_type) ? -Number(t.amount) : 0)),
+      (s, t) =>
+        s +
+        (isCredit(t.tx_type)
+          ? Number(t.amount)
+          : ["withdrawal", "fee"].includes(t.tx_type)
+            ? -Number(t.amount)
+            : 0),
       opening,
     );
     const doc = savingsStatementPdf({
       header: { ...headerInfo, title: "Savings Statement" },
-      txs: rows, openingBalance: opening, closingBalance: closing,
+      txs: rows,
+      openingBalance: opening,
+      closingBalance: closing,
     });
     doc.save(`savings-statement-${profile?.member_number ?? "member"}-${from}-${to}.pdf`);
   };
 
   const downloadSavingsCsv = () => {
-    downloadCSV(`savings-${from}-${to}.csv`, txs.map((t) => ({
-      date: t.created_at, type: t.tx_type, description: t.description ?? "", amount: t.amount,
-    })));
+    downloadCSV(
+      `savings-${from}-${to}.csv`,
+      txs.map((t) => ({
+        date: t.created_at,
+        type: t.tx_type,
+        description: t.description ?? "",
+        amount: t.amount,
+      })),
+    );
   };
 
   const downloadLoanPdf = async (loan: any) => {
-    const { data: rep } = await supabase.from("transactions").select("*")
-      .eq("user_id", user!.id).eq("tx_type", "repayment")
+    const { data: rep } = await supabase
+      .from("transactions")
+      .select("*")
+      .eq("user_id", user!.id)
+      .eq("tx_type", "repayment")
       .order("created_at", { ascending: true });
     const doc = loanRepaymentPdf({
       header: { ...headerInfo, title: "Loan Repayment Statement", subtitle: loan.loan_number },
-      loan, repayments: rep ?? [],
+      loan,
+      repayments: rep ?? [],
     });
     doc.save(`loan-${loan.loan_number}.pdf`);
   };
@@ -100,23 +136,38 @@ function StatementsPage() {
 
         <section className="rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
           <h2 className="text-base font-semibold">Savings statement</h2>
-          <p className="text-xs text-muted-foreground">Download your full transaction history with running balance.</p>
+          <p className="text-xs text-muted-foreground">
+            Download your full transaction history with running balance.
+          </p>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
-            <div><Label>From</Label><Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></div>
-            <div><Label>To</Label><Input type="date" value={to} onChange={(e) => setTo(e.target.value)} /></div>
+            <div>
+              <Label>From</Label>
+              <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+            </div>
+            <div>
+              <Label>To</Label>
+              <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+            </div>
             <div className="flex items-end gap-2">
-              <Button onClick={fetchData} variant="outline" size="sm">Refresh</Button>
+              <Button onClick={fetchData} variant="outline" size="sm">
+                Refresh
+              </Button>
             </div>
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
-            <Button onClick={downloadSavingsPdf} className="bg-[image:var(--gradient-primary)] text-primary-foreground">
+            <Button
+              onClick={downloadSavingsPdf}
+              className="bg-[image:var(--gradient-primary)] text-primary-foreground"
+            >
               <FileDown className="mr-2 h-4 w-4" /> Download PDF
             </Button>
             <Button onClick={downloadSavingsCsv} variant="outline">
               <FileSpreadsheet className="mr-2 h-4 w-4" /> Download CSV
             </Button>
           </div>
-          <p className="mt-3 text-xs text-muted-foreground">{txs.length} transaction(s) in selected period.</p>
+          <p className="mt-3 text-xs text-muted-foreground">
+            {txs.length} transaction(s) in selected period.
+          </p>
         </section>
 
         <section className="rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
@@ -130,11 +181,13 @@ function StatementsPage() {
                   <div className="min-w-0">
                     <p className="text-sm font-semibold">{l.loan_number}</p>
                     <p className="text-xs text-muted-foreground">
-                      {fmtTZS(l.amount_approved || l.amount_requested)} · principal outstanding {fmtTZS(l.outstanding_balance)} · {l.status}
+                      {fmtTZS(l.amount_approved || l.amount_requested)} · principal outstanding{" "}
+                      {fmtTZS(l.outstanding_balance)} · {l.status}
                     </p>
                     {(Number(l.fee_amount ?? 0) > 0 || Number(l.fee_outstanding ?? 0) > 0) && (
                       <p className="mt-0.5 text-xs text-primary">
-                        Loan fee: {fmtTZS(l.fee_amount ?? 0)} · fee outstanding {fmtTZS(l.fee_outstanding ?? 0)}
+                        Loan fee: {fmtTZS(l.fee_amount ?? 0)} · fee outstanding{" "}
+                        {fmtTZS(l.fee_outstanding ?? 0)}
                       </p>
                     )}
                   </div>

@@ -4,7 +4,13 @@ import { AppHeader } from "@/components/AppHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/friendlyError";
@@ -33,7 +39,10 @@ function EscalationsPage() {
   const [resolutionDraft, setResolutionDraft] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
-    let q = supabase.from("assistant_escalations").select("*").order("created_at", { ascending: false });
+    let q = supabase
+      .from("assistant_escalations")
+      .select("*")
+      .order("created_at", { ascending: false });
     if (filter !== "all") q = q.eq("status", filter);
     const { data, error } = await q;
     if (error) toast.error(friendlyError(error));
@@ -44,7 +53,11 @@ function EscalationsPage() {
     load();
     const ch = supabase
       .channel("escalations")
-      .on("postgres_changes", { event: "*", schema: "public", table: "assistant_escalations" }, () => load())
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "assistant_escalations" },
+        () => load(),
+      )
       .subscribe();
     return () => {
       supabase.removeChannel(ch);
@@ -52,7 +65,10 @@ function EscalationsPage() {
   }, [load]);
 
   const update = async (id: string, patch: { status?: string; resolution?: string | null }) => {
-    const { error } = await supabase.from("assistant_escalations").update(patch as never).eq("id", id);
+    const { error } = await supabase
+      .from("assistant_escalations")
+      .update(patch as never)
+      .eq("id", id);
     if (error) toast.error(friendlyError(error));
     else toast.success("Updated");
   };
@@ -64,10 +80,14 @@ function EscalationsPage() {
         <header className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold">Assistant Escalations</h1>
-            <p className="text-sm text-muted-foreground">Cases routed by the AI assistant into the staff queue.</p>
+            <p className="text-sm text-muted-foreground">
+              Cases routed by the AI assistant into the staff queue.
+            </p>
           </div>
           <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="open">Open</SelectItem>
               <SelectItem value="in_progress">In progress</SelectItem>
@@ -97,7 +117,11 @@ function EscalationsPage() {
               </div>
               <p className="mt-2 whitespace-pre-wrap text-sm">{e.notes}</p>
               {e.loan_id && (
-                <Link to="/loans/$loanId" params={{ loanId: e.loan_id }} className="mt-2 inline-block text-xs text-primary underline">
+                <Link
+                  to="/loans/$loanId"
+                  params={{ loanId: e.loan_id }}
+                  className="mt-2 inline-block text-xs text-primary underline"
+                >
                   Open related loan →
                 </Link>
               )}
@@ -106,18 +130,41 @@ function EscalationsPage() {
                   <Textarea
                     placeholder="Resolution notes (optional)"
                     value={resolutionDraft[e.id] ?? e.resolution ?? ""}
-                    onChange={(ev) => setResolutionDraft((d) => ({ ...d, [e.id]: ev.target.value }))}
+                    onChange={(ev) =>
+                      setResolutionDraft((d) => ({ ...d, [e.id]: ev.target.value }))
+                    }
                   />
                   <div className="flex flex-wrap gap-2">
                     {e.status === "open" && (
-                      <Button size="sm" variant="secondary" onClick={() => update(e.id, { status: "in_progress" })}>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => update(e.id, { status: "in_progress" })}
+                      >
                         Take
                       </Button>
                     )}
-                    <Button size="sm" onClick={() => update(e.id, { status: "resolved", resolution: resolutionDraft[e.id] ?? null })}>
+                    <Button
+                      size="sm"
+                      onClick={() =>
+                        update(e.id, {
+                          status: "resolved",
+                          resolution: resolutionDraft[e.id] ?? null,
+                        })
+                      }
+                    >
                       Resolve
                     </Button>
-                    <Button size="sm" variant="ghost" onClick={() => update(e.id, { status: "dismissed", resolution: resolutionDraft[e.id] ?? null })}>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() =>
+                        update(e.id, {
+                          status: "dismissed",
+                          resolution: resolutionDraft[e.id] ?? null,
+                        })
+                      }
+                    >
                       Dismiss
                     </Button>
                   </div>

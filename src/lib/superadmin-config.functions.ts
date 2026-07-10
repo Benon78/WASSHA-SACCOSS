@@ -84,16 +84,24 @@ export const getRolesOverview = createServerFn({ method: "GET" })
   .middleware([requireSuperAdmin])
   .handler(async () => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const [perms, builtIn, customRoles, customPerms, userRoles, userCustom, boardSeats, profiles] = await Promise.all([
-      supabaseAdmin.from("permissions").select("code, description, category").order("category").order("code"),
-      supabaseAdmin.from("role_permissions").select("role, permission_code"),
-      supabaseAdmin.from("custom_roles").select("id, name, description, is_active, created_at").order("name"),
-      supabaseAdmin.from("custom_role_permissions").select("custom_role_id, permission_code"),
-      supabaseAdmin.from("user_roles").select("role"),
-      supabaseAdmin.from("user_custom_roles").select("custom_role_id, user_id"),
-      supabaseAdmin.from("loan_board_members").select("user_id, seat, assigned_at"),
-      supabaseAdmin.from("profiles").select("user_id, full_name, member_number"),
-    ]);
+    const [perms, builtIn, customRoles, customPerms, userRoles, userCustom, boardSeats, profiles] =
+      await Promise.all([
+        supabaseAdmin
+          .from("permissions")
+          .select("code, description, category")
+          .order("category")
+          .order("code"),
+        supabaseAdmin.from("role_permissions").select("role, permission_code"),
+        supabaseAdmin
+          .from("custom_roles")
+          .select("id, name, description, is_active, created_at")
+          .order("name"),
+        supabaseAdmin.from("custom_role_permissions").select("custom_role_id, permission_code"),
+        supabaseAdmin.from("user_roles").select("role"),
+        supabaseAdmin.from("user_custom_roles").select("custom_role_id, user_id"),
+        supabaseAdmin.from("loan_board_members").select("user_id, seat, assigned_at"),
+        supabaseAdmin.from("profiles").select("user_id, full_name, member_number"),
+      ]);
 
     const profileMap = new Map<string, { full_name: string; member_number: string | null }>();
     for (const p of profiles.data ?? [])
@@ -109,7 +117,10 @@ export const getRolesOverview = createServerFn({ method: "GET" })
     }
     const builtInCounts: Record<string, number> = {};
     for (const r of userRoles.data ?? []) builtInCounts[r.role] = (builtInCounts[r.role] ?? 0) + 1;
-    const customMembers: Record<string, { user_id: string; full_name: string; member_number: string | null }[]> = {};
+    const customMembers: Record<
+      string,
+      { user_id: string; full_name: string; member_number: string | null }[]
+    > = {};
     for (const r of userCustom.data ?? []) {
       const p = profileMap.get(r.user_id);
       (customMembers[r.custom_role_id] ??= []).push({
@@ -143,7 +154,7 @@ export const getRolesOverview = createServerFn({ method: "GET" })
 /** Lightweight member picker for role/permission assignment dialogs. */
 export const listMembersForPicker = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((i: unknown) =>
+  .validator((i: unknown) =>
     z.object({ search: z.string().trim().max(120).optional() }).parse(i),
   )
   .handler(async ({ data }) => {
@@ -170,7 +181,7 @@ const setBuiltInInput = z.object({
 });
 export const setBuiltInRolePermissions = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((i: unknown) => setBuiltInInput.parse(i))
+  .validator((i: unknown) => setBuiltInInput.parse(i))
   .handler(async ({ data, context }) => {
     await assertCallerPassword(context.userId, data.password);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -184,14 +195,15 @@ export const setBuiltInRolePermissions = createServerFn({ method: "POST" })
     const { data: catalog } = await supabaseAdmin.from("permissions").select("code");
     const known = new Set((catalog ?? []).map((p) => p.code));
     const invalid = data.permissions.filter((p) => !known.has(p));
-    if (invalid.length) throw new Response(`Unknown permissions: ${invalid.join(", ")}`, { status: 400 });
+    if (invalid.length)
+      throw new Response(`Unknown permissions: ${invalid.join(", ")}`, { status: 400 });
 
     const del = await supabaseAdmin.from("role_permissions").delete().eq("role", data.role);
     if (del.error) throw new Response(del.error.message, { status: 500 });
     if (data.permissions.length) {
-      const ins = await supabaseAdmin.from("role_permissions").insert(
-        data.permissions.map((p) => ({ role: data.role as never, permission_code: p })),
-      );
+      const ins = await supabaseAdmin
+        .from("role_permissions")
+        .insert(data.permissions.map((p) => ({ role: data.role as never, permission_code: p })));
       if (ins.error) throw new Response(ins.error.message, { status: 500 });
     }
 
@@ -219,7 +231,7 @@ const nameSchema = z
 
 export const createCustomRole = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((i: unknown) =>
+  .validator((i: unknown) =>
     z
       .object({
         name: nameSchema,
@@ -246,9 +258,9 @@ export const createCustomRole = createServerFn({ method: "POST" })
     if (error) throw new Response(error.message, { status: 400 });
 
     if (data.permissions.length) {
-      const ins = await supabaseAdmin.from("custom_role_permissions").insert(
-        data.permissions.map((p) => ({ custom_role_id: created.id, permission_code: p })),
-      );
+      const ins = await supabaseAdmin
+        .from("custom_role_permissions")
+        .insert(data.permissions.map((p) => ({ custom_role_id: created.id, permission_code: p })));
       if (ins.error) throw new Response(ins.error.message, { status: 500 });
     }
 
@@ -278,7 +290,7 @@ export const createCustomRole = createServerFn({ method: "POST" })
 
 export const updateCustomRole = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((i: unknown) =>
+  .validator((i: unknown) =>
     z
       .object({
         id: z.string().uuid(),
@@ -318,7 +330,10 @@ export const updateCustomRole = createServerFn({ method: "POST" })
         .select("permission_code")
         .eq("custom_role_id", data.id);
       prevPerms = (existing ?? []).map((r) => r.permission_code);
-      const del = await supabaseAdmin.from("custom_role_permissions").delete().eq("custom_role_id", data.id);
+      const del = await supabaseAdmin
+        .from("custom_role_permissions")
+        .delete()
+        .eq("custom_role_id", data.id);
       if (del.error) throw new Response(del.error.message, { status: 500 });
       if (data.permissions.length) {
         const ins = await supabaseAdmin
@@ -335,18 +350,19 @@ export const updateCustomRole = createServerFn({ method: "POST" })
         .select("user_id")
         .eq("custom_role_id", data.id);
       prevMembers = (existing ?? []).map((r) => r.user_id);
-      const del = await supabaseAdmin.from("user_custom_roles").delete().eq("custom_role_id", data.id);
+      const del = await supabaseAdmin
+        .from("user_custom_roles")
+        .delete()
+        .eq("custom_role_id", data.id);
       if (del.error) throw new Response(del.error.message, { status: 500 });
       if (data.assignToUserIds.length) {
-        const ins = await supabaseAdmin
-          .from("user_custom_roles")
-          .insert(
-            data.assignToUserIds.map((uid) => ({
-              user_id: uid,
-              custom_role_id: data.id,
-              assigned_by: context.userId,
-            })),
-          );
+        const ins = await supabaseAdmin.from("user_custom_roles").insert(
+          data.assignToUserIds.map((uid) => ({
+            user_id: uid,
+            custom_role_id: data.id,
+            assigned_by: context.userId,
+          })),
+        );
         if (ins.error) throw new Response(ins.error.message, { status: 500 });
       }
     }
@@ -356,7 +372,12 @@ export const updateCustomRole = createServerFn({ method: "POST" })
       entity: "custom_roles",
       entityId: data.id,
       prev: { ...prev, permissions: prevPerms, members: prevMembers },
-      next: { ...prev, ...patch, permissions: data.permissions ?? prevPerms, members: data.assignToUserIds ?? prevMembers },
+      next: {
+        ...prev,
+        ...patch,
+        permissions: data.permissions ?? prevPerms,
+        members: data.assignToUserIds ?? prevMembers,
+      },
       summary: `Updated custom role "${prev.name}"`,
       actorId: context.userId,
       meta: context.requestMeta,
@@ -366,7 +387,7 @@ export const updateCustomRole = createServerFn({ method: "POST" })
 
 export const deleteCustomRole = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((i: unknown) =>
+  .validator((i: unknown) =>
     z.object({ id: z.string().uuid(), password: z.string().min(1).max(128) }).parse(i),
   )
   .handler(async ({ data, context }) => {
@@ -435,7 +456,7 @@ export const listBranches = createServerFn({ method: "GET" })
     return (branchesRes.data ?? []).map((b) => ({
       ...b,
       member_count: counts.get(b.id) ?? 0,
-      manager: b.manager_id ? managers.get(b.manager_id) ?? null : null,
+      manager: b.manager_id ? (managers.get(b.manager_id) ?? null) : null,
     }));
   });
 
@@ -448,7 +469,7 @@ const branchCodeSchema = z
 
 export const createBranch = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((i: unknown) =>
+  .validator((i: unknown) =>
     z
       .object({
         code: branchCodeSchema,
@@ -489,7 +510,7 @@ export const createBranch = createServerFn({ method: "POST" })
 
 export const updateBranch = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((i: unknown) =>
+  .validator((i: unknown) =>
     z
       .object({
         id: z.string().uuid(),
@@ -511,8 +532,12 @@ export const updateBranch = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!prev) throw new Response("Branch not found", { status: 404 });
 
-    
-    const patch: { name?: string; address?: string | null; manager_id?: string | null; status?: "active" | "disabled" } = {};
+    const patch: {
+      name?: string;
+      address?: string | null;
+      manager_id?: string | null;
+      status?: "active" | "disabled";
+    } = {};
     if (data.name !== undefined) patch.name = data.name;
     if (data.address !== undefined) patch.address = data.address;
     if (data.manager_id !== undefined) patch.manager_id = data.manager_id;
@@ -542,7 +567,7 @@ export const updateBranch = createServerFn({ method: "POST" })
  */
 export const mergeBranches = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((i: unknown) =>
+  .validator((i: unknown) =>
     z
       .object({
         sourceId: z.string().uuid(),
@@ -557,7 +582,11 @@ export const mergeBranches = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const [src, tgt] = await Promise.all([
-      supabaseAdmin.from("branches").select("id, name, code, status").eq("id", data.sourceId).maybeSingle(),
+      supabaseAdmin
+        .from("branches")
+        .select("id, name, code, status")
+        .eq("id", data.sourceId)
+        .maybeSingle(),
       supabaseAdmin.from("branches").select("id, name, code").eq("id", data.targetId).maybeSingle(),
     ]);
     if (!src.data) throw new Response("Source branch not found", { status: 404 });
@@ -628,7 +657,7 @@ const publishPolicyInput = z.object({
 
 export const publishLoanPolicy = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((i: unknown) => publishPolicyInput.parse(i))
+  .validator((i: unknown) => publishPolicyInput.parse(i))
   .handler(async ({ data, context }) => {
     await assertCallerPassword(context.userId, data.password);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

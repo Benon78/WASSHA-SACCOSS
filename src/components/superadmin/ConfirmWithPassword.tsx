@@ -1,6 +1,13 @@
 import { useState, type ReactNode } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -61,7 +68,9 @@ export function ConfirmWithPassword({
 
   return (
     <>
-      <span onClick={() => setOpen(true)} className="contents">{trigger}</span>
+      <span onClick={() => setOpen(true)} className="contents">
+        {trigger}
+      </span>
       <Dialog open={open} onOpenChange={(v) => (!busy ? setOpen(v) : null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

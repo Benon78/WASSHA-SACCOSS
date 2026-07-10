@@ -35,7 +35,7 @@ const schema = z.object({
 });
 
 export const logAuthEvent = createServerFn({ method: "POST" })
-  .inputValidator((i: unknown) => schema.parse(i))
+  .validator((i: unknown) => schema.parse(i))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     let ip: string | null = null;
@@ -43,7 +43,9 @@ export const logAuthEvent = createServerFn({ method: "POST" })
     try {
       ip = getRequestIP({ xForwardedFor: true }) ?? null;
       ua = getRequestHeader("user-agent") ?? null;
-    } catch { /* off-request */ }
+    } catch {
+      /* off-request */
+    }
 
     const meta: Record<string, unknown> = {};
     if (data.provider) meta.provider = data.provider;

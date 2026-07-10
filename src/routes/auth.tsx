@@ -2,7 +2,6 @@ import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-r
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +11,6 @@ import { logAuthEvent } from "@/lib/auth-log.functions";
 import { useAuth } from "@/lib/auth";
 import { safeInternalPath } from "@/lib/safeUrl";
 import { Wallet, Loader2 } from "lucide-react";
-
 
 const search = z.object({ redirect: z.string().max(2048).optional() });
 
@@ -30,19 +28,33 @@ const phoneSchema = z
   .string()
   .trim()
   .max(20)
-  .refine((v) => v === "" || /^\+?[0-9\s\-()]{7,20}$/.test(v), { message: "Enter a valid phone number" });
+  .refine((v) => v === "" || /^\+?[0-9\s\-()]{7,20}$/.test(v), {
+    message: "Enter a valid phone number",
+  });
 
 export const Route = createFileRoute("/auth")({
   validateSearch: search,
   head: () => ({
     meta: [
       { title: "Sign in or create your account — WASSHA SACCOS" },
-      { name: "description", content: "Sign in to WASSHA SACCOS to manage savings, track loan approvals, download statements and get real-time notifications." },
+      {
+        name: "description",
+        content:
+          "Sign in to WASSHA SACCOS to manage savings, track loan approvals, download statements and get real-time notifications.",
+      },
       { property: "og:title", content: "Sign in or create your account — WASSHA SACCOS" },
-      { property: "og:description", content: "Access your WASSHA SACCOS member dashboard: savings balances, loan applications, real-time approval tracking, statements and secure notifications — all in one place." },
+      {
+        property: "og:description",
+        content:
+          "Access your WASSHA SACCOS member dashboard: savings balances, loan applications, real-time approval tracking, statements and secure notifications — all in one place.",
+      },
       { property: "og:url", content: "https://wassha-saccos.lovable.app/auth" },
       { name: "twitter:title", content: "Sign in — WASSHA SACCOS" },
-      { name: "twitter:description", content: "Access your WASSHA SACCOS member dashboard: savings, loans, statements and real-time notifications." },
+      {
+        name: "twitter:description",
+        content:
+          "Access your WASSHA SACCOS member dashboard: savings, loans, statements and real-time notifications.",
+      },
     ],
     links: [{ rel: "canonical", href: "https://wassha-saccos.lovable.app/auth" }],
   }),
@@ -105,13 +117,13 @@ function AuthPage() {
     window.history.replaceState(null, "", window.location.pathname + window.location.search);
   }, []);
 
-
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
       const parsedEmail = emailSchema.safeParse(email);
-      if (!parsedEmail.success) throw new Error(parsedEmail.error.issues[0]?.message ?? "Invalid email");
+      if (!parsedEmail.success)
+        throw new Error(parsedEmail.error.issues[0]?.message ?? "Invalid email");
       const cleanEmail = parsedEmail.data;
 
       if (mode === "signup") {
@@ -147,7 +159,9 @@ function AuthPage() {
         const { data: lockData } = await supabase.rpc("is_email_locked", { _email: cleanEmail });
         if (lockData && (lockData as any).locked) {
           const until = (lockData as any).locked_until;
-          throw new Error(`Too many failed attempts. Try again after ${until ? new Date(until).toLocaleTimeString() : "a few minutes"}.`);
+          throw new Error(
+            `Too many failed attempts. Try again after ${until ? new Date(until).toLocaleTimeString() : "a few minutes"}.`,
+          );
         }
         const { error } = await supabase.auth.signInWithPassword({
           email: cleanEmail,
@@ -180,7 +194,10 @@ function AuthPage() {
       // Signup errors from Supabase can be terse ("Database error saving new user");
       // give the user something actionable and keep them on the page.
       if (mode === "signup" && /database error/i.test(reason)) {
-        toast.error("We couldn't create your account. Please try again in a moment, or contact support if the issue persists.", { duration: 8000 });
+        toast.error(
+          "We couldn't create your account. Please try again in a moment, or contact support if the issue persists.",
+          { duration: 8000 },
+        );
       } else {
         toast.error(friendly, { duration: 6000 });
       }
@@ -189,13 +206,18 @@ function AuthPage() {
     }
   };
 
-
-  const title = mode === "signin" ? "Welcome back" : mode === "signup" ? "Create your member account" : "Reset your password";
-  const subtitle = mode === "signin"
-    ? "Sign in to your SACCOS dashboard."
-    : mode === "signup"
-      ? "Join WASSHA SACCOS in under a minute."
-      : "Enter your email and we'll send you a reset link.";
+  const title =
+    mode === "signin"
+      ? "Welcome back"
+      : mode === "signup"
+        ? "Create your member account"
+        : "Reset your password";
+  const subtitle =
+    mode === "signin"
+      ? "Sign in to your SACCOS dashboard."
+      : mode === "signup"
+        ? "Join WASSHA SACCOS in under a minute."
+        : "Enter your email and we'll send you a reset link.";
 
   return (
     <div className="flex min-h-screen items-stretch">
@@ -210,9 +232,12 @@ function AuthPage() {
           </div>
         </Link>
         <div>
-          <h2 className="text-3xl font-bold leading-tight">Banking that works for the cooperative.</h2>
+          <h2 className="text-3xl font-bold leading-tight">
+            Banking that works for the cooperative.
+          </h2>
           <p className="mt-3 max-w-md text-sm text-white/75">
-            Track your savings, apply for loans, follow each approval stage, and get notified the moment things move.
+            Track your savings, apply for loans, follow each approval stage, and get notified the
+            moment things move.
           </p>
         </div>
         <p className="text-xs text-white/50">© WASSHA SACCOS</p>
@@ -237,17 +262,33 @@ function AuthPage() {
               <>
                 <div className="space-y-1.5">
                   <Label htmlFor="name">Full name</Label>
-                  <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+                  <Input
+                    id="name"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="phone">Phone</Label>
-                  <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+255..." />
+                  <Input
+                    id="phone"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+255..."
+                  />
                 </div>
               </>
             )}
             <div className="space-y-1.5">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </div>
             {mode !== "forgot" && (
               <div className="space-y-1.5">
@@ -263,19 +304,35 @@ function AuthPage() {
                     </button>
                   )}
                 </div>
-                <Input id="pwd" type="password" minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} required />
+                <Input
+                  id="pwd"
+                  type="password"
+                  minLength={6}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
               </div>
             )}
-            <Button type="submit" disabled={loading} className="w-full bg-[image:var(--gradient-primary)] text-primary-foreground shadow-[var(--shadow-elegant)] hover:opacity-95">
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[image:var(--gradient-primary)] text-primary-foreground shadow-[var(--shadow-elegant)] hover:opacity-95"
+            >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Send reset link"}
+              {mode === "signin"
+                ? "Sign in"
+                : mode === "signup"
+                  ? "Create account"
+                  : "Send reset link"}
             </Button>
           </form>
 
           {mode !== "forgot" && (
             <>
               <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-                <span className="h-px flex-1 bg-border" /> OR <span className="h-px flex-1 bg-border" />
+                <span className="h-px flex-1 bg-border" /> OR{" "}
+                <span className="h-px flex-1 bg-border" />
               </div>
               <Button
                 type="button"
@@ -284,11 +341,14 @@ function AuthPage() {
                 onClick={async () => {
                   setLoading(true);
                   try {
-                    const result = await lovable.auth.signInWithOAuth("google", {
-                      redirect_uri: window.location.origin,
+                    const { error } = await supabase.auth.signInWithOAuth({
+                      provider: "google",
+                      options: {
+                        redirectTo: `${window.location.origin}/auth/callback`,
+                      },
                     });
-                    if (result.error) throw result.error;
-                    if (result.redirected) return;
+
+                    if (error) throw error;
                     toast.success("Signed in with Google");
                     nav({ to: safeRedirect, replace: true });
                   } catch (err: any) {
@@ -296,7 +356,11 @@ function AuthPage() {
                     const friendly = translateOAuthError("google_error", reason);
                     toast.error(friendly, { duration: 8000 });
                     void logAuthEvent({
-                      data: { eventType: "failed_login", provider: "google", reason: reason.slice(0, 500) },
+                      data: {
+                        eventType: "failed_login",
+                        provider: "google",
+                        reason: reason.slice(0, 500),
+                      },
                     }).catch(() => undefined);
                   } finally {
                     setLoading(false);
@@ -306,10 +370,22 @@ function AuthPage() {
                 className="w-full"
               >
                 <svg viewBox="0 0 24 24" className="mr-2 h-4 w-4" aria-hidden>
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.75h3.57c2.08-1.92 3.28-4.74 3.28-8.07z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.75c-.99.66-2.25 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C4 20.98 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.12A6.98 6.98 0 015.5 12c0-.74.13-1.45.34-2.12V7.04H2.18A11 11 0 001 12c0 1.77.42 3.45 1.18 4.96l3.66-2.84z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.65l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 4 3.02 2.18 6.04l3.66 2.84C6.71 6.28 9.14 5.38 12 5.38z"/>
+                  <path
+                    fill="#4285F4"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.75h3.57c2.08-1.92 3.28-4.74 3.28-8.07z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.75c-.99.66-2.25 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C4 20.98 7.7 23 12 23z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.84 14.12A6.98 6.98 0 015.5 12c0-.74.13-1.45.34-2.12V7.04H2.18A11 11 0 001 12c0 1.77.42 3.45 1.18 4.96l3.66-2.84z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.65l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 4 3.02 2.18 6.04l3.66 2.84C6.71 6.28 9.14 5.38 12 5.38z"
+                  />
                 </svg>
                 Continue with Google
               </Button>
@@ -320,21 +396,30 @@ function AuthPage() {
             {mode === "forgot" ? (
               <>
                 Remembered it?{" "}
-                <button onClick={() => setMode("signin")} className="font-semibold text-primary hover:underline">
+                <button
+                  onClick={() => setMode("signin")}
+                  className="font-semibold text-primary hover:underline"
+                >
                   Back to sign in
                 </button>
               </>
             ) : mode === "signin" ? (
               <>
                 New to WASSHA?{" "}
-                <button onClick={() => setMode("signup")} className="font-semibold text-primary hover:underline">
+                <button
+                  onClick={() => setMode("signup")}
+                  className="font-semibold text-primary hover:underline"
+                >
                   Create an account
                 </button>
               </>
             ) : (
               <>
                 Already a member?{" "}
-                <button onClick={() => setMode("signin")} className="font-semibold text-primary hover:underline">
+                <button
+                  onClick={() => setMode("signin")}
+                  className="font-semibold text-primary hover:underline"
+                >
                   Sign in
                 </button>
               </>
@@ -369,8 +454,9 @@ function translateOAuthError(code: string, description?: string | null): string 
     return "Google rejected the sign-in request. Please try again in a moment.";
   }
   if (code === "google_error") {
-    return description ? `Google sign-in failed: ${description}` : "Google sign-in failed. Please try again.";
+    return description
+      ? `Google sign-in failed: ${description}`
+      : "Google sign-in failed. Please try again.";
   }
   return description ? `Sign-in failed: ${description}` : "Sign-in failed. Please try again.";
 }
-

@@ -84,7 +84,8 @@ function ResetPasswordPage() {
         <div className="mb-6 flex items-start gap-3 rounded-lg border border-border/60 bg-muted/40 p-3">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
           <p className="text-xs text-muted-foreground">
-            Choose a strong new password. It must be at least 8 characters and include letters and numbers.
+            Choose a strong new password. It must be at least 8 characters and include letters and
+            numbers.
           </p>
         </div>
 

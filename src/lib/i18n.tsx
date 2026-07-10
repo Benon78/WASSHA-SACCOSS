@@ -642,7 +642,7 @@ const Ctx = createContext<I18nCtx | null>(null);
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(() =>
-    typeof window !== "undefined" ? ((localStorage.getItem("lang") as Lang) || "en") : "en"
+    typeof window !== "undefined" ? (localStorage.getItem("lang") as Lang) || "en" : "en",
   );
   useEffect(() => {
     try {
@@ -650,12 +650,15 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       if (typeof document !== "undefined") {
         document.documentElement.lang = lang;
       }
-    } catch {}
+    } catch (e) {
+      console.error(e);
+    }
   }, [lang]);
   const value: I18nCtx = {
     lang,
     setLang: setLangState,
-    t: (k) => (dict[lang] as Record<string, string>)[k] ?? (dict.en as Record<string, string>)[k] ?? k,
+    t: (k) =>
+      (dict[lang] as Record<string, string>)[k] ?? (dict.en as Record<string, string>)[k] ?? k,
   };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

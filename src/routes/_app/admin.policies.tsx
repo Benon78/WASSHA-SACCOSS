@@ -21,18 +21,32 @@ function PoliciesPage() {
   const { hasRole, loading } = useAuth();
   const [policies, setPolicies] = useState<any[]>([]);
   const [form, setForm] = useState({
-    interest_rate: "12.0", min_savings: "100000", savings_multiplier: "3",
-    min_membership_months: "3", max_term_months: "36", notes: "",
-    emergency_rate: "18.0", emergency_multiplier: "1.5", emergency_max_amount: "1000000", emergency_max_term_months: "6",
-    chapchap_rate: "15.0", late_penalty_rate: "2.0", processing_fee_rate: "1.0",
+    interest_rate: "12.0",
+    min_savings: "100000",
+    savings_multiplier: "3",
+    min_membership_months: "3",
+    max_term_months: "36",
+    notes: "",
+    emergency_rate: "18.0",
+    emergency_multiplier: "1.5",
+    emergency_max_amount: "1000000",
+    emergency_max_term_months: "6",
+    chapchap_rate: "15.0",
+    late_penalty_rate: "2.0",
+    processing_fee_rate: "1.0",
   });
   const [busy, setBusy] = useState(false);
 
   const load = async () => {
-    const { data } = await supabase.from("loan_policies").select("*").order("version", { ascending: false });
+    const { data } = await supabase
+      .from("loan_policies")
+      .select("*")
+      .order("version", { ascending: false });
     setPolicies(data ?? []);
   };
-  useEffect(() => { if (hasRole("admin")) load(); }, []);
+  useEffect(() => {
+    if (hasRole("admin")) load();
+  }, []);
 
   if (loading) return null;
   if (!hasRole("admin")) return <Navigate to="/dashboard" />;
@@ -60,7 +74,10 @@ function PoliciesPage() {
     });
     setBusy(false);
     if (error) toast.error(friendlyError(error));
-    else { toast.success("New policy version published"); load(); }
+    else {
+      toast.success("New policy version published");
+      load();
+    }
   };
 
   return (
@@ -69,7 +86,10 @@ function PoliciesPage() {
       <div className="container mx-auto max-w-5xl space-y-6 px-4 py-6">
         <div>
           <h1 className="text-2xl font-bold">Loan policies</h1>
-          <p className="text-sm text-muted-foreground">Versioned. New entries become effective immediately and apply to all future eligibility checks.</p>
+          <p className="text-sm text-muted-foreground">
+            Versioned. New entries become effective immediately and apply to all future eligibility
+            checks.
+          </p>
         </div>
 
         <section className="rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
@@ -77,22 +97,140 @@ function PoliciesPage() {
             <Plus className="h-4 w-4 text-primary" /> Publish new policy version
           </h2>
           <form onSubmit={create} className="mt-4 grid gap-4 md:grid-cols-3">
-            <div><Label>Interest rate (% p.a.)</Label><Input type="number" step="0.1" required value={form.interest_rate} onChange={(e) => setForm({ ...form, interest_rate: e.target.value })} /></div>
-            <div><Label>Savings multiplier</Label><Input type="number" step="0.1" required value={form.savings_multiplier} onChange={(e) => setForm({ ...form, savings_multiplier: e.target.value })} /></div>
-            <div><Label>Min savings (TZS)</Label><Input type="number" required value={form.min_savings} onChange={(e) => setForm({ ...form, min_savings: e.target.value })} /></div>
-            <div><Label>Min membership (months)</Label><Input type="number" required value={form.min_membership_months} onChange={(e) => setForm({ ...form, min_membership_months: e.target.value })} /></div>
-            <div><Label>Max term (months)</Label><Input type="number" required value={form.max_term_months} onChange={(e) => setForm({ ...form, max_term_months: e.target.value })} /></div>
-            <div><Label>Processing fee (% of principal)</Label><Input type="number" step="0.1" required value={form.processing_fee_rate} onChange={(e) => setForm({ ...form, processing_fee_rate: e.target.value })} /></div>
-            <div><Label>Late-payment penalty (% / month)</Label><Input type="number" step="0.1" required value={form.late_penalty_rate} onChange={(e) => setForm({ ...form, late_penalty_rate: e.target.value })} /></div>
-            <div><Label>Chap-Chap rate (% p.a.)</Label><Input type="number" step="0.1" required value={form.chapchap_rate} onChange={(e) => setForm({ ...form, chapchap_rate: e.target.value })} /></div>
-            <div className="md:col-span-3 pt-2"><h3 className="text-sm font-semibold text-primary">Emergency tier</h3></div>
-            <div><Label>Emergency rate (% p.a.)</Label><Input type="number" step="0.1" required value={form.emergency_rate} onChange={(e) => setForm({ ...form, emergency_rate: e.target.value })} /></div>
-            <div><Label>Emergency multiplier</Label><Input type="number" step="0.1" required value={form.emergency_multiplier} onChange={(e) => setForm({ ...form, emergency_multiplier: e.target.value })} /></div>
-            <div><Label>Emergency max amount (TZS)</Label><Input type="number" required value={form.emergency_max_amount} onChange={(e) => setForm({ ...form, emergency_max_amount: e.target.value })} /></div>
-            <div><Label>Emergency max term (months)</Label><Input type="number" required value={form.emergency_max_term_months} onChange={(e) => setForm({ ...form, emergency_max_term_months: e.target.value })} /></div>
-            <div className="md:col-span-3"><Label>Notes</Label><Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Reason for this policy update..." /></div>
+            <div>
+              <Label>Interest rate (% p.a.)</Label>
+              <Input
+                type="number"
+                step="0.1"
+                required
+                value={form.interest_rate}
+                onChange={(e) => setForm({ ...form, interest_rate: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Savings multiplier</Label>
+              <Input
+                type="number"
+                step="0.1"
+                required
+                value={form.savings_multiplier}
+                onChange={(e) => setForm({ ...form, savings_multiplier: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Min savings (TZS)</Label>
+              <Input
+                type="number"
+                required
+                value={form.min_savings}
+                onChange={(e) => setForm({ ...form, min_savings: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Min membership (months)</Label>
+              <Input
+                type="number"
+                required
+                value={form.min_membership_months}
+                onChange={(e) => setForm({ ...form, min_membership_months: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Max term (months)</Label>
+              <Input
+                type="number"
+                required
+                value={form.max_term_months}
+                onChange={(e) => setForm({ ...form, max_term_months: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Processing fee (% of principal)</Label>
+              <Input
+                type="number"
+                step="0.1"
+                required
+                value={form.processing_fee_rate}
+                onChange={(e) => setForm({ ...form, processing_fee_rate: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Late-payment penalty (% / month)</Label>
+              <Input
+                type="number"
+                step="0.1"
+                required
+                value={form.late_penalty_rate}
+                onChange={(e) => setForm({ ...form, late_penalty_rate: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Chap-Chap rate (% p.a.)</Label>
+              <Input
+                type="number"
+                step="0.1"
+                required
+                value={form.chapchap_rate}
+                onChange={(e) => setForm({ ...form, chapchap_rate: e.target.value })}
+              />
+            </div>
+            <div className="md:col-span-3 pt-2">
+              <h3 className="text-sm font-semibold text-primary">Emergency tier</h3>
+            </div>
+            <div>
+              <Label>Emergency rate (% p.a.)</Label>
+              <Input
+                type="number"
+                step="0.1"
+                required
+                value={form.emergency_rate}
+                onChange={(e) => setForm({ ...form, emergency_rate: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Emergency multiplier</Label>
+              <Input
+                type="number"
+                step="0.1"
+                required
+                value={form.emergency_multiplier}
+                onChange={(e) => setForm({ ...form, emergency_multiplier: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Emergency max amount (TZS)</Label>
+              <Input
+                type="number"
+                required
+                value={form.emergency_max_amount}
+                onChange={(e) => setForm({ ...form, emergency_max_amount: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Emergency max term (months)</Label>
+              <Input
+                type="number"
+                required
+                value={form.emergency_max_term_months}
+                onChange={(e) => setForm({ ...form, emergency_max_term_months: e.target.value })}
+              />
+            </div>
             <div className="md:col-span-3">
-              <Button type="submit" disabled={busy} className="bg-[image:var(--gradient-primary)] text-primary-foreground">Publish version</Button>
+              <Label>Notes</Label>
+              <Textarea
+                value={form.notes}
+                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                placeholder="Reason for this policy update..."
+              />
+            </div>
+            <div className="md:col-span-3">
+              <Button
+                type="submit"
+                disabled={busy}
+                className="bg-[image:var(--gradient-primary)] text-primary-foreground"
+              >
+                Publish version
+              </Button>
             </div>
           </form>
         </section>
@@ -105,10 +243,15 @@ function PoliciesPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left text-xs uppercase text-muted-foreground">
-                  <th className="py-2 pr-3">Version</th><th className="pr-3">Rate</th><th className="pr-3">Mult</th>
-                  <th className="pr-3">Fee%</th><th className="pr-3">Penalty%/mo</th>
-                  <th className="pr-3">Emerg. rate</th><th className="pr-3">Emerg. max</th>
-                  <th className="pr-3">Effective</th><th>Notes</th>
+                  <th className="py-2 pr-3">Version</th>
+                  <th className="pr-3">Rate</th>
+                  <th className="pr-3">Mult</th>
+                  <th className="pr-3">Fee%</th>
+                  <th className="pr-3">Penalty%/mo</th>
+                  <th className="pr-3">Emerg. rate</th>
+                  <th className="pr-3">Emerg. max</th>
+                  <th className="pr-3">Effective</th>
+                  <th>Notes</th>
                 </tr>
               </thead>
               <tbody>
@@ -116,7 +259,11 @@ function PoliciesPage() {
                   <tr key={p.id} className="border-b border-border/40">
                     <td className="py-3 pr-3 font-bold">
                       v{p.version}
-                      {i === 0 && <span className="ml-2 rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-semibold text-success">CURRENT</span>}
+                      {i === 0 && (
+                        <span className="ml-2 rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-semibold text-success">
+                          CURRENT
+                        </span>
+                      )}
                     </td>
                     <td className="pr-3">{p.interest_rate}%</td>
                     <td className="pr-3">{p.savings_multiplier}×</td>
@@ -124,7 +271,9 @@ function PoliciesPage() {
                     <td className="pr-3">{p.late_penalty_rate ?? 0}%</td>
                     <td className="pr-3">{p.emergency_rate ?? 0}%</td>
                     <td className="pr-3">{fmtTZS(p.emergency_max_amount ?? 0)}</td>
-                    <td className="pr-3 text-xs text-muted-foreground">{fmtDate(p.effective_from)}</td>
+                    <td className="pr-3 text-xs text-muted-foreground">
+                      {fmtDate(p.effective_from)}
+                    </td>
                     <td className="text-xs text-muted-foreground">{p.notes || "—"}</td>
                   </tr>
                 ))}

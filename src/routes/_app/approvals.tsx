@@ -26,7 +26,10 @@ function ApprovalsQueue() {
         .order("created_at", { ascending: false });
       // RLS will filter for staff; profiles join may not work without FK aliasing — fall back
       if (!data) {
-        const { data: l2 } = await supabase.from("loans").select("*").order("created_at", { ascending: false });
+        const { data: l2 } = await supabase
+          .from("loans")
+          .select("*")
+          .order("created_at", { ascending: false });
         setLoans(l2 ?? []);
       } else setLoans(data);
     })();
@@ -47,7 +50,7 @@ function ApprovalsQueue() {
   const allOpen = loans.filter((l) => l.status === "pending");
   const history = loans.filter((l) => l.status !== "pending");
 
-  const Card = ({ list }: { list: any[] }) => (
+  const Card = ({ list }: { list: any[] }) =>
     list.length === 0 ? (
       <div className="flex flex-col items-center gap-2 rounded-2xl border border-border/70 bg-card p-12 text-center text-sm text-muted-foreground">
         <Inbox className="h-8 w-8" /> Nothing here.
@@ -57,25 +60,32 @@ function ApprovalsQueue() {
         <ul className="divide-y divide-border/70">
           {list.map((l) => (
             <li key={l.id}>
-              <Link to="/loans/$loanId" params={{ loanId: l.id }} className="flex items-center justify-between gap-4 p-4 transition hover:bg-muted/50">
+              <Link
+                to="/loans/$loanId"
+                params={{ loanId: l.id }}
+                className="flex items-center justify-between gap-4 p-4 transition hover:bg-muted/50"
+              >
                 <div>
                   <p className="text-sm font-bold">{l.loan_number}</p>
                   <p className="text-xs text-muted-foreground line-clamp-1">{l.purpose}</p>
-                  <p className="mt-1 text-[10px] text-muted-foreground">Submitted {fmtDate(l.created_at)}</p>
+                  <p className="mt-1 text-[10px] text-muted-foreground">
+                    Submitted {fmtDate(l.created_at)}
+                  </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                     {STAGE_LABEL[l.stage as LoanStage]}
                   </span>
-                  <span className="hidden text-sm font-bold sm:inline">{fmtTZS(l.amount_requested)}</span>
+                  <span className="hidden text-sm font-bold sm:inline">
+                    {fmtTZS(l.amount_requested)}
+                  </span>
                 </div>
               </Link>
             </li>
           ))}
         </ul>
       </div>
-    )
-  );
+    );
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -94,9 +104,15 @@ function ApprovalsQueue() {
             <TabsTrigger value="all">All open ({allOpen.length})</TabsTrigger>
             <TabsTrigger value="history">History ({history.length})</TabsTrigger>
           </TabsList>
-          <TabsContent value="mine" className="mt-4"><Card list={mine} /></TabsContent>
-          <TabsContent value="all" className="mt-4"><Card list={allOpen} /></TabsContent>
-          <TabsContent value="history" className="mt-4"><Card list={history} /></TabsContent>
+          <TabsContent value="mine" className="mt-4">
+            <Card list={mine} />
+          </TabsContent>
+          <TabsContent value="all" className="mt-4">
+            <Card list={allOpen} />
+          </TabsContent>
+          <TabsContent value="history" className="mt-4">
+            <Card list={history} />
+          </TabsContent>
         </Tabs>
       </div>
     </div>

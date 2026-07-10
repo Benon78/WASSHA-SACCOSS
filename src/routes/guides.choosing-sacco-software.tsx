@@ -1,7 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppHeader } from "@/components/AppHeader";
+import { AppFooter } from "@/components/AppFooter";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Bell, GitBranch, ShieldCheck, LineChart, Users, Wallet, FileText } from "lucide-react";
+import {
+  CheckCircle2,
+  Bell,
+  GitBranch,
+  ShieldCheck,
+  LineChart,
+  Users,
+  Wallet,
+  FileText,
+} from "lucide-react";
 
 const URL = "https://wassha-saccos.lovable.app/guides/choosing-sacco-software";
 
@@ -9,13 +19,24 @@ export const Route = createFileRoute("/guides/choosing-sacco-software")({
   head: () => ({
     meta: [
       { title: "How to Choose SACCO & Credit Union Software (2026 Guide) — WASSHA SACCOS" },
-      { name: "description", content: "A practical guide for SACCO and credit union decision-makers: what software cooperatives use, the must-have features, and how to pick the right platform." },
+      {
+        name: "description",
+        content:
+          "A practical guide for SACCO and credit union decision-makers: what software cooperatives use, the must-have features, and how to pick the right platform.",
+      },
       { property: "og:title", content: "How to Choose SACCO & Credit Union Software — 2026 Guide" },
-      { property: "og:description", content: "What software do credit unions use, and how do you choose the right platform for your SACCO? A decision-maker's guide." },
+      {
+        property: "og:description",
+        content:
+          "What software do credit unions use, and how do you choose the right platform for your SACCO? A decision-maker's guide.",
+      },
       { property: "og:url", content: URL },
       { property: "og:type", content: "article" },
       { name: "twitter:title", content: "How to Choose SACCO Software" },
-      { name: "twitter:description", content: "A practical guide for SACCO and credit union decision-makers." },
+      {
+        name: "twitter:description",
+        content: "A practical guide for SACCO and credit union decision-makers.",
+      },
     ],
     links: [{ rel: "canonical", href: URL }],
     scripts: [
@@ -68,10 +89,21 @@ export const Route = createFileRoute("/guides/choosing-sacco-software")({
   component: ChoosingSaccoSoftwareGuide,
 });
 
-function Feature({ icon: Icon, title, children }: { icon: React.ComponentType<{ className?: string }>; title: string; children: React.ReactNode }) {
+function Feature({
+  icon: Icon,
+  title,
+  children,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="rounded-2xl border border-border/70 bg-card p-5">
-      <div className="flex items-center gap-2 text-primary"><Icon className="h-5 w-5" /><h3 className="text-sm font-semibold text-foreground">{title}</h3></div>
+      <div className="flex items-center gap-2 text-primary">
+        <Icon className="h-5 w-5" />
+        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+      </div>
       <p className="mt-2 text-sm text-muted-foreground">{children}</p>
     </div>
   );
@@ -87,37 +119,41 @@ function ChoosingSaccoSoftwareGuide() {
           How to Choose SACCO &amp; Credit Union Software
         </h1>
         <p className="mt-3 text-base text-muted-foreground">
-          A decision-maker's guide for SACCOs, cooperatives, and credit unions evaluating a
-          digital banking platform. Covers what software credit unions actually use, the
-          features that matter, and a checklist for shortlisting vendors.
+          A decision-maker's guide for SACCOs, cooperatives, and credit unions evaluating a digital
+          banking platform. Covers what software credit unions actually use, the features that
+          matter, and a checklist for shortlisting vendors.
         </p>
 
         <section className="mt-10">
-          <h2 className="text-xl font-semibold text-foreground">What software do credit unions use?</h2>
+          <h2 className="text-xl font-semibold text-foreground">
+            What software do credit unions use?
+          </h2>
           <p className="mt-3 text-sm text-muted-foreground">
             Credit unions and SACCOs run on <strong>core banking</strong> or
-            <strong> cooperative-management platforms</strong>. These handle member records,
-            savings and share accounts, multi-stage loan approvals, disbursement, repayment
-            schedules, statements, and audit logs. Larger unions layer in mobile money and
-            reporting tools; smaller SACCOs increasingly move directly to modern cloud
-            platforms that bundle everything into a single web app.
+            <strong> cooperative-management platforms</strong>. These handle member records, savings
+            and share accounts, multi-stage loan approvals, disbursement, repayment schedules,
+            statements, and audit logs. Larger unions layer in mobile money and reporting tools;
+            smaller SACCOs increasingly move directly to modern cloud platforms that bundle
+            everything into a single web app.
           </p>
         </section>
 
         <section className="mt-10">
-          <h2 className="text-xl font-semibold text-foreground">The features that actually matter</h2>
+          <h2 className="text-xl font-semibold text-foreground">
+            The features that actually matter
+          </h2>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             <Feature icon={GitBranch} title="Multi-stage loan workflows">
-              Submitted → Review → Finance → Board → Manager → Disbursement, with a clear
-              owner and SLA at every stage.
+              Submitted → Review → Finance → Board → Manager → Disbursement, with a clear owner and
+              SLA at every stage.
             </Feature>
             <Feature icon={Bell} title="Real-time notifications">
-              Members and staff see approvals, rejections and disbursements the moment they
-              happen — no more phone-tag with the loans office.
+              Members and staff see approvals, rejections and disbursements the moment they happen —
+              no more phone-tag with the loans office.
             </Feature>
             <Feature icon={ShieldCheck} title="Role separation &amp; audit logs">
-              Approvers, finance officers, board members and admins each get scoped
-              permissions, and every policy change is logged.
+              Approvers, finance officers, board members and admins each get scoped permissions, and
+              every policy change is logged.
             </Feature>
             <Feature icon={Wallet} title="Savings, shares &amp; opening balances">
               Track deposits, withdrawals and share capital alongside loans so eligibility
@@ -128,8 +164,8 @@ function ChoosingSaccoSoftwareGuide() {
               exportable to CSV, XLSX and PDF.
             </Feature>
             <Feature icon={Users} title="Member self-service">
-              Members apply for loans, check balances, download statements, and update
-              their profile without visiting the office.
+              Members apply for loans, check balances, download statements, and update their profile
+              without visiting the office.
             </Feature>
           </div>
         </section>
@@ -155,25 +191,32 @@ function ChoosingSaccoSoftwareGuide() {
         </section>
 
         <section className="mt-10 rounded-3xl border border-border/70 bg-secondary p-6 text-secondary-foreground">
-          <div className="flex items-center gap-2"><FileText className="h-5 w-5" /><h2 className="text-lg font-semibold">How WASSHA SACCOS fits</h2></div>
+          <div className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            <h2 className="text-lg font-semibold">How WASSHA SACCOS fits</h2>
+          </div>
           <p className="mt-2 text-sm">
-            WASSHA SACCOS is a fintech-grade cooperative platform with the workflow,
-            notification and reporting features listed above already built in — including
-            multi-stage loan approvals, real-time notifications, member self-service,
-            role-based admin controls with full audit logging, and dashboards for boards
-            and finance officers.
+            WASSHA SACCOS is a fintech-grade cooperative platform with the workflow, notification
+            and reporting features listed above already built in — including multi-stage loan
+            approvals, real-time notifications, member self-service, role-based admin controls with
+            full audit logging, and dashboards for boards and finance officers.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
-            <Button asChild><Link to="/workflow">See the loan workflow</Link></Button>
-            <Button asChild variant="outline"><Link to="/auth">Create a member account</Link></Button>
+            <Button asChild>
+              <Link to="/workflow">See the loan workflow</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/auth">Create a member account</Link>
+            </Button>
           </div>
         </section>
 
         <p className="mt-10 text-xs text-muted-foreground">
-          Last updated 2026. Written for SACCO boards, credit-union managers and cooperative
-          finance officers evaluating digital banking software.
+          Last updated 2026. Written for SACCO boards, credit-union managers and cooperative finance
+          officers evaluating digital banking software.
         </p>
       </article>
+      <AppFooter />
     </div>
   );
 }

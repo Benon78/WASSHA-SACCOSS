@@ -45,14 +45,19 @@ export function MfaGate({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    if (!user) { setGate(null); return; }
+    if (!user) {
+      setGate(null);
+      return;
+    }
     let cancelled = false;
     (async () => {
       await refreshGate();
       if (cancelled) return;
       await refreshFactors();
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [user?.id]);
 
   if (!user || !gate || !gate.required || gate.verified) return <>{children}</>;
@@ -65,9 +70,17 @@ export function MfaGate({ children }: { children: React.ReactNode }) {
       for (const f of list?.totp ?? []) {
         if (f.status !== "verified") await supabase.auth.mfa.unenroll({ factorId: f.id });
       }
-      const { data, error } = await supabase.auth.mfa.enroll({ factorType: "totp", friendlyName: `TOTP ${Date.now()}` });
+      const { data, error } = await supabase.auth.mfa.enroll({
+        factorType: "totp",
+        friendlyName: `TOTP ${Date.now()}`,
+      });
       if (error) throw error;
-      setEnroll({ factorId: data.id, qr: data.totp.qr_code, secret: data.totp.secret, uri: data.totp.uri });
+      setEnroll({
+        factorId: data.id,
+        qr: data.totp.qr_code,
+        secret: data.totp.secret,
+        uri: data.totp.uri,
+      });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to start enrollment");
     } finally {
@@ -79,9 +92,15 @@ export function MfaGate({ children }: { children: React.ReactNode }) {
     if (!enroll) return;
     setLoading(true);
     try {
-      const { data: ch, error: chErr } = await supabase.auth.mfa.challenge({ factorId: enroll.factorId });
+      const { data: ch, error: chErr } = await supabase.auth.mfa.challenge({
+        factorId: enroll.factorId,
+      });
       if (chErr) throw chErr;
-      const { error: vErr } = await supabase.auth.mfa.verify({ factorId: enroll.factorId, challengeId: ch.id, code });
+      const { error: vErr } = await supabase.auth.mfa.verify({
+        factorId: enroll.factorId,
+        challengeId: ch.id,
+        code,
+      });
       if (vErr) throw vErr;
       toast.success("Two-factor authentication enabled");
       setEnroll(null);
@@ -134,8 +153,8 @@ export function MfaGate({ children }: { children: React.ReactNode }) {
           <h1 className="text-xl font-bold">Two-factor authentication required</h1>
         </div>
         <p className="mt-3 text-sm text-muted-foreground">
-          Your account has an elevated role. WASSHA SACCOS security policy requires a
-          second factor (TOTP authenticator) for this session.
+          Your account has an elevated role. WASSHA SACCOS security policy requires a second factor
+          (TOTP authenticator) for this session.
         </p>
 
         {/* Case A: user has no verified TOTP → enroll */}
@@ -152,14 +171,15 @@ export function MfaGate({ children }: { children: React.ReactNode }) {
         {hasEnrolled === false && enroll && (
           <div className="mt-6 space-y-4">
             <p className="text-sm">
-              Scan this QR code with your authenticator app (Google Authenticator, 1Password, Authy, etc.),
-              then enter the 6-digit code to confirm.
+              Scan this QR code with your authenticator app (Google Authenticator, 1Password, Authy,
+              etc.), then enter the 6-digit code to confirm.
             </p>
             <div className="flex justify-center rounded-lg bg-white p-4">
               <img src={enroll.qr} alt="TOTP QR" className="h-48 w-48" />
             </div>
             <div className="text-xs text-muted-foreground">
-              Can't scan? Enter this secret manually: <code className="font-mono">{enroll.secret}</code>
+              Can't scan? Enter this secret manually:{" "}
+              <code className="font-mono">{enroll.secret}</code>
             </div>
             <div className="space-y-2">
               <Label htmlFor="mfa-code">6-digit code</Label>
@@ -174,7 +194,16 @@ export function MfaGate({ children }: { children: React.ReactNode }) {
               />
             </div>
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => { setEnroll(null); setCode(""); }} disabled={loading}>Cancel</Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setEnroll(null);
+                  setCode("");
+                }}
+                disabled={loading}
+              >
+                Cancel
+              </Button>
               <Button onClick={verifyEnroll} disabled={loading || code.length !== 6}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Verify &amp; enable
@@ -186,7 +215,9 @@ export function MfaGate({ children }: { children: React.ReactNode }) {
         {/* Case B: user already has a factor but this session isn't aal2 → challenge */}
         {hasEnrolled === true && (
           <div className="mt-6 space-y-4">
-            <p className="text-sm">Enter the 6-digit code from your authenticator app to unlock this session.</p>
+            <p className="text-sm">
+              Enter the 6-digit code from your authenticator app to unlock this session.
+            </p>
             {!challengeId ? (
               <Button onClick={startChallenge} disabled={loading}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -219,7 +250,9 @@ export function MfaGate({ children }: { children: React.ReactNode }) {
 
         <div className="mt-8 flex justify-between border-t border-border/60 pt-4">
           <p className="text-xs text-muted-foreground">Session AAL: {gate.aal ?? "unknown"}</p>
-          <Button variant="ghost" size="sm" onClick={() => void signOut()}>Sign out</Button>
+          <Button variant="ghost" size="sm" onClick={() => void signOut()}>
+            Sign out
+          </Button>
         </div>
       </div>
     </div>

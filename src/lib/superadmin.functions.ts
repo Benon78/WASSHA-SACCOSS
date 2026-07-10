@@ -73,13 +73,22 @@ export const getSuperAdminStats = createServerFn({ method: "GET" })
       auditAlerts,
     ] = await Promise.all([
       supabase.from("profiles").select("*", { count: "exact", head: true }),
-      supabase.from("loans").select("*", { count: "exact", head: true }).in("status", ["approved", "disbursed"]),
+      supabase
+        .from("loans")
+        .select("*", { count: "exact", head: true })
+        .in("status", ["approved", "disbursed"]),
       supabaseAdmin.rpc("get_portfolio_totals" as never).then(
         (r) => r,
         () => ({ data: null }),
       ),
-      supabaseAdmin.from("loans").select("outstanding_balance").in("status", ["approved", "disbursed"]),
-      supabaseAdmin.from("loans").select("*", { count: "exact", head: true }).eq("status", "completed"),
+      supabaseAdmin
+        .from("loans")
+        .select("outstanding_balance")
+        .in("status", ["approved", "disbursed"]),
+      supabaseAdmin
+        .from("loans")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "completed"),
       supabaseAdmin
         .from("auth_events")
         .select("*", { count: "exact", head: true })
@@ -129,7 +138,7 @@ const listUsersInput = z.object({
 
 export const listUsers = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((input: unknown) => listUsersInput.parse(input))
+  .validator((input: unknown) => listUsersInput.parse(input))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const from = (data.page - 1) * data.pageSize;
@@ -137,14 +146,18 @@ export const listUsers = createServerFn({ method: "POST" })
 
     let q = supabaseAdmin
       .from("profiles")
-      .select("user_id, full_name, member_number, phone, joined_at, branch_id, suspended_at, deleted_at, created_at", {
-        count: "exact",
-      })
+      .select(
+        "user_id, full_name, member_number, phone, joined_at, branch_id, suspended_at, deleted_at, created_at",
+        {
+          count: "exact",
+        },
+      )
       .order("created_at", { ascending: false })
       .range(from, to);
 
     if (data.status === "active") q = q.is("suspended_at", null).is("deleted_at", null);
-    else if (data.status === "suspended") q = q.not("suspended_at", "is", null).is("deleted_at", null);
+    else if (data.status === "suspended")
+      q = q.not("suspended_at", "is", null).is("deleted_at", null);
     else if (data.status === "deleted") q = q.not("deleted_at", "is", null);
 
     if (data.search) {
@@ -176,7 +189,7 @@ export const listUsers = createServerFn({ method: "POST" })
     const rows = (profiles ?? []).map((p) => ({
       ...p,
       roles: roleMap.get(p.user_id) ?? [],
-      branch: p.branch_id ? branchMap.get(p.branch_id) ?? null : null,
+      branch: p.branch_id ? (branchMap.get(p.branch_id) ?? null) : null,
     }));
 
     return { rows, total: count ?? 0, page: data.page, pageSize: data.pageSize };
@@ -188,7 +201,7 @@ const idInput = z.object({ userId: z.string().uuid() });
 
 export const getUserDetail = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((input: unknown) => idInput.parse(input))
+  .validator((input: unknown) => idInput.parse(input))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const [profile, roles, sessions, events, authUser] = await Promise.all([
@@ -236,7 +249,8 @@ export const getUserDetail = createServerFn({ method: "POST" })
       email: authUser.data.user?.email ?? null,
       emailConfirmedAt: authUser.data.user?.email_confirmed_at ?? null,
       lastSignInAt: authUser.data.user?.last_sign_in_at ?? null,
-      bannedUntil: (authUser.data.user as unknown as { banned_until?: string | null })?.banned_until ?? null,
+      bannedUntil:
+        (authUser.data.user as unknown as { banned_until?: string | null })?.banned_until ?? null,
     };
   });
 
@@ -246,7 +260,7 @@ const reauthInput = z.object({ password: z.string().min(1).max(128) });
 
 export const reauthenticate = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((input: unknown) => reauthInput.parse(input))
+  .validator((input: unknown) => reauthInput.parse(input))
   .handler(async ({ data, context }) => {
     const { userId } = context;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -267,7 +281,7 @@ const sensitiveBase = {
 // suspend
 export const suspendUser = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ ...sensitiveBase, reason: z.string().trim().min(3).max(500) }).parse(input),
   )
   .handler(async ({ data, context }) => {
@@ -288,7 +302,8 @@ export const suspendUser = createServerFn({ method: "POST" })
       .eq("user_id", data.userId)
       .select("user_id");
     if (error) throw new Response(error.message, { status: 500 });
-    if (!updated || updated.length === 0) throw new Response("No profile row was updated. The user may not exist.", { status: 404 });
+    if (!updated || updated.length === 0)
+      throw new Response("No profile row was updated. The user may not exist.", { status: 404 });
     // Also ban in Supabase Auth so tokens can't refresh.
     await supabaseAdmin.auth.admin.updateUserById(data.userId, {
       ban_duration: "876000h",
@@ -310,7 +325,7 @@ export const suspendUser = createServerFn({ method: "POST" })
 // reactivate
 export const reactivateUser = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((input: unknown) => z.object(sensitiveBase).parse(input))
+  .validator((input: unknown) => z.object(sensitiveBase).parse(input))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(context.userId);
@@ -329,7 +344,8 @@ export const reactivateUser = createServerFn({ method: "POST" })
       .eq("user_id", data.userId)
       .select("user_id");
     if (error) throw new Response(error.message, { status: 500 });
-    if (!updated || updated.length === 0) throw new Response("No profile row was updated. The user may not exist.", { status: 404 });
+    if (!updated || updated.length === 0)
+      throw new Response("No profile row was updated. The user may not exist.", { status: 404 });
     await supabaseAdmin.auth.admin.updateUserById(data.userId, { ban_duration: "none" } as never);
 
     await writeAudit({
@@ -348,7 +364,7 @@ export const reactivateUser = createServerFn({ method: "POST" })
 // soft delete
 export const softDeleteUser = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ ...sensitiveBase, reason: z.string().trim().min(3).max(500) }).parse(input),
   )
   .handler(async ({ data, context }) => {
@@ -372,11 +388,18 @@ export const softDeleteUser = createServerFn({ method: "POST" })
       .eq("user_id", data.userId)
       .select("user_id");
     if (error) throw new Response(error.message, { status: 500 });
-    if (!updated || updated.length === 0) throw new Response("No profile row was updated. The user may not exist.", { status: 404 });
-    await supabaseAdmin.auth.admin.updateUserById(data.userId, { ban_duration: "876000h" } as never);
-    await supabaseAdmin
-      .from("deletion_log")
-      .insert({ entity: "profiles", entity_id: data.userId, actor_id: context.userId, reason: data.reason, snapshot: prev as never });
+    if (!updated || updated.length === 0)
+      throw new Response("No profile row was updated. The user may not exist.", { status: 404 });
+    await supabaseAdmin.auth.admin.updateUserById(data.userId, {
+      ban_duration: "876000h",
+    } as never);
+    await supabaseAdmin.from("deletion_log").insert({
+      entity: "profiles",
+      entity_id: data.userId,
+      actor_id: context.userId,
+      reason: data.reason,
+      snapshot: prev as never,
+    });
 
     await writeAudit({
       action: "user.soft_delete",
@@ -394,7 +417,7 @@ export const softDeleteUser = createServerFn({ method: "POST" })
 // send password reset email
 export const sendPasswordReset = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((input: unknown) => z.object(sensitiveBase).parse(input))
+  .validator((input: unknown) => z.object(sensitiveBase).parse(input))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(context.userId);
@@ -424,7 +447,7 @@ export const sendPasswordReset = createServerFn({ method: "POST" })
 // unlock (clear ban)
 export const unlockUser = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((input: unknown) => z.object(sensitiveBase).parse(input))
+  .validator((input: unknown) => z.object(sensitiveBase).parse(input))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(context.userId);
@@ -449,7 +472,7 @@ export const unlockUser = createServerFn({ method: "POST" })
 // mark email verified
 export const verifyEmail = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((input: unknown) => z.object(sensitiveBase).parse(input))
+  .validator((input: unknown) => z.object(sensitiveBase).parse(input))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(context.userId);
@@ -473,7 +496,7 @@ export const verifyEmail = createServerFn({ method: "POST" })
 const APP_ROLES = ["member", "approver", "finance", "manager", "admin", "super_admin"] as const;
 export const changeUserRole = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z
       .object({ ...sensitiveBase, role: z.enum(APP_ROLES), replaceAll: z.boolean().default(true) })
       .parse(input),
@@ -483,10 +506,16 @@ export const changeUserRole = createServerFn({ method: "POST" })
     const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(context.userId);
     await verifyCallerPassword(authUser.user!.email!, data.password);
 
-    const { data: prev } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", data.userId);
+    const { data: prev } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", data.userId);
 
     if (data.replaceAll) {
-      const { error: delErr } = await supabaseAdmin.from("user_roles").delete().eq("user_id", data.userId);
+      const { error: delErr } = await supabaseAdmin
+        .from("user_roles")
+        .delete()
+        .eq("user_id", data.userId);
       if (delErr) throw new Response(delErr.message, { status: 500 });
     }
     const { data: inserted, error } = await supabaseAdmin
@@ -495,7 +524,9 @@ export const changeUserRole = createServerFn({ method: "POST" })
       .select("user_id");
     if (error) throw new Response(error.message, { status: 500 });
     if (!inserted || inserted.length === 0) {
-      throw new Response("Role change did not persist. Check database permissions.", { status: 500 });
+      throw new Response("Role change did not persist. Check database permissions.", {
+        status: 500,
+      });
     }
 
     await writeAudit({
@@ -514,7 +545,7 @@ export const changeUserRole = createServerFn({ method: "POST" })
 // remove a single role from user_roles
 export const removeUserRole = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ ...sensitiveBase, role: z.enum(APP_ROLES) }).parse(input),
   )
   .handler(async ({ data, context }) => {
@@ -527,7 +558,9 @@ export const removeUserRole = createServerFn({ method: "POST" })
     }
 
     const { data: prev } = await supabaseAdmin
-      .from("user_roles").select("role").eq("user_id", data.userId);
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", data.userId);
 
     const { data: deleted, error } = await supabaseAdmin
       .from("user_roles")
@@ -537,7 +570,9 @@ export const removeUserRole = createServerFn({ method: "POST" })
       .select("id");
     if (error) throw new Response(error.message, { status: 400 });
     if (!deleted || deleted.length === 0) {
-      throw new Response(`Role "${data.role}" was not found on this user (nothing to remove).`, { status: 404 });
+      throw new Response(`Role "${data.role}" was not found on this user (nothing to remove).`, {
+        status: 404,
+      });
     }
 
     await writeAudit({
@@ -553,12 +588,10 @@ export const removeUserRole = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-
-
 // assign branch
 export const assignBranch = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ ...sensitiveBase, branchId: z.string().uuid().nullable() }).parse(input),
   )
   .handler(async ({ data, context }) => {
@@ -578,7 +611,8 @@ export const assignBranch = createServerFn({ method: "POST" })
       .eq("user_id", data.userId)
       .select("user_id");
     if (error) throw new Response(error.message, { status: 500 });
-    if (!updated || updated.length === 0) throw new Response("No profile row was updated. The user may not exist.", { status: 404 });
+    if (!updated || updated.length === 0)
+      throw new Response("No profile row was updated. The user may not exist.", { status: 404 });
 
     await writeAudit({
       action: "user.assign_branch",
@@ -596,7 +630,7 @@ export const assignBranch = createServerFn({ method: "POST" })
 // force sign-out (revoke all sessions for a user)
 export const forceSignOutUser = createServerFn({ method: "POST" })
   .middleware([requireSuperAdmin])
-  .inputValidator((input: unknown) => z.object(sensitiveBase).parse(input))
+  .validator((input: unknown) => z.object(sensitiveBase).parse(input))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(context.userId);

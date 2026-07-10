@@ -16,10 +16,23 @@ export const getMonitoringStats = createServerFn({ method: "GET" })
     const since1h = new Date(now - 3600 * 1000).toISOString();
     const since24h = new Date(now - 24 * 3600 * 1000).toISOString();
     const [audit1h, audit24h, tx24h, sessions] = await Promise.all([
-      supabaseAdmin.from("audit_log").select("*", { count: "exact", head: true }).gte("created_at", since1h),
-      supabaseAdmin.from("audit_log").select("*", { count: "exact", head: true }).gte("created_at", since24h),
-      supabaseAdmin.from("transactions").select("*", { count: "exact", head: true }).gte("created_at", since24h),
-      supabaseAdmin.from("user_sessions").select("*", { count: "exact", head: true }).is("revoked_at", null).gte("last_seen", since24h),
+      supabaseAdmin
+        .from("audit_log")
+        .select("*", { count: "exact", head: true })
+        .gte("created_at", since1h),
+      supabaseAdmin
+        .from("audit_log")
+        .select("*", { count: "exact", head: true })
+        .gte("created_at", since24h),
+      supabaseAdmin
+        .from("transactions")
+        .select("*", { count: "exact", head: true })
+        .gte("created_at", since24h),
+      supabaseAdmin
+        .from("user_sessions")
+        .select("*", { count: "exact", head: true })
+        .is("revoked_at", null)
+        .gte("last_seen", since24h),
     ]);
     const { data: recent } = await supabaseAdmin
       .from("audit_log")
@@ -37,7 +50,9 @@ export const getMonitoringStats = createServerFn({ method: "GET" })
   });
 
 export const Route = createFileRoute("/_app/superadmin/monitoring")({
-  head: () => ({ meta: [{ title: "Monitoring — Super Admin" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({
+    meta: [{ title: "Monitoring — Super Admin" }, { name: "robots", content: "noindex" }],
+  }),
   component: MonitoringPage,
 });
 
@@ -57,7 +72,9 @@ function MonitoringPage() {
     <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-bold">Monitoring</h1>
-        <p className="text-sm text-muted-foreground">Live signals from the platform. Refreshes every 30 seconds.</p>
+        <p className="text-sm text-muted-foreground">
+          Live signals from the platform. Refreshes every 30 seconds.
+        </p>
       </header>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -74,19 +91,31 @@ function MonitoringPage() {
         <ul className="mt-3 divide-y divide-border/40 text-sm">
           {data.recent.map((e) => (
             <li key={e.id} className="flex items-center gap-3 py-2">
-              <span className="rounded bg-muted px-2 py-0.5 text-[10px] font-mono uppercase text-muted-foreground">{e.action}</span>
+              <span className="rounded bg-muted px-2 py-0.5 text-[10px] font-mono uppercase text-muted-foreground">
+                {e.action}
+              </span>
               <span className="truncate">{e.entity}</span>
               <span className="ml-auto text-xs text-muted-foreground">{fmtDate(e.created_at)}</span>
             </li>
           ))}
-          {data.recent.length === 0 && <li className="py-4 text-center text-muted-foreground">No recent activity.</li>}
+          {data.recent.length === 0 && (
+            <li className="py-4 text-center text-muted-foreground">No recent activity.</li>
+          )}
         </ul>
       </section>
     </div>
   );
 }
 
-function Kpi({ icon: Icon, label, value }: { icon: typeof Activity; label: string; value: number }) {
+function Kpi({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof Activity;
+  label: string;
+  value: number;
+}) {
   return (
     <div className="rounded-2xl border border-border/70 bg-card p-4">
       <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">

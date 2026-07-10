@@ -16,18 +16,24 @@ import { Loader2, Upload, X, Briefcase, Zap, AlertCircle } from "lucide-react";
 import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/_app/loans/apply")({
-  head: () => pageHead({
-    path: "/loans/apply",
-    title: "Apply for a loan — WASSHA SACCOS",
-    description: "Submit a development, chap-chap, or emergency loan application with supporting documents.",
-    noIndex: true,
-  }),
+  head: () =>
+    pageHead({
+      path: "/loans/apply",
+      title: "Apply for a loan — WASSHA SACCOS",
+      description:
+        "Submit a development, chap-chap, or emergency loan application with supporting documents.",
+      noIndex: true,
+    }),
   component: ApplyPage,
 });
 
 const MAX = 10 * 1024 * 1024;
 const ALLOWED_MIME = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]);
-const TYPE_ICON: Record<string, any> = { development: Briefcase, chapchap: Zap, emergency: AlertCircle };
+const TYPE_ICON: Record<string, any> = {
+  development: Briefcase,
+  chapchap: Zap,
+  emergency: AlertCircle,
+};
 
 function ApplyPage() {
   const { user } = useAuth();
@@ -44,7 +50,8 @@ function ApplyPage() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.rpc("calculate_eligibility", { _user_id: user.id })
+    supabase
+      .rpc("calculate_eligibility", { _user_id: user.id })
       .then(({ data }) => setEligibility(data));
   }, [user?.id]);
 
@@ -57,9 +64,13 @@ function ApplyPage() {
     const fs = Array.from(e.target.files ?? []);
     const ok: File[] = [];
     for (const f of fs) {
-      if (f.size > MAX) { toast.error(`${f.name} exceeds 10MB`); continue; }
+      if (f.size > MAX) {
+        toast.error(`${f.name} exceeds 10MB`);
+        continue;
+      }
       if (!ALLOWED_MIME.has(f.type)) {
-        toast.error(`${f.name}: only PDF, JPG, PNG, WEBP allowed`); continue;
+        toast.error(`${f.name}: only PDF, JPG, PNG, WEBP allowed`);
+        continue;
       }
       ok.push(f);
     }
@@ -78,23 +89,34 @@ function ApplyPage() {
     }
     setSubmitting(true);
     try {
-      const { data: loan, error } = await supabase.from("loans").insert({
-        member_id: user.id,
-        amount_requested: amt,
-        purpose,
-        term_months: Number(term),
-        loan_type: loanType,
-        eligibility_limit: eligibility?.max_amount ?? null,
-      }).select().single();
+      const { data: loan, error } = await supabase
+        .from("loans")
+        .insert({
+          member_id: user.id,
+          amount_requested: amt,
+          purpose,
+          term_months: Number(term),
+          loan_type: loanType,
+          eligibility_limit: eligibility?.max_amount ?? null,
+        })
+        .select()
+        .single();
       if (error) throw error;
 
       for (const f of files) {
         const path = `${user.id}/${loan.id}/${Date.now()}-${f.name}`;
         const { error: upErr } = await supabase.storage.from("loan-documents").upload(path, f);
-        if (upErr) { toast.error(`Upload failed: ${f.name}`); continue; }
+        if (upErr) {
+          toast.error(`Upload failed: ${f.name}`);
+          continue;
+        }
         await supabase.from("loan_documents").insert({
-          loan_id: loan.id, file_path: path, file_name: f.name,
-          file_size: f.size, mime_type: f.type, uploaded_by: user.id,
+          loan_id: loan.id,
+          file_path: path,
+          file_name: f.name,
+          file_size: f.size,
+          mime_type: f.type,
+          uploaded_by: user.id,
         });
       }
 
@@ -102,7 +124,9 @@ function ApplyPage() {
       nav({ to: "/loans/$loanId", params: { loanId: loan.id } });
     } catch (err: any) {
       toast.error(friendlyError(err, "Failed to submit"));
-    } finally { setSubmitting(false); }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -111,31 +135,43 @@ function ApplyPage() {
       <div className="container mx-auto max-w-3xl space-y-6 px-4 py-6">
         <div>
           <h1 className="text-2xl font-bold">Apply for a loan</h1>
-          <p className="text-sm text-muted-foreground">Submit your loan request and supporting documents.</p>
+          <p className="text-sm text-muted-foreground">
+            Submit your loan request and supporting documents.
+          </p>
         </div>
 
         {eligibility && (
-          <div className={`rounded-2xl border p-5 ${eligibility.eligible ? "border-success/30 bg-success/5" : "border-warning/40 bg-warning/5"}`}>
+          <div
+            className={`rounded-2xl border p-5 ${eligibility.eligible ? "border-success/30 bg-success/5" : "border-warning/40 bg-warning/5"}`}
+          >
             <div className="flex items-center justify-between">
               <p className="text-sm font-semibold">
-                {eligibility.eligible ? "You're eligible to borrow up to" : "You are not eligible right now"}
+                {eligibility.eligible
+                  ? "You're eligible to borrow up to"
+                  : "You are not eligible right now"}
               </p>
               <p className="text-lg font-bold text-primary">{fmtTZS(eligibility.max_amount)}</p>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Savings: {fmtTZS(eligibility.savings)} · Active loan: {fmtTZS(eligibility.active_loan_balance)} · Member: {eligibility.months_member} months
+              Savings: {fmtTZS(eligibility.savings)} · Active loan:{" "}
+              {fmtTZS(eligibility.active_loan_balance)} · Member: {eligibility.months_member} months
             </p>
             {!eligibility.eligible && eligibility.reasons?.length > 0 && (
               <ul className="mt-3 space-y-1 text-sm">
                 {eligibility.reasons.map((r: any, i: number) => (
-                  <li key={i} className="text-muted-foreground">• {r.message}</li>
+                  <li key={i} className="text-muted-foreground">
+                    • {r.message}
+                  </li>
                 ))}
               </ul>
             )}
           </div>
         )}
 
-        <form onSubmit={submit} className="space-y-5 rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
+        <form
+          onSubmit={submit}
+          className="space-y-5 rounded-2xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]"
+        >
           <div className="space-y-2">
             <Label>Loan type</Label>
             <div className="grid gap-2 md:grid-cols-3">
@@ -148,12 +184,20 @@ function ApplyPage() {
                     key={t}
                     onClick={() => setLoanType(t)}
                     className={`rounded-xl border p-4 text-left transition ${
-                      active ? "border-primary bg-primary/5 shadow-[var(--shadow-card)]" : "border-border hover:border-primary/40"
+                      active
+                        ? "border-primary bg-primary/5 shadow-[var(--shadow-card)]"
+                        : "border-border hover:border-primary/40"
                     }`}
                   >
-                    <Icon className={`mb-2 h-5 w-5 ${active ? "text-primary" : "text-muted-foreground"}`} />
-                    <p className={`text-sm font-semibold ${active ? "text-primary" : ""}`}>{LOAN_TYPE_LABEL[t]}</p>
-                    <p className="mt-1 text-[11px] leading-snug text-muted-foreground">{LOAN_TYPE_DESC[t]}</p>
+                    <Icon
+                      className={`mb-2 h-5 w-5 ${active ? "text-primary" : "text-muted-foreground"}`}
+                    />
+                    <p className={`text-sm font-semibold ${active ? "text-primary" : ""}`}>
+                      {LOAN_TYPE_LABEL[t]}
+                    </p>
+                    <p className="mt-1 text-[11px] leading-snug text-muted-foreground">
+                      {LOAN_TYPE_DESC[t]}
+                    </p>
                   </button>
                 );
               })}
@@ -163,31 +207,70 @@ function ApplyPage() {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="amount">Amount (TZS) — max {fmtTZS(rule.maxAmount)}</Label>
-              <Input id="amount" type="number" min="1" max={rule.maxAmount} value={amount} onChange={(e) => setAmount(e.target.value)} required />
+              <Input
+                id="amount"
+                type="number"
+                min="1"
+                max={rule.maxAmount}
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                required
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="term">Term (months) — max {rule.maxTerm}</Label>
-              <Input id="term" type="number" min="1" max={rule.maxTerm} value={term} onChange={(e) => setTerm(e.target.value)} required />
+              <Input
+                id="term"
+                type="number"
+                min="1"
+                max={rule.maxTerm}
+                value={term}
+                onChange={(e) => setTerm(e.target.value)}
+                required
+              />
             </div>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="purpose">Purpose</Label>
-            <Textarea id="purpose" value={purpose} onChange={(e) => setPurpose(e.target.value)} required minLength={10} placeholder="Explain how you'll use this loan..." />
+            <Textarea
+              id="purpose"
+              value={purpose}
+              onChange={(e) => setPurpose(e.target.value)}
+              required
+              minLength={10}
+              placeholder="Explain how you'll use this loan..."
+            />
           </div>
 
           <div className="space-y-2">
-            <Label>Supporting documents <span className="text-destructive">*</span> (PDF / JPG / PNG / WEBP — at least one, up to 5 files, 10MB each)</Label>
+            <Label>
+              Supporting documents <span className="text-destructive">*</span> (PDF / JPG / PNG /
+              WEBP — at least one, up to 5 files, 10MB each)
+            </Label>
             <label className="flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-border bg-muted/30 p-6 transition hover:bg-muted">
               <Upload className="h-5 w-5 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">Click to upload files</span>
-              <input type="file" multiple accept="application/pdf,image/jpeg,image/png,image/webp" onChange={onPick} className="hidden" />
+              <input
+                type="file"
+                multiple
+                accept="application/pdf,image/jpeg,image/png,image/webp"
+                onChange={onPick}
+                className="hidden"
+              />
             </label>
             {files.length > 0 && (
               <ul className="space-y-1">
                 {files.map((f, i) => (
-                  <li key={i} className="flex items-center justify-between rounded-lg border border-border/60 px-3 py-2 text-sm">
+                  <li
+                    key={i}
+                    className="flex items-center justify-between rounded-lg border border-border/60 px-3 py-2 text-sm"
+                  >
                     <span className="truncate">{f.name}</span>
-                    <button type="button" onClick={() => setFiles(files.filter((_, j) => j !== i))} className="text-muted-foreground hover:text-destructive">
+                    <button
+                      type="button"
+                      onClick={() => setFiles(files.filter((_, j) => j !== i))}
+                      className="text-muted-foreground hover:text-destructive"
+                    >
                       <X className="h-4 w-4" />
                     </button>
                   </li>
@@ -196,8 +279,11 @@ function ApplyPage() {
             )}
           </div>
 
-          <Button type="submit" disabled={submitting || (eligibility && !eligibility.eligible)}
-            className="w-full bg-[image:var(--gradient-primary)] text-primary-foreground shadow-[var(--shadow-elegant)] hover:opacity-95">
+          <Button
+            type="submit"
+            disabled={submitting || (eligibility && !eligibility.eligible)}
+            className="w-full bg-[image:var(--gradient-primary)] text-primary-foreground shadow-[var(--shadow-elegant)] hover:opacity-95"
+          >
             {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Submit application
           </Button>

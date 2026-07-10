@@ -8,5 +8,7 @@ Disallow: /loans
 Disallow: /statements
 Disallow: /notifications
 Disallow: /profile
+Disallow: /superadmin
+Disallow: /superadmin/
 
 Sitemap: https://wassha-saccos.lovable.app/sitemap.xml

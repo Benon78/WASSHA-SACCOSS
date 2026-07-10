@@ -21,16 +21,41 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { TableSkeleton } from "@/components/status/LoadingState";
 import { ErrorState, classifyError } from "@/components/status/ErrorState";
 import { EmptyState } from "@/components/status/EmptyState";
 import { ConfirmWithPassword } from "@/components/superadmin/ConfirmWithPassword";
-import { MoreHorizontal, Search, ShieldOff, ShieldCheck, KeyRound, Mail, Trash2, LogOut, UserCog, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  MoreHorizontal,
+  Search,
+  ShieldOff,
+  ShieldCheck,
+  KeyRound,
+  Mail,
+  Trash2,
+  LogOut,
+  UserCog,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { fmtDate } from "@/lib/format";
 
 const searchSchema = z.object({
@@ -41,7 +66,9 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/_app/superadmin/users")({
-  head: () => ({ meta: [{ title: "Users — Super Admin" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({
+    meta: [{ title: "Users — Super Admin" }, { name: "robots", content: "noindex" }],
+  }),
   validateSearch: zodValidator(searchSchema),
   component: UsersPage,
 });
@@ -87,7 +114,9 @@ function UsersPage() {
             Manage every user on the platform. Sensitive actions require password confirmation.
           </p>
         </div>
-        {data && <p className="text-sm text-muted-foreground">{data.total.toLocaleString()} total</p>}
+        {data && (
+          <p className="text-sm text-muted-foreground">{data.total.toLocaleString()} total</p>
+        )}
       </div>
 
       {/* Filters */}
@@ -96,7 +125,13 @@ function UsersPage() {
           className="flex flex-1 items-end gap-2"
           onSubmit={(e) => {
             e.preventDefault();
-            navigate({ search: (s: z.infer<typeof searchSchema>) => ({ ...s, search: searchInput || undefined, page: 1 }) });
+            navigate({
+              search: (s: z.infer<typeof searchSchema>) => ({
+                ...s,
+                search: searchInput || undefined,
+                page: 1,
+              }),
+            });
           }}
         >
           <div className="flex-1 space-y-1.5">
@@ -112,17 +147,27 @@ function UsersPage() {
               />
             </div>
           </div>
-          <Button type="submit" variant="secondary">Search</Button>
+          <Button type="submit" variant="secondary">
+            Search
+          </Button>
         </form>
         <div className="space-y-1.5">
           <Label>Status</Label>
           <Select
             value={search.status}
             onValueChange={(v) =>
-              navigate({ search: (s: z.infer<typeof searchSchema>) => ({ ...s, status: v as never, page: 1 }) })
+              navigate({
+                search: (s: z.infer<typeof searchSchema>) => ({
+                  ...s,
+                  status: v as never,
+                  page: 1,
+                }),
+              })
             }
           >
-            <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="suspended">Suspended</SelectItem>
@@ -136,13 +181,23 @@ function UsersPage() {
           <Select
             value={String(search.pageSize)}
             onValueChange={(v) =>
-              navigate({ search: (s: z.infer<typeof searchSchema>) => ({ ...s, pageSize: Number(v), page: 1 }) })
+              navigate({
+                search: (s: z.infer<typeof searchSchema>) => ({
+                  ...s,
+                  pageSize: Number(v),
+                  page: 1,
+                }),
+              })
             }
           >
-            <SelectTrigger className="w-24"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-24">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               {[25, 50, 100].map((n) => (
-                <SelectItem key={n} value={String(n)}>{n}</SelectItem>
+                <SelectItem key={n} value={String(n)}>
+                  {n}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -179,7 +234,9 @@ function UsersPage() {
                         className="text-left font-medium hover:underline"
                         onClick={() => setDetailUserId(u.user_id)}
                       >
-                        {u.full_name || <span className="text-muted-foreground italic">(no name)</span>}
+                        {u.full_name || (
+                          <span className="text-muted-foreground italic">(no name)</span>
+                        )}
                       </button>
                       <div className="text-xs text-muted-foreground">{u.phone ?? "—"}</div>
                     </td>
@@ -190,22 +247,30 @@ function UsersPage() {
                           <Badge variant="outline">member</Badge>
                         ) : (
                           u.roles.map((r) => (
-                            <Badge key={r} variant={r === "super_admin" ? "default" : "outline"}>{r}</Badge>
+                            <Badge key={r} variant={r === "super_admin" ? "default" : "outline"}>
+                              {r}
+                            </Badge>
                           ))
                         )}
                       </div>
                     </td>
-                    <td className="px-3 py-2">{u.branch?.name ?? <span className="text-muted-foreground">—</span>}</td>
+                    <td className="px-3 py-2">
+                      {u.branch?.name ?? <span className="text-muted-foreground">—</span>}
+                    </td>
                     <td className="px-3 py-2">
                       {u.deleted_at ? (
                         <Badge variant="destructive">Deleted</Badge>
                       ) : u.suspended_at ? (
-                        <Badge className="bg-amber-500 text-white hover:bg-amber-500">Suspended</Badge>
+                        <Badge className="bg-amber-500 text-white hover:bg-amber-500">
+                          Suspended
+                        </Badge>
                       ) : (
                         <Badge variant="secondary">Active</Badge>
                       )}
                     </td>
-                    <td className="px-3 py-2 text-xs text-muted-foreground">{fmtDate(u.joined_at)}</td>
+                    <td className="px-3 py-2 text-xs text-muted-foreground">
+                      {fmtDate(u.joined_at)}
+                    </td>
                     <td className="px-3 py-2 text-right">
                       <UserActionsMenu user={u} onDone={invalidate} />
                     </td>
@@ -226,7 +291,11 @@ function UsersPage() {
                 variant="ghost"
                 size="sm"
                 disabled={search.page <= 1}
-                onClick={() => navigate({ search: (s: z.infer<typeof searchSchema>) => ({ ...s, page: s.page - 1 }) })}
+                onClick={() =>
+                  navigate({
+                    search: (s: z.infer<typeof searchSchema>) => ({ ...s, page: s.page - 1 }),
+                  })
+                }
               >
                 <ChevronLeft className="h-4 w-4" /> Prev
               </Button>
@@ -234,7 +303,11 @@ function UsersPage() {
                 variant="ghost"
                 size="sm"
                 disabled={search.page >= totalPages}
-                onClick={() => navigate({ search: (s: z.infer<typeof searchSchema>) => ({ ...s, page: s.page + 1 }) })}
+                onClick={() =>
+                  navigate({
+                    search: (s: z.infer<typeof searchSchema>) => ({ ...s, page: s.page + 1 }),
+                  })
+                }
               >
                 Next <ChevronRight className="h-4 w-4" />
               </Button>
@@ -288,51 +361,112 @@ function UserActionsMenu({ user, onDone }: { user: UserRow; onDone: () => void }
 
         <ConfirmWithPassword
           title="Send password reset"
-          description={<>Emails a recovery link to <strong>{user.full_name || "this user"}</strong>.</>}
+          description={
+            <>
+              Emails a recovery link to <strong>{user.full_name || "this user"}</strong>.
+            </>
+          }
           actionLabel="Send reset"
-          trigger={<DropdownMenuItem onSelect={(e) => e.preventDefault()}><Mail className="mr-2 h-4 w-4" />Send password reset</DropdownMenuItem>}
-          onConfirmed={(password) => wrap(() => resetPw({ data: { userId: user.user_id, password } }), "Reset link sent")}
+          trigger={
+            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+              <Mail className="mr-2 h-4 w-4" />
+              Send password reset
+            </DropdownMenuItem>
+          }
+          onConfirmed={(password) =>
+            wrap(() => resetPw({ data: { userId: user.user_id, password } }), "Reset link sent")
+          }
         />
 
         <ConfirmWithPassword
           title="Verify email"
-          description={<>Mark <strong>{user.full_name || "this user"}</strong>'s email as verified.</>}
+          description={
+            <>
+              Mark <strong>{user.full_name || "this user"}</strong>'s email as verified.
+            </>
+          }
           actionLabel="Verify email"
-          trigger={<DropdownMenuItem onSelect={(e) => e.preventDefault()}><ShieldCheck className="mr-2 h-4 w-4" />Mark email verified</DropdownMenuItem>}
-          onConfirmed={(password) => wrap(() => verifyEm({ data: { userId: user.user_id, password } }), "Email verified")}
+          trigger={
+            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+              <ShieldCheck className="mr-2 h-4 w-4" />
+              Mark email verified
+            </DropdownMenuItem>
+          }
+          onConfirmed={(password) =>
+            wrap(() => verifyEm({ data: { userId: user.user_id, password } }), "Email verified")
+          }
         />
 
         <ConfirmWithPassword
           title="Unlock account"
-          description={<>Clear any lockout on <strong>{user.full_name || "this user"}</strong>.</>}
+          description={
+            <>
+              Clear any lockout on <strong>{user.full_name || "this user"}</strong>.
+            </>
+          }
           actionLabel="Unlock"
-          trigger={<DropdownMenuItem onSelect={(e) => e.preventDefault()}><KeyRound className="mr-2 h-4 w-4" />Unlock account</DropdownMenuItem>}
-          onConfirmed={(password) => wrap(() => unlock({ data: { userId: user.user_id, password } }), "Account unlocked")}
+          trigger={
+            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+              <KeyRound className="mr-2 h-4 w-4" />
+              Unlock account
+            </DropdownMenuItem>
+          }
+          onConfirmed={(password) =>
+            wrap(() => unlock({ data: { userId: user.user_id, password } }), "Account unlocked")
+          }
         />
 
         <ConfirmWithPassword
           title="Force sign-out"
-          description={<>Terminates every active session for <strong>{user.full_name || "this user"}</strong>.</>}
+          description={
+            <>
+              Terminates every active session for <strong>{user.full_name || "this user"}</strong>.
+            </>
+          }
           actionLabel="Force sign-out"
-          trigger={<DropdownMenuItem onSelect={(e) => e.preventDefault()}><LogOut className="mr-2 h-4 w-4" />Force sign-out</DropdownMenuItem>}
-          onConfirmed={(password) => wrap(() => forceOut({ data: { userId: user.user_id, password } }), "All sessions signed out")}
+          trigger={
+            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Force sign-out
+            </DropdownMenuItem>
+          }
+          onConfirmed={(password) =>
+            wrap(
+              () => forceOut({ data: { userId: user.user_id, password } }),
+              "All sessions signed out",
+            )
+          }
         />
 
         <DropdownMenuSeparator />
         <DropdownMenuLabel>Role</DropdownMenuLabel>
         <ConfirmWithPassword
           title="Change role"
-          description={<>Replace current roles for <strong>{user.full_name || "this user"}</strong> with the selected role.</>}
+          description={
+            <>
+              Replace current roles for <strong>{user.full_name || "this user"}</strong> with the
+              selected role.
+            </>
+          }
           actionLabel="Change role"
-          trigger={<DropdownMenuItem onSelect={(e) => e.preventDefault()}><UserCog className="mr-2 h-4 w-4" />Change role…</DropdownMenuItem>}
+          trigger={
+            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+              <UserCog className="mr-2 h-4 w-4" />
+              Change role…
+            </DropdownMenuItem>
+          }
           extraFields={
             <div className="space-y-1.5">
               <Label>New role</Label>
               <Select value={roleDraft} onValueChange={(v) => setRoleDraft(v as never)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {APP_ROLES.map((r) => (
-                    <SelectItem key={r} value={r}>{r}</SelectItem>
+                    <SelectItem key={r} value={r}>
+                      {r}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -340,7 +474,10 @@ function UserActionsMenu({ user, onDone }: { user: UserRow; onDone: () => void }
           }
           onConfirmed={(password) =>
             wrap(
-              () => changeRole({ data: { userId: user.user_id, password, role: roleDraft, replaceAll: true } }),
+              () =>
+                changeRole({
+                  data: { userId: user.user_id, password, role: roleDraft, replaceAll: true },
+                }),
               `Role changed to ${roleDraft}`,
             )
           }
@@ -348,7 +485,12 @@ function UserActionsMenu({ user, onDone }: { user: UserRow; onDone: () => void }
 
         <ConfirmWithPassword
           title="Remove role"
-          description={<>Delete a specific role from <strong>{user.full_name || "this user"}</strong>. This permanently removes the row from user_roles.</>}
+          description={
+            <>
+              Delete a specific role from <strong>{user.full_name || "this user"}</strong>. This
+              permanently removes the row from user_roles.
+            </>
+          }
           actionLabel="Remove role"
           trigger={
             <DropdownMenuItem
@@ -358,34 +500,49 @@ function UserActionsMenu({ user, onDone }: { user: UserRow; onDone: () => void }
               }}
               disabled={!user.roles || user.roles.length === 0}
             >
-              <ShieldOff className="mr-2 h-4 w-4" />Remove role…
+              <ShieldOff className="mr-2 h-4 w-4" />
+              Remove role…
             </DropdownMenuItem>
           }
           extraFields={
             <div className="space-y-1.5">
               <Label>Role to remove</Label>
               <Select value={roleToRemove} onValueChange={(v) => setRoleToRemove(v as never)}>
-                <SelectTrigger><SelectValue placeholder="Select role" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
                 <SelectContent>
                   {(user.roles ?? []).map((r) => (
-                    <SelectItem key={r} value={r}>{r}</SelectItem>
+                    <SelectItem key={r} value={r}>
+                      {r}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                Only roles currently assigned to this user are listed. Removing the last Admin is blocked by the database.
+                Only roles currently assigned to this user are listed. Removing the last Admin is
+                blocked by the database.
               </p>
             </div>
           }
           onConfirmed={async (password) => {
-            if (!roleToRemove) { toast.error("Pick a role to remove"); return; }
+            if (!roleToRemove) {
+              toast.error("Pick a role to remove");
+              return;
+            }
             await wrap(
-              () => removeRole({ data: { userId: user.user_id, password, role: roleToRemove as (typeof APP_ROLES)[number] } }),
+              () =>
+                removeRole({
+                  data: {
+                    userId: user.user_id,
+                    password,
+                    role: roleToRemove as (typeof APP_ROLES)[number],
+                  },
+                }),
               `Role ${roleToRemove} removed`,
             );
           }}
         />
-
 
         <DropdownMenuSeparator />
         <DropdownMenuLabel>Status</DropdownMenuLabel>
@@ -393,22 +550,51 @@ function UserActionsMenu({ user, onDone }: { user: UserRow; onDone: () => void }
         {user.suspended_at || user.deleted_at ? (
           <ConfirmWithPassword
             title="Reactivate user"
-            description={<>Restore access for <strong>{user.full_name || "this user"}</strong>.</>}
+            description={
+              <>
+                Restore access for <strong>{user.full_name || "this user"}</strong>.
+              </>
+            }
             actionLabel="Reactivate"
-            trigger={<DropdownMenuItem onSelect={(e) => e.preventDefault()}><ShieldCheck className="mr-2 h-4 w-4" />Reactivate</DropdownMenuItem>}
-            onConfirmed={(password) => wrap(() => reactivate({ data: { userId: user.user_id, password } }), "User reactivated")}
+            trigger={
+              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                <ShieldCheck className="mr-2 h-4 w-4" />
+                Reactivate
+              </DropdownMenuItem>
+            }
+            onConfirmed={(password) =>
+              wrap(
+                () => reactivate({ data: { userId: user.user_id, password } }),
+                "User reactivated",
+              )
+            }
           />
         ) : (
           <ConfirmWithPassword
             title="Suspend user"
-            description={<>Temporarily block <strong>{user.full_name || "this user"}</strong>. Provide a reason for the audit log.</>}
+            description={
+              <>
+                Temporarily block <strong>{user.full_name || "this user"}</strong>. Provide a reason
+                for the audit log.
+              </>
+            }
             actionLabel="Suspend"
             destructive
-            trigger={<DropdownMenuItem onSelect={(e) => e.preventDefault()}><ShieldOff className="mr-2 h-4 w-4" />Suspend</DropdownMenuItem>}
+            trigger={
+              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                <ShieldOff className="mr-2 h-4 w-4" />
+                Suspend
+              </DropdownMenuItem>
+            }
             extraFields={
               <div className="space-y-1.5">
                 <Label>Reason</Label>
-                <Textarea rows={3} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Why is this user being suspended?" />
+                <Textarea
+                  rows={3}
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  placeholder="Why is this user being suspended?"
+                />
               </div>
             }
             onConfirmed={(password) => {
@@ -428,22 +614,34 @@ function UserActionsMenu({ user, onDone }: { user: UserRow; onDone: () => void }
             title="Delete user (soft)"
             description={
               <>
-                Marks <strong>{user.full_name || "this user"}</strong> as deleted. Financial history is preserved for audit.
+                Marks <strong>{user.full_name || "this user"}</strong> as deleted. Financial history
+                is preserved for audit.
               </>
             }
             actionLabel="Delete"
             destructive
-            trigger={<DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete (soft)</DropdownMenuItem>}
+            trigger={
+              <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete (soft)
+              </DropdownMenuItem>
+            }
             extraFields={
               <div className="space-y-1.5">
                 <Label>Reason</Label>
-                <Textarea rows={3} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Reason for deletion" />
+                <Textarea
+                  rows={3}
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  placeholder="Reason for deletion"
+                />
               </div>
             }
             onConfirmed={(password) => {
               if (reason.trim().length < 3) throw new Error("Reason must be at least 3 characters");
               return wrap(
-                () => softDelete({ data: { userId: user.user_id, password, reason: reason.trim() } }),
+                () =>
+                  softDelete({ data: { userId: user.user_id, password, reason: reason.trim() } }),
                 "User deleted",
               );
             }}
@@ -471,22 +669,34 @@ function UserDetailSheet({ userId, onClose }: { userId: string | null; onClose: 
           <SheetTitle>User details</SheetTitle>
         </SheetHeader>
         {isLoading || !data ? (
-          <div className="mt-6"><TableSkeleton rows={5} cols={2} /></div>
+          <div className="mt-6">
+            <TableSkeleton rows={5} cols={2} />
+          </div>
         ) : (
           <div className="mt-6 space-y-6 text-sm">
             <section>
-              <h3 className="mb-2 text-xs uppercase tracking-widest text-muted-foreground">Profile</h3>
+              <h3 className="mb-2 text-xs uppercase tracking-widest text-muted-foreground">
+                Profile
+              </h3>
               <dl className="grid grid-cols-2 gap-2">
-                <dt className="text-muted-foreground">Name</dt><dd>{data.profile?.full_name || "—"}</dd>
-                <dt className="text-muted-foreground">Email</dt><dd>{data.email ?? "—"}</dd>
-                <dt className="text-muted-foreground">Email confirmed</dt><dd>{data.emailConfirmedAt ? fmtDate(data.emailConfirmedAt) : "No"}</dd>
-                <dt className="text-muted-foreground">Last sign-in</dt><dd>{data.lastSignInAt ? fmtDate(data.lastSignInAt) : "Never"}</dd>
-                <dt className="text-muted-foreground">Roles</dt><dd>{data.roles.join(", ") || "member"}</dd>
-                <dt className="text-muted-foreground">Locked</dt><dd>{data.bannedUntil ? "Yes" : "No"}</dd>
+                <dt className="text-muted-foreground">Name</dt>
+                <dd>{data.profile?.full_name || "—"}</dd>
+                <dt className="text-muted-foreground">Email</dt>
+                <dd>{data.email ?? "—"}</dd>
+                <dt className="text-muted-foreground">Email confirmed</dt>
+                <dd>{data.emailConfirmedAt ? fmtDate(data.emailConfirmedAt) : "No"}</dd>
+                <dt className="text-muted-foreground">Last sign-in</dt>
+                <dd>{data.lastSignInAt ? fmtDate(data.lastSignInAt) : "Never"}</dd>
+                <dt className="text-muted-foreground">Roles</dt>
+                <dd>{data.roles.join(", ") || "member"}</dd>
+                <dt className="text-muted-foreground">Locked</dt>
+                <dd>{data.bannedUntil ? "Yes" : "No"}</dd>
               </dl>
             </section>
             <section>
-              <h3 className="mb-2 text-xs uppercase tracking-widest text-muted-foreground">Recent sessions</h3>
+              <h3 className="mb-2 text-xs uppercase tracking-widest text-muted-foreground">
+                Recent sessions
+              </h3>
               {data.sessions.length === 0 ? (
                 <p className="text-muted-foreground">No sessions recorded.</p>
               ) : (
@@ -494,22 +704,32 @@ function UserDetailSheet({ userId, onClose }: { userId: string | null; onClose: 
                   {data.sessions.slice(0, 8).map((s) => (
                     <li key={s.id} className="rounded-lg border border-border/40 p-2">
                       <div className="text-xs text-muted-foreground">{fmtDate(s.last_seen)}</div>
-                      <div className="truncate">{s.browser || s.user_agent || "Unknown browser"}</div>
-                      <div className="text-xs text-muted-foreground">{s.ip ?? "—"} · {s.location ?? "—"}{s.revoked_at ? " · revoked" : ""}</div>
+                      <div className="truncate">
+                        {s.browser || s.user_agent || "Unknown browser"}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {s.ip ?? "—"} · {s.location ?? "—"}
+                        {s.revoked_at ? " · revoked" : ""}
+                      </div>
                     </li>
                   ))}
                 </ul>
               )}
             </section>
             <section>
-              <h3 className="mb-2 text-xs uppercase tracking-widest text-muted-foreground">Login history</h3>
+              <h3 className="mb-2 text-xs uppercase tracking-widest text-muted-foreground">
+                Login history
+              </h3>
               {data.events.length === 0 ? (
                 <p className="text-muted-foreground">No events recorded.</p>
               ) : (
                 <ul className="space-y-1.5">
                   {data.events.slice(0, 15).map((e) => (
                     <li key={e.id} className="flex items-start justify-between gap-3 text-xs">
-                      <span><Badge variant="outline">{e.event_type}</Badge> <span className="text-muted-foreground">{e.ip ?? "—"}</span></span>
+                      <span>
+                        <Badge variant="outline">{e.event_type}</Badge>{" "}
+                        <span className="text-muted-foreground">{e.ip ?? "—"}</span>
+                      </span>
                       <span className="text-muted-foreground">{fmtDate(e.created_at)}</span>
                     </li>
                   ))}

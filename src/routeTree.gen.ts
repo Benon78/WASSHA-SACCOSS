@@ -10,12 +10,15 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WorkflowRouteImport } from './routes/workflow'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GuidesChoosingSaccoSoftwareRouteImport } from './routes/guides.choosing-sacco-software'
+import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AppSuperadminRouteImport } from './routes/_app/superadmin'
 import { Route as AppStatementsRouteImport } from './routes/_app/statements'
@@ -55,6 +58,11 @@ const WorkflowRoute = WorkflowRouteImport.update({
   path: '/workflow',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -63,6 +71,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -85,6 +98,11 @@ const GuidesChoosingSaccoSoftwareRoute =
     path: '/guides/choosing-sacco-software',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
+  getParentRoute: () => AuthRoute,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -254,9 +272,11 @@ const AppAdminAuditRoute = AppAdminAuditRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/workflow': typeof WorkflowRoute
   '/admin': typeof AppAdminRouteWithChildren
   '/approvals': typeof AppApprovalsRoute
@@ -267,6 +287,7 @@ export interface FileRoutesByFullPath {
   '/statements': typeof AppStatementsRoute
   '/superadmin': typeof AppSuperadminRouteWithChildren
   '/api/chat': typeof ApiChatRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/guides/choosing-sacco-software': typeof GuidesChoosingSaccoSoftwareRoute
   '/admin/audit': typeof AppAdminAuditRoute
   '/admin/board': typeof AppAdminBoardRoute
@@ -295,9 +316,11 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/workflow': typeof WorkflowRoute
   '/approvals': typeof AppApprovalsRoute
   '/dashboard': typeof AppDashboardRoute
@@ -306,6 +329,7 @@ export interface FileRoutesByTo {
   '/profile': typeof AppProfileRoute
   '/statements': typeof AppStatementsRoute
   '/api/chat': typeof ApiChatRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/guides/choosing-sacco-software': typeof GuidesChoosingSaccoSoftwareRoute
   '/admin/audit': typeof AppAdminAuditRoute
   '/admin/board': typeof AppAdminBoardRoute
@@ -336,9 +360,11 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/workflow': typeof WorkflowRoute
   '/_app/admin': typeof AppAdminRouteWithChildren
   '/_app/approvals': typeof AppApprovalsRoute
@@ -349,6 +375,7 @@ export interface FileRoutesById {
   '/_app/statements': typeof AppStatementsRoute
   '/_app/superadmin': typeof AppSuperadminRouteWithChildren
   '/api/chat': typeof ApiChatRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/guides/choosing-sacco-software': typeof GuidesChoosingSaccoSoftwareRoute
   '/_app/admin/audit': typeof AppAdminAuditRoute
   '/_app/admin/board': typeof AppAdminBoardRoute
@@ -380,8 +407,10 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/privacy'
     | '/reset-password'
     | '/sitemap.xml'
+    | '/terms'
     | '/workflow'
     | '/admin'
     | '/approvals'
@@ -392,6 +421,7 @@ export interface FileRouteTypes {
     | '/statements'
     | '/superadmin'
     | '/api/chat'
+    | '/auth/callback'
     | '/guides/choosing-sacco-software'
     | '/admin/audit'
     | '/admin/board'
@@ -421,8 +451,10 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/privacy'
     | '/reset-password'
     | '/sitemap.xml'
+    | '/terms'
     | '/workflow'
     | '/approvals'
     | '/dashboard'
@@ -431,6 +463,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/statements'
     | '/api/chat'
+    | '/auth/callback'
     | '/guides/choosing-sacco-software'
     | '/admin/audit'
     | '/admin/board'
@@ -461,8 +494,10 @@ export interface FileRouteTypes {
     | '/'
     | '/_app'
     | '/auth'
+    | '/privacy'
     | '/reset-password'
     | '/sitemap.xml'
+    | '/terms'
     | '/workflow'
     | '/_app/admin'
     | '/_app/approvals'
@@ -473,6 +508,7 @@ export interface FileRouteTypes {
     | '/_app/statements'
     | '/_app/superadmin'
     | '/api/chat'
+    | '/auth/callback'
     | '/guides/choosing-sacco-software'
     | '/_app/admin/audit'
     | '/_app/admin/board'
@@ -503,9 +539,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
-  AuthRoute: typeof AuthRoute
+  AuthRoute: typeof AuthRouteWithChildren
+  PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TermsRoute: typeof TermsRoute
   WorkflowRoute: typeof WorkflowRoute
   ApiChatRoute: typeof ApiChatRoute
   GuidesChoosingSaccoSoftwareRoute: typeof GuidesChoosingSaccoSoftwareRoute
@@ -520,6 +558,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkflowRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -532,6 +577,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -561,6 +613,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/guides/choosing-sacco-software'
       preLoaderRoute: typeof GuidesChoosingSaccoSoftwareRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof AuthRoute
     }
     '/api/chat': {
       id: '/api/chat'
@@ -888,12 +947,24 @@ const AppRouteChildren: AppRouteChildren = {
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
+interface AuthRouteChildren {
+  AuthCallbackRoute: typeof AuthCallbackRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthCallbackRoute: AuthCallbackRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
-  AuthRoute: AuthRoute,
+  AuthRoute: AuthRouteWithChildren,
+  PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TermsRoute: TermsRoute,
   WorkflowRoute: WorkflowRoute,
   ApiChatRoute: ApiChatRoute,
   GuidesChoosingSaccoSoftwareRoute: GuidesChoosingSaccoSoftwareRoute,
